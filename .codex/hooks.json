@@ -1,0 +1,31 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pwsh -NoProfile -Command '$r = git rev-parse --show-toplevel 2>$null; if (-not $r) { $r = (Get-Location).Path }; & (Join-Path $r \"hooks/codex-hook.ps1\") -Event SessionStart -RootPath $r'",
+            "commandWindows": "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \"$r = git rev-parse --show-toplevel 2>$null; if (-not $r) { $r = (Get-Location).Path }; & (Join-Path $r 'hooks/codex-hook.ps1') -Event SessionStart -RootPath $r\"",
+            "timeout": 20,
+            "statusMessage": "Checking repository context"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pwsh -NoProfile -Command '$r = git rev-parse --show-toplevel 2>$null; if (-not $r) { $r = (Get-Location).Path }; & (Join-Path $r \"hooks/codex-hook.ps1\") -Event Stop -RootPath $r'",
+            "commandWindows": "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \"$r = git rev-parse --show-toplevel 2>$null; if (-not $r) { $r = (Get-Location).Path }; & (Join-Path $r 'hooks/codex-hook.ps1') -Event Stop -RootPath $r\"",
+            "timeout": 60,
+            "statusMessage": "Validating project evidence"
+          }
+        ]
+      }
+    ]
+  }
+}

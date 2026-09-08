@@ -1,0 +1,54 @@
+---
+ruleset_id: STAGE-REVIEW
+title: "Review 阶段菜单"
+version: 2
+status: active
+health: healthy
+scope: implementation-review
+stages: [review]
+effective_at: 2026-09-08T11:34:45+08:00
+updated_at: 2026-09-08T11:34:45+08:00
+source_refs: [rules/README.md, docs/README.md]
+related_plan_ids: [PLAN-20260907-001, PLAN-20260908-001]
+related_achievement_ids: [ACH-20260907-001, ACH-20260908-001]
+supersedes_version: 1
+---
+
+# Review — 审查阶段菜单
+
+## 目标
+
+交叉核对实现、Plan、Design、Spec、Rules、Tests 和执行记录，发现并修复本次实现自身的问题。
+
+## 进入条件
+
+- Development 已完成，Plan 状态为 `in_review`。
+- 执行记录包含修改范围、命令、结果和偏差。
+
+## 必读
+
+1. 当前 Plan 包、精确 Design/Spec、`applicable_rules` 和实现差异。
+2. Required modules：[`RULESET-SOURCE-EVIDENCE`](../modules/source-and-evidence.md)、[`RULESET-IMPLEMENTATION-QUALITY`](../modules/implementation-quality.md)、[`RULESET-TESTING-QUALITY`](../modules/testing-quality.md)。
+3. Conditional modules：[`RULESET-GIT-COLLABORATION`](../modules/git-collaboration.md) 在 Git 模式必读；涉及仓库行为读 [`RULESET-REPOSITORY-SAFETY`](../modules/repository-safety.md)；UI 读 [`RULESET-RESPONSIVE-UI`](../modules/responsive-ui.md)；敏感数据读 [`RULESET-SECURITY-PRIVACY`](../modules/security-and-privacy.md)。
+
+## 强制动作
+
+- 核对需求、设计、规则、功能、测试、文档和索引一致性。
+- Git 模式绑定已提交 `reviewed_commit` 与可重算的 `reviewed_scope_digest`；未提交内容不能形成最终通过证据。
+- 对每个适用 Rule 给出 PASS、FAIL、NOT_APPLICABLE 或 UNVERIFIED，并附证据或理由。
+- 按严重级别记录发现、位置、影响、修复要求和复查结果。
+- FAIL 必须返回 Development 修复后重新 Review。
+- UNVERIFIED 不得被当作通过。
+- Review 不替代独立 Regression。
+
+## 输出证据
+
+- `docs/plans/<PLAN-ID>/review-report.md`。
+- 报告包含完整规则符合性矩阵、测试结果和剩余风险。
+
+## 退出门禁
+
+- 所有阻断发现已修复并复查。
+- 每个适用 MUST Rule 为 PASS 或有合法 NOT_APPLICABLE 理由。
+- 不存在 FAIL 或 UNVERIFIED。
+- 报告状态为 `passed` 后，Plan 更新为 `in_regression` 并进入 [`Regression`](./regression.md)。

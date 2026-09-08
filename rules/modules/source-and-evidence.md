@@ -1,0 +1,147 @@
+---
+ruleset_id: RULESET-SOURCE-EVIDENCE
+title: "资料来源与证据规则"
+version: 2
+status: active
+health: healthy
+scope: global
+stages: [exploration, planning, development, review, regression, acceptance]
+effective_at: 2026-09-08T11:34:45+08:00
+updated_at: 2026-09-08T11:34:45+08:00
+source_refs: [AGENTS.md, rules/README.md]
+related_plan_ids: [PLAN-20260907-001, PLAN-20260908-001]
+related_achievement_ids: [ACH-20260907-001, ACH-20260908-001]
+supersedes_version: 1
+---
+
+# 资料来源与证据规则
+
+## SRC-001 — 先读取项目和阶段入口
+
+- Level: `MUST`
+- Status: `active`
+- Stages: `exploration`, `planning`, `development`, `review`, `regression`, `acceptance`
+- Applies to: 所有项目任务。
+- Trigger: 开始任务或切换生命周期阶段。
+- Requirement: 先读 `AGENTS.md` 和 `rules/INDEX.md`，再读对应阶段菜单和其路由的资料。
+- Verification modes: `review`
+- Verification: 执行证据能指出使用的入口、阶段和规则版本。
+- Exceptions: 无。
+- Source: 用户要求 AGENTS 为首要快速检索入口，并采用阶段菜单。
+
+## SRC-002 — 区分事实、实现、推断和未定义项
+
+- Level: `MUST`
+- Status: `active`
+- Stages: `exploration`, `planning`, `review`
+- Applies to: 需求理解、诊断、规划和 Review。
+- Trigger: 描述项目当前状态或形成结论。
+- Requirement: 明确区分用户确认事实、当前实现、AI 推断和未定义项，不把后两者包装成确认事实。
+- Verification modes: `review`
+- Verification: 检查 Plan、报告和回复中的依据与措辞。
+- Exceptions: 无。
+- Source: `AGENTS.md` 的快速检索和未定义项规则。
+
+## SRC-003 — 不按日期猜测当前真相
+
+- Level: `MUST`
+- Status: `active`
+- Stages: `exploration`, `planning`, `development`, `review`, `regression`
+- Applies to: Design、Spec、Rules、Plan 和 Achievement 检索。
+- Trigger: 同一主题存在多个版本或历史文件。
+- Requirement: 通过 AGENTS、Docs Index 和 Rules Index 确定当前版本，不得只选择日期最新文件。
+- Verification modes: `review`
+- Verification: Plan 引用精确 ID 和版本，且与中央索引一致。
+- Exceptions: 中央索引缺失或冲突时必须报告并修复，仍不能自行按日期决定。
+- Source: 已归档的 Docs 操作协议。
+
+## SRC-004 — 冲突必须显式处理
+
+- Level: `MUST`
+- Status: `active`
+- Stages: `exploration`, `planning`, `development`, `review`, `regression`, `acceptance`
+- Applies to: 所有资料和实现冲突。
+- Trigger: 两个来源对同一事实给出不同要求。
+- Requirement: 按 `AGENTS.md` 的优先级采用更高来源，并同步修正或明确报告受影响资料，不得静默选择。
+- Verification modes: `review`
+- Verification: Execution Log 或 Review Report 记录冲突双方、决定和同步结果。
+- Exceptions: 无。
+- Source: `AGENTS.md` 权威性与冲突优先级。
+
+## SRC-005 — 修改前检查长期 Rule 候选
+
+- Level: `MUST`
+- Status: `active`
+- Stages: `exploration`, `development`
+- Applies to: 所有将修改文件的任务。
+- Trigger: 即将进行首次文件修改，或用户在执行中发送新要求。
+- Requirement: 检查用户最新消息是否包含可复用的长期注意事项，并按 `rules/README.md` 分类。
+- Verification modes: `review`
+- Verification: 存在候选时有确认记录；不存在时执行记录确认已完成 preflight。
+- Exceptions: 纯只读任务无需在交付前创建修改门禁记录。
+- Source: 用户确认的规则自动接收流程。
+
+## SRC-006 — 候选确认前只允许只读探查
+
+- Level: `MUST`
+- Status: `active`
+- Stages: `exploration`, `development`
+- Applies to: 检测到长期 Rule 候选的修改任务。
+- Trigger: 候选尚未获得用户确认。
+- Requirement: 暂停文件修改，仅允许定位代码、查重、冲突检查和影响分析，并向用户展示结构化候选卡。
+- Verification modes: `review`
+- Verification: 候选确认时间早于规则文件和修复文件的修改记录。
+- Exceptions: 防止即时数据损失所需的只读或停止操作；仍不得擅自写入 Rule。
+- Source: 用户要求 AI 在修复前询问是否写入 Rules。
+
+## SRC-007 — AI 建议不能自行成为 active Rule
+
+- Level: `MUST`
+- Status: `active`
+- Stages: `exploration`, `planning`, `review`
+- Applies to: AI发现的最佳实践、重复问题和规则缺口。
+- Trigger: 候选没有明确用户确认来源。
+- Requirement: 只能作为候选提出，不得自行写入或提升为 active Rule。
+- Verification modes: `review`
+- Verification: 每个新 active Rule 都有用户确认或既有明确指令来源和关联 Plan。
+- Exceptions: 系统或开发者层级的强制安全约束无需转录为项目 Rule 才生效。
+- Source: 用户确认的规则生效门槛。
+
+## SRC-008 — 先发现可发现事实
+
+- Level: `SHOULD`
+- Status: `active`
+- Stages: `exploration`, `planning`
+- Applies to: 项目内可通过文件、配置、代码或测试查明的信息。
+- Trigger: AI准备向用户提出事实性问题。
+- Requirement: 先完成合理的只读探查，只把不可发现的偏好、权衡或授权问题交给用户。
+- Verification modes: `review`
+- Verification: 问题前有相应探查证据，或明确说明项目中不存在所需信息。
+- Exceptions: 用户提示本身存在无法通过项目消除的明显矛盾。
+- Source: 项目 AI 自主执行和减少用户文档负担的要求。
+
+## SRC-009 — 分支本地资料不是自动的团队真相
+
+- Level: `MUST`
+- Status: `active`
+- Stages: `exploration`, `planning`, `review`, `regression`, `acceptance`
+- Applies to: Git 模式下的代码、Rules、Docs 和 Tests。
+- Trigger: 将当前检出内容描述为团队当前版本。
+- Requirement: 同时说明本地 HEAD、远端新鲜度和集成目标；未验证远端时只陈述分支本地事实。
+- Verification modes: `automatic`, `review`
+- Verification: Plan State 与报告包含仓库上下文且措辞符合预检状态。
+- Exceptions: non_git 模式明确记为 not_applicable。
+- Source: 用户确认的仓库版本真相定义。
+
+## SRC-010 — 当前索引是可重建投影
+
+- Level: `MUST`
+- Status: `active`
+- Stages: `exploration`, `planning`, `review`, `acceptance`
+- Applies to: `docs/INDEX.md` 和 `rules/INDEX.md` 的生成区块。
+- Trigger: 索引与原始元数据冲突或发生合并冲突。
+- Requirement: 以原始档案和状态元数据重建动态区块，不得手工拼接出第二套事实。
+- Verification modes: `automatic`, `review`
+- Verification: `hooks/update-indexes.ps1 -Check` 与聚合校验器通过。
+- Exceptions: 索引的非生成协议正文仍按确认 Plan 修改。
+- Source: 用户确认的中央索引并发治理方案。
