@@ -5,9 +5,9 @@ plan_id: PLAN-20260909-PCVDMF5G
 status: in_progress
 repository_mode: git_remote
 remote_name: origin
-integration_target: origin/main
-work_branch: feature/branch-governance
-base_commit: 9146012d2b8350c2a542701ddcdd86c13f289066
+integration_target: origin/develop
+work_branch: feature/branch-governance-hardening
+base_commit: c4a6d7462fc2d20bcc4b5a38ecb1d2db05dcec54
 remote_freshness: verified
 working_tree_state: clean
 owned_paths: [.github, AGENTS.md, package.json, hooks/validate-branch-flow.mjs, tests/branch-flow.test.mjs, rules/modules/branch-governance.md, rules/INDEX.md, docs/INDEX.md, docs/specs/SPEC-20260909-ASMC5N7Z-branch-governance, docs/plans/PLAN-20260909-PCVDMF5G]
@@ -22,4 +22,4 @@ integrated_scope_digest: null
 
 # Plan State
 
-治理文件和 bootstrap PR 正在实施。长期分支与 GitHub Ruleset 必须等待 bootstrap PR 进入 `main` 后创建；当前不得声称远端保护已经启用。
+Bootstrap PR #2 已进入 `main`，四个长期分支已对齐合并提交。当前修复 required check 跨目标上下文复用问题；该修复从 feature 分支开始，必须沿完整晋升链进入 `main` 后才能完成远端 Ruleset 固化。

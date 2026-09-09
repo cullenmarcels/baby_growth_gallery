@@ -5,7 +5,7 @@
 - 最后协议更新：`2026-09-08T11:34:45+08:00`
 - 索引状态：`consistent`
 - 当前阶段：第一阶段工程基础已归档；`PLAN-20260909-PCVDMF5G` 正在建立五层分支治理和自动晋升检查。
-- 仓库协作状态：不缓存；每次运行 [`repository-preflight.ps1`](../hooks/repository-preflight.ps1)。分支治理 bootstrap 基线为 `origin/main@9146012d2b8350c2a542701ddcdd86c13f289066`，工作分支为 `feature/branch-governance`。
+- 仓库协作状态：不缓存；每次运行 [`repository-preflight.ps1`](../hooks/repository-preflight.ps1)。Bootstrap 已合并至 `main@c4a6d7462fc2d20bcc4b5a38ecb1d2db05dcec54`；检查上下文加固工作分支为 `feature/branch-governance-hardening`，先集成至 `develop`。
 - 归档基线：[`ARCHIVE.sha256`](./ARCHIVE.sha256)
 - 生成命令：`hooks/update-indexes.ps1 -Write`；核对命令：`hooks/update-indexes.ps1 -Check`
 
@@ -24,7 +24,7 @@
 | Plan ID | 标题 | 状态 | 仓库模式 | 基线提交 | 候选提交 | 集成提交 | Review | Regression | 验收有效性 | Achievement |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 <!-- GENERATED:BEGIN PLANS -->
-| [PLAN-20260909-PCVDMF5G](./plans/PLAN-20260909-PCVDMF5G/plan.md) | 建立五层分支治理与自动晋升检查 | `in_progress` | `git_remote` | `9146012d2b8350c2a542701ddcdd86c13f289066` | `-` | `-` | [pending](./plans/PLAN-20260909-PCVDMF5G/review-report.md) | [pending](./plans/PLAN-20260909-PCVDMF5G/regression-report.md) | pending | - |
+| [PLAN-20260909-PCVDMF5G](./plans/PLAN-20260909-PCVDMF5G/plan.md) | 建立五层分支治理与自动晋升检查 | `in_progress` | `git_remote` | `c4a6d7462fc2d20bcc4b5a38ecb1d2db05dcec54` | `-` | `-` | [pending](./plans/PLAN-20260909-PCVDMF5G/review-report.md) | [pending](./plans/PLAN-20260909-PCVDMF5G/regression-report.md) | pending | - |
 | [PLAN-20260908-KP1B7472](./plans/PLAN-20260908-KP1B7472/plan.md) | 基于 GitHub 远端建立可启动的前后端分离 Monorepo | `archived` | `git_remote` | `8814674ce2b2c7add4572430159e34aa2d92d399` | `493e318ad6ed2809e08809c98b359ed9a1a9a346` | `39d25fa93a585dac9c998175a96838d3ab8d26f0` | [passed](./plans/PLAN-20260908-KP1B7472/review-report.md) | [passed](./plans/PLAN-20260908-KP1B7472/regression-report.md) | confirmed 2026-09-09T15:39:42+08:00 | [ACH-20260908-KP1B7472](./achievements/ACH-20260908-KP1B7472-project-foundation.md) |
 | [PLAN-20260908-001](./plans/PLAN-20260908-001/plan.md) | Git 多成员、多设备协作与可移植证据链 | `archived` | `legacy` | `-` | `-` | `-` | [passed](./plans/PLAN-20260908-001/review-report.md) | [passed](./plans/PLAN-20260908-001/regression-report.md) | confirmed 2026-09-08T14:57:26+08:00 | [ACH-20260908-001](./achievements/ACH-20260908-001-git-collaboration-portable-evidence.md) |
 | [PLAN-20260907-001](./plans/PLAN-20260907-001/plan.md) | 建设阶段菜单与规则有效性体系 | `archived` | `legacy` | `-` | `-` | `-` | [passed](./plans/PLAN-20260907-001/review-report.md) | [passed](./plans/PLAN-20260907-001/regression-report.md) | confirmed 2026-09-07T17:18:08+08:00 | [ACH-20260907-001](./achievements/ACH-20260907-001-rules-lifecycle-system.md) |
