@@ -25,15 +25,61 @@ CI 状态为 `not_configured`：GitHub Actions 明确属于本阶段非目标，
 
 ## 规则覆盖
 
-| Ruleset | Version | Rule IDs | 结果 | Review 证据 |
-| --- | ---: | --- | --- | --- |
-| `RULESET-SOURCE-EVIDENCE` | 2 | `SRC-001`、`SRC-002`、`SRC-003`、`SRC-004`、`SRC-005`、`SRC-006`、`SRC-007`、`SRC-008`、`SRC-009`、`SRC-010` | PASS | 入口、索引、Design/Spec/Plan 和远端 preflight 均先读取；未定义业务未实现；索引由 hook 验证。 |
-| `RULESET-REPOSITORY-SAFETY` | 2 | `REPO-001`、`REPO-002`、`REPO-003`、`REPO-004`、`REPO-005`、`REPO-006`、`REPO-007` | PASS | 仅修改当前 Plan owned scope；`.dockerignore` 排除环境、构建和测试产物；未触碰 LICENSE、归档 Plan 或 Achievement；未强推/改写历史。 |
-| `RULESET-GIT-COLLABORATION` | 1 | `GIT-001`、`GIT-002`、`GIT-003`、`GIT-004`、`GIT-005`、`GIT-006`、`GIT-007`、`GIT-008`、`GIT-009`、`GIT-010` | PASS | `git_remote`、`origin/main` 基线、功能分支、fresh preflight、无 overlap、候选 commit 和 scope digest 已固定；验收/集成字段保持 null。 |
-| `RULESET-IMPLEMENTATION-QUALITY` | 1 | `IMPL-001`、`IMPL-002`、`IMPL-003`、`IMPL-004`、`IMPL-005`、`IMPL-006` | PASS | 代码、Compose、Dockerfile、环境示例、README、测试和执行记录同步；只实现工程状态页和公共健康接口，没有扩张业务模块。 |
-| `RULESET-TESTING-QUALITY` | 2 | `TEST-001`、`TEST-002`、`TEST-003`、`TEST-004`、`TEST-005`、`TEST-006`、`TEST-007`、`TEST-008`、`TEST-009`、`TEST-010` | PASS | MUST 项均有命令/接口/浏览器/容器证据；Review 与后续 Regression 分离；结果按 PASS/FAIL/not_configured 记录；平台范围未夸大。 |
-| `RULESET-SECURITY-PRIVACY` | 1 | `SAFE-001`、`SAFE-002`、`SAFE-003`、`SAFE-004` | PASS | 只提交非生产占位凭据；无 token/私钥特征；CORS allowlist + credentials、Helmet、traceId、脱敏 Problem Details 和 private bucket 已验证。 |
-| `RULESET-RESPONSIVE-UI` | 1 | `RESP-001`、`RESP-002`、`RESP-003`、`RESP-004`、`RESP-005`、`RESP-006` | PASS | 375/834/1440 同步覆盖；加载/成功/错误三态均有 Playwright 基线；成功态无横向溢出；未把设计未定义细节声明为事实。 |
+| Rule ID | Ruleset version | 结果 | Review 证据 |
+| --- | ---: | --- | --- |
+| `SRC-001` | 2 | PASS | 修改前读取 AGENTS、Docs/Rules Index 与阶段菜单。 |
+| `SRC-002` | 2 | PASS | 报告区分计划事实、实现结果、环境偏差和未定义业务。 |
+| `SRC-003` | 2 | PASS | 当前资料由索引、ID 和状态确定，不按日期猜测。 |
+| `SRC-004` | 2 | PASS | PostgreSQL 18、Compose 5、端口和网络偏差均显式处理。 |
+| `SRC-005` | 2 | PASS | 用户最新消息没有新增长期 Rule 候选。 |
+| `SRC-006` | 2 | PASS | 用户已明确确认并要求实施完整 Plan。 |
+| `SRC-007` | 2 | PASS | 未将实现建议自行升级为 active Rule。 |
+| `SRC-008` | 2 | PASS | 先探查远端、主机、设计、实现、容器和端口事实。 |
+| `SRC-009` | 2 | PASS | 功能分支资料通过候选/PR 交付，不冒充 main 真相。 |
+| `SRC-010` | 2 | PASS | Docs/Rules 索引由 `update-indexes.ps1` 重建并验证。 |
+| `REPO-001` | 2 | PASS | 保留远端 README 身份、LICENSE 和无关用户文件。 |
+| `REPO-002` | 2 | PASS | 修改限定在 Plan 的 owned scope。 |
+| `REPO-003` | 2 | PASS | stop/down 目标为明确 Compose 服务；未删除卷或数据。 |
+| `REPO-004` | 2 | PASS | `.gitignore`/`.dockerignore` 排除环境、日志、构建与测试产物。 |
+| `REPO-005` | 2 | PASS | 候选前后核对 diff、状态、镜像边界和验证结果。 |
+| `REPO-006` | 2 | PASS | 仅 fetch/普通提交/候选推送流程；无 force、reset 或历史改写。 |
+| `REPO-007` | 2 | PASS | 未修改归档 Plan、Achievement 或归档清单。 |
+| `GIT-001` | 1 | PASS | preflight 确认真实根目录与 `git_remote`。 |
+| `GIT-002` | 1 | PASS | 本地状态与 `origin/main` 远端新鲜度分别记录。 |
+| `GIT-003` | 1 | PASS | 阻断项为空后才修改；候选工作树 clean。 |
+| `GIT-004` | 1 | PASS | state 固定 base、branch、integration target 和 owned paths。 |
+| `GIT-005` | 1 | PASS | 活动 Plan overlap 扫描为空；新增 `.dockerignore` 同步入 scope。 |
+| `GIT-006` | 1 | PASS | Review 绑定已提交候选和可重算 digest。 |
+| `GIT-007` | 1 | PASS | accepted commit/digest 保持 null，等待用户验收。 |
+| `GIT-008` | 1 | PASS | integrated commit/digest 保持 null，未提前归档。 |
+| `GIT-009` | 1 | PASS | 不直接修改 main、不自动 merge、不 force push。 |
+| `GIT-010` | 1 | PASS | CI 明确记为 `not_configured`，容器/平台状态如实记录。 |
+| `IMPL-001` | 1 | PASS | 实现严格依据确认的 Design、Spec 和 Plan。 |
+| `IMPL-002` | 1 | PASS | 代码、Compose、Dockerfile、环境示例、README、测试和文档同步。 |
+| `IMPL-003` | 1 | PASS | 镜像源/端口覆盖为兼容修正，默认版本与架构未改变。 |
+| `IMPL-004` | 1 | PASS | 执行记录可重建安装、修复、命令、偏差与结果。 |
+| `IMPL-005` | 1 | PASS | 仅在实际验证后把 Review/Regression 写为 passed。 |
+| `IMPL-006` | 1 | PASS | 未创建 auth/photos/family/growth/worker 或真实 provider。 |
+| `TEST-001` | 2 | PASS | 每项 MUST 均有 preflight、命令、接口、容器或浏览器证据。 |
+| `TEST-002` | 2 | PASS | 本表逐条覆盖 Plan 固定的全部 53 个 Rule ID。 |
+| `TEST-003` | 2 | PASS | Review 后另行执行完整独立 Regression。 |
+| `TEST-004` | 2 | PASS | 退出码、HTTP 状态、内容类型、哈希和测试计数结构化记录。 |
+| `TEST-005` | 2 | PASS | 无 FAIL/UNVERIFIED；CI 使用合法 `not_configured`。 |
+| `TEST-006` | 2 | PASS | 回归覆盖依赖、契约、安全、响应式、容器与持久卷影响。 |
+| `TEST-007` | 2 | PASS | 复用 `pnpm validate`、项目 hooks、Jest、Vitest、Playwright。 |
+| `TEST-008` | 2 | PASS | 当前只完成候选回归；集成后复验保留到授权合并后。 |
+| `TEST-009` | 2 | PASS | CI 未配置且非本阶段目标，没有失败 CI 被忽略。 |
+| `TEST-010` | 2 | PASS | 只声明 Windows/Docker Desktop/Chromium 覆盖。 |
+| `SAFE-001` | 1 | PASS | 仅有明确非生产占位凭据；无真实 `.env`、token 或私钥。 |
+| `SAFE-002` | 1 | PASS | 使用合成内容；未写入真实儿童/家庭隐私数据。 |
+| `SAFE-003` | 1 | PASS | readiness 只做最小连接探测，不读取业务数据。 |
+| `SAFE-004` | 1 | PASS | secret signature 扫描无命中；认证 token 未进入项目/报告。 |
+| `RESP-001` | 1 | PASS | 375、834、1440 三类终端同步验证。 |
+| `RESP-002` | 1 | PASS | 响应式容器与状态页从首阶段即实现和测试。 |
+| `RESP-003` | 1 | PASS | 加载、成功、错误三态均覆盖；本状态页无业务空态。 |
+| `RESP-004` | 1 | PASS | Review/Regression 均记录三视口 × 三状态矩阵。 |
+| `RESP-005` | 1 | PASS | 375/834/1440 来自确认 Plan；未发明设计未定义细节。 |
+| `RESP-006` | 1 | PASS | 使用 CSS 变量、流式容器和无横向溢出布局。 |
 
 ## 实现与契约核对
 

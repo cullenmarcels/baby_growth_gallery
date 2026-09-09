@@ -2,7 +2,7 @@
 id: PLAN-20260908-KP1B7472-STATE
 type: plan_state
 plan_id: PLAN-20260908-KP1B7472
-status: in_regression
+status: acceptance_pending
 repository_mode: git_remote
 remote_name: origin
 integration_target: origin/main
@@ -22,4 +22,4 @@ integrated_scope_digest: null
 
 # Plan State
 
-Review 已绑定候选 `493e318ad6ed2809e08809c98b359ed9a1a9a346` 和 owned scope digest，并逐条通过全部适用 Rule。当前进入独立 Regression；用户验收、合并和 Achievement 不在本状态中提前记录。
+Review 与独立 Regression 均已通过并绑定候选 `493e318ad6ed2809e08809c98b359ed9a1a9a346` / owned scope digest。当前等待用户通过 Pull Request 验收；accepted/integrated commit 与 digest 保持 null，合并和 Achievement 不提前记录。
