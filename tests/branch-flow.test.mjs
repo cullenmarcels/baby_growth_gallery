@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { validateBranchFlow } from '../hooks/validate-branch-flow.mjs';
 
@@ -33,4 +34,12 @@ test('rejects bypasses and invalid feature names', () => {
   for (const [base, head] of denied) {
     assert.equal(validateBranchFlow(base, head).ok, false, `${head} -> ${base}`);
   }
+});
+
+test('isolates required check contexts by target branch', () => {
+  const workflow = readFileSync('.github/workflows/branch-flow.yml', 'utf8');
+
+  assert.match(workflow, /name: branch-flow-\$\{\{ github\.base_ref \}\}/);
+  assert.match(workflow, /ref: \$\{\{ github\.event\.pull_request\.base\.sha \}\}/);
+  assert.doesNotMatch(workflow, /pull_request\.head\.sha/);
 });
