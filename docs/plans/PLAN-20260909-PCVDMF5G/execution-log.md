@@ -4,7 +4,7 @@ type: execution_log
 title: "五层分支治理执行记录"
 status: open
 created_at: 2026-09-09T17:33:09+08:00
-updated_at: 2026-09-09T17:45:23+08:00
+updated_at: 2026-09-09T18:02:04+08:00
 plan_id: PLAN-20260909-PCVDMF5G
 related_ids: [PLAN-20260909-PCVDMF5G, SPEC-20260909-ASMC5N7Z, RULESET-BRANCH-GOVERNANCE]
 supersedes: []
@@ -42,3 +42,17 @@ superseded_by: []
 ### 阶段暂停点
 
 本地 bootstrap 候选已经就绪；远端长期分支、Ruleset 和 required check 尚未创建，保持 pending。下一步只推送 `feature/branch-governance` 并创建一次性 bootstrap PR，等待用户在 GitHub 合并后再继续远端配置。
+
+## Bootstrap 合并与远端实施
+
+- 用户于 2026-09-09 明确报告 PR #2 已合并；GitHub API 复核 PR 状态为 `MERGED`，merge commit 与 `refs/heads/main` 均为 `c4a6d7462fc2d20bcc4b5a38ecb1d2db05dcec54`。
+- `develop`、`release`、`master` 均从该精确提交以非强制 Git Data API 创建，初始状态无漂移；默认分支仍为 `main`。
+- 创建 `Develop history protection` Ruleset `22629637`：active、无 bypass、禁止 deletion 与 non-fast-forward，不要求 PR。
+- 创建初版 `Stable and release PR protection` Ruleset `22629639`：active、无 bypass、0 审批、解决 Review 对话、只允许 merge、禁止 deletion 与 non-fast-forward。
+- 合法探针 PR #3（`feature/branch-flow-probe → develop`）的 `branch-flow` 在 GitHub Actions 实际通过；非法探针 PR #4（同 head → `release`）实际失败且 `mergeStateStatus=BLOCKED`。两个探针均未合并，随后已关闭；临时 probe 分支已删除，提交不包含文件变化。
+
+## Review 发现：检查上下文必须按目标隔离
+
+- PR #3 与 #4 故意复用同一 head commit 后，GitHub 在该 SHA 上同时展示同名 `branch-flow` 的成功与失败结果，证明通用 context 存在跨目标状态复用风险。
+- 修正设计为单 Job 动态检查名 `branch-flow-<base>`，并将一个合并的稳定/发布 Ruleset 拆成 `main`、`master`、`release` 三个 Ruleset，各自要求对应 context。
+- 该发现属于实现阶段安全修复，不降低门禁；修复从 `feature/branch-governance-hardening` 开始，沿 `develop → release → master → main` 晋升后重新执行正负探针。
