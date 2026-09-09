@@ -4,11 +4,11 @@ type: regression_report
 title: "前后端工程基础 Regression"
 status: passed
 created_at: 2026-09-08T17:41:41+08:00
-updated_at: 2026-09-09T11:04:03+08:00
+updated_at: 2026-09-09T15:39:42+08:00
 plan_id: PLAN-20260908-KP1B7472
 repository_mode: git_remote
 candidate_commit: 493e318ad6ed2809e08809c98b359ed9a1a9a346
-integrated_commit: null
+integrated_commit: 39d25fa93a585dac9c998175a96838d3ab8d26f0
 ci_status: not_configured
 related_ids: [PLAN-20260908-KP1B7472]
 supersedes: []
@@ -19,7 +19,7 @@ superseded_by: []
 
 ## 结论
 
-`PASS`。在 Review 报告提交后，针对 reviewed candidate `493e318ad6ed2809e08809c98b359ed9a1a9a346` 独立重跑本地、浏览器与容器回归；没有 FAIL 或 UNVERIFIED。`integrated_commit` 保持 null，因为功能分支尚未由用户验收和合并。
+`PASS`。候选回归与 `origin/main@39d25fa93a585dac9c998175a96838d3ab8d26f0` 的独立集成回归均已完成；没有遗留 FAIL 或 UNVERIFIED。最终 PR Head 与 merge commit 的 Git tree 相同，accepted/integrated owned scope digest 均为 `DAFFB741770B8D240573194FEB8A0D640D6CDF0D55544AE7BA9BDA24A46E22A0`。
 
 CI 状态为 `not_configured`，与本阶段明确非目标一致；本报告只声明本地 Windows/Docker Desktop/Chromium 证据。
 
@@ -53,4 +53,19 @@ CI 状态为 `not_configured`，与本阶段明确非目标一致；本报告只
 
 - 已验证：Windows 11、WSL 2、Docker Desktop Linux containers、Node 24.20.0、pnpm 11.21.0、Playwright Chromium。
 - 未配置而非失败：GitHub Actions CI；按 Plan 留给后续 CI 专项。
-- 未执行：`origin/main` 集成回归。只有用户验收并授权合并后，才能记录 accepted/integrated commit、重算 integrated scope digest、创建 Achievement。
+
+## 集成回归
+
+| 范围 | 结果 | 集成证据 |
+| --- | --- | --- |
+| 远端与提交关系 | PASS | PR #1 为 `MERGED`；`c33eb668…` 位于 `origin/main@39d25fa…`，两者 tree 均为 `f6949f4…`。 |
+| 作用范围摘要 | PASS | accepted/integrated digest 同为 `DAFFB741…`，用户确认继续有效。 |
+| 聚合工程质量 | PASS | lint、Prettier、typecheck、API 8/8、Web 3/3、三个 build 与 `PROJECT_VALIDATION=PASSED`。 |
+| 工作区行尾诊断 | PASS | 首次 Prettier 失败由 Windows `core.autocrlf=true` 的 CRLF 展开导致；规范化后 Git staged/worktree diff 均为零，完整重跑通过。 |
+| 部署栈 E2E | PASS | 375/834/1440 × 三态及真实栈联通共 12/12。 |
+| OpenAPI 稳定性 | PASS | 连续两次生成哈希一致且无 Git diff。 |
+| 依赖故障矩阵 | PASS | PostgreSQL、Redis、MinIO 分别停服：live 200、ready 503 且依赖名称/traceId 正确；恢复后全部 up。 |
+| 最终服务状态 | PASS | Web、API、PostgreSQL、Redis、MinIO 均运行；API/PostgreSQL/Redis/MinIO healthy。 |
+| CI | NOT_APPLICABLE | GitHub Actions 为 `not_configured`，是本 Plan 明确非目标，不记录为 PASS。 |
+
+集成复验仅声明本机 Windows 11、Docker Desktop Linux containers 和 Playwright Chromium；没有扩大到未实际运行的平台或浏览器。

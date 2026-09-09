@@ -2,7 +2,7 @@
 id: PLAN-20260908-KP1B7472-STATE
 type: plan_state
 plan_id: PLAN-20260908-KP1B7472
-status: acceptance_pending
+status: archived
 repository_mode: git_remote
 remote_name: origin
 integration_target: origin/main
@@ -14,12 +14,12 @@ owned_paths: [AGENTS.md, .codex, .dockerignore, .gitattributes, .gitignore, .nod
 overlapping_plan_ids: []
 reviewed_commit: 493e318ad6ed2809e08809c98b359ed9a1a9a346
 reviewed_scope_digest: 3F07C9C53DB5BDC5999FF445F462DD429072CF6E011A35E94C37D66E667F8EB4
-accepted_commit: null
-accepted_scope_digest: null
-integrated_commit: null
-integrated_scope_digest: null
+accepted_commit: c33eb66844fd7525ddb751c42d9edc54bd7a5ca9
+accepted_scope_digest: DAFFB741770B8D240573194FEB8A0D640D6CDF0D55544AE7BA9BDA24A46E22A0
+integrated_commit: 39d25fa93a585dac9c998175a96838d3ab8d26f0
+integrated_scope_digest: DAFFB741770B8D240573194FEB8A0D640D6CDF0D55544AE7BA9BDA24A46E22A0
 ---
 
 # Plan State
 
-Review 与独立 Regression 均已通过并绑定候选 `493e318ad6ed2809e08809c98b359ed9a1a9a346` / owned scope digest。当前等待用户通过 Pull Request 验收；accepted/integrated commit 与 digest 保持 null，合并和 Achievement 不提前记录。
+Review 与候选 Regression 均已通过并绑定候选 `493e318ad6ed2809e08809c98b359ed9a1a9a346`。用户试玩最终 PR Head `c33eb66844fd7525ddb751c42d9edc54bd7a5ca9` 后明确确认正常并授权归档；PR #1 已由用户合并为 `origin/main@39d25fa93a585dac9c998175a96838d3ab8d26f0`。Accepted 与 integrated owned scope digest 相同，独立集成复验通过，Plan 已归档。

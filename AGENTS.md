@@ -5,7 +5,7 @@
 ## 1. 项目状态
 
 - 项目类型：PC、平板、移动端自适应网站。
-- 当前阶段：前后端工程基础实施中；业务需求仍只能来自已确认 Design、Spec 与 Plan。
+- 当前阶段：第一阶段前后端工程基础已归档；下一业务阶段尚未建立 Plan，需求仍只能来自已确认 Design、Spec 与 Plan。
 - 内容受众：项目资料和代码主要供 AI 检索、推理、实现与验收。
 - 最终目标：以已确认知识为准，持续交付可运行、可验证的最终网站。
 
@@ -76,7 +76,8 @@
 | 自动验证入口 | `hooks/validate-project.ps1` | 已生效 | 聚合规则、文档、索引、归档哈希和仓库检查 |
 | 首版 UI 设计基线 | `docs/designs/DES-20260908-ZVZKM07B-baby-growth-ui/design.md` | 已生效 | 设计来源、令牌、截图映射与未定义项 |
 | 工程基础规格 | `docs/specs/SPEC-20260908-5BD26QCA-project-foundation/spec.md` | 已生效 | 技术栈、目录、公共接口、部署与安全边界 |
-| 当前实施 Plan | `docs/plans/PLAN-20260908-KP1B7472/plan.md` | 实施中 | Git 基线、owned scope、验证与 PR 交付 |
+| 第一阶段 Plan | `docs/plans/PLAN-20260908-KP1B7472/plan.md` | 已归档 | Git 基线、owned scope、验证与 PR 交付 |
+| 第一阶段 Achievement | `docs/achievements/ACH-20260908-KP1B7472-project-foundation.md` | 已归档 | 工程基础、验收、集成复验与完成证据 |
 
 执行任务时先用 `rules/INDEX.md` 定位阶段；进入 `docs/` 后读取 `docs/README.md` 和 `docs/INDEX.md`。不得仅按文件日期推断当前有效资料。
 

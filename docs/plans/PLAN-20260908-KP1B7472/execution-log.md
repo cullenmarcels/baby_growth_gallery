@@ -2,9 +2,9 @@
 id: PLAN-20260908-KP1B7472-EXEC
 type: execution_log
 title: "前后端工程基础执行记录"
-status: open
+status: closed
 created_at: 2026-09-08T17:41:41+08:00
-updated_at: 2026-09-09T11:09:55+08:00
+updated_at: 2026-09-09T15:39:42+08:00
 plan_id: PLAN-20260908-KP1B7472
 related_ids: [PLAN-20260908-KP1B7472, DES-20260908-ZVZKM07B, SPEC-20260908-5BD26QCA]
 supersedes: []
@@ -72,3 +72,17 @@ superseded_by: []
 ## 后续记录
 
 工程实现、依赖锁定、主机安装和自动/容器验证均已完成。reviewed candidate 固定为 `493e318ad6ed2809e08809c98b359ed9a1a9a346`，owned scope digest 为 `3F07C9C53DB5BDC5999FF445F462DD429072CF6E011A35E94C37D66E667F8EB4`；Review 与独立 Regression 均通过，Plan 进入 `acceptance_pending`。交付前 fetch 确认 `origin/main` 仍为基线 `8814674ce2b2c7add4572430159e34aa2d92d399`，preflight fresh/clean；功能分支已普通推送并创建 [Pull Request #1](https://github.com/cullenmarcels/baby_growth_gallery/pull/1)，状态 OPEN/CLEAN、CI `not_configured`。未自动合并；合并、集成复验与 Achievement 仍需用户后续验收授权。
+
+## 人工验收、集成与归档（2026-09-09）
+
+- 用户先在本机完整栈上试玩 `http://localhost:18080`，明确反馈“我已经试玩完毕，确认正常”；随后明确指示：“记录验收并 PR #1 ，合并动作我已经在github上操作完成。确认完成第一阶段的开发，请归档。”
+- GitHub 远端确认 PR #1 状态为 `MERGED`，合并时间 `2026-09-09T11:31:42+08:00`，merge commit 为 `39d25fa93a585dac9c998175a96838d3ab8d26f0`；最终 PR Head `c33eb66844fd7525ddb751c42d9edc54bd7a5ca9` 是该提交祖先。
+- 本地 `main` 仅以 `--ff-only` 更新到已验证的 `origin/main`；候选和 merge commit 的 Git tree 均为 `f6949f473384bde0020c83028d0d48b2da9646a6`。
+- 对 Plan 全部 `owned_paths` 重算，accepted/integrated scope digest 均为 `DAFFB741770B8D240573194FEB8A0D640D6CDF0D55544AE7BA9BDA24A46E22A0`，确认未被合并过程改变。
+- 集成 `pnpm validate` 首次因本机全局 `core.autocrlf=true` 将未显式指定 eol 的源码展开为 CRLF 而在 Prettier 阶段停止；Git blob 为 LF，`git diff --quiet` 和忽略行尾检查均证明无内容差异。用已锁定 Prettier 规范化工作区并刷新索引后 staged/worktree diff 均为零，完整重跑通过。
+- 集成验证通过 ESLint、Prettier、TypeScript、API Jest 8/8、Web Vitest 3/3、三个 workspace build 和 `PROJECT_VALIDATION=PASSED`。
+- `STACK_BASE_URL=http://localhost:18080 pnpm e2e` 在 375、834、1440 三个视口共 12/12 通过，覆盖加载、成功、错误及真实 Nginx → 独立 API 联通。
+- 连续两次生成 OpenAPI/client 无漂移且无 Git diff；OpenAPI SHA-256 `EE25AE627C0363AD5DFF7804B0C1CF97CD6B1430BDEF770E083E3FFA7E96BF71`，schema SHA-256 `ADE9551AA00480C50CD1C9B58DD494FCF0CFA13BEDBA4EB3E8C5938EB361D60F`。
+- 集成依赖故障矩阵再次通过：分别停止 PostgreSQL、Redis、MinIO 时 live 200、ready 503，Problem Details 准确指出 `postgres`、`redis`、`objectStorage` 且包含 traceId；逐项恢复后 ready 200、三项依赖均为 up。
+- GitHub Actions CI 仍为 `not_configured`，符合第一阶段非目标；没有伪造 CI PASS。平台证据仅覆盖 Windows 11、Docker Desktop Linux containers 与 Playwright Chromium。
+- 根据用户归档授权，生成 `ACH-20260908-KP1B7472-project-foundation.md`，更新 Acceptance、State、Regression、Docs Index、AGENTS 与 `docs/ARCHIVE.sha256`；第一阶段进入不可变归档状态。
