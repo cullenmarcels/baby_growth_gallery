@@ -4,7 +4,7 @@ type: execution_log
 title: "前后端工程基础执行记录"
 status: open
 created_at: 2026-09-08T17:41:41+08:00
-updated_at: 2026-09-08T17:41:41+08:00
+updated_at: 2026-09-09T10:54:24+08:00
 plan_id: PLAN-20260908-KP1B7472
 related_ids: [PLAN-20260908-KP1B7472, DES-20260908-ZVZKM07B, SPEC-20260908-5BD26QCA]
 supersedes: []
@@ -47,6 +47,28 @@ superseded_by: []
 - 通过用户确认的 UAC 管理员流程启用 `VirtualMachinePlatform` 与 `Microsoft-Windows-Subsystem-Linux`；两个 DISM 操作均返回成功码 `3010`，表示必须重启后生效。
 - 重启前不能验证 Docker daemon、基础设施 healthy、依赖故障矩阵、两个生产镜像或完整 `stack:up`；这些项目保持 `unavailable_pending_restart`，不得写为通过。
 
+## 重启恢复与容器验证（2026-09-09）
+
+- 重跑远端 preflight：HEAD `bb42c1e240a4138f5644c99479a45278d0e2c6ca`，分支 `feature/project-foundation`，`origin/main` 新鲜，工作树初始 clean，无阻断或 Plan 路径重叠。
+- WSL 2.7.13、Linux kernel 6.18.33.2、Docker Desktop 4.90.0、Engine 29.7.2、Compose 5.5.1 均可用；GitHub CLI 仍以 `cullenmarcels` 登录并具备目标仓库权限。
+- 当前网络会主动重置 `auth.docker.io` TLS，并使 Quay layer 下载停滞。没有把第三方 registry 写死到项目：Compose/Dockerfile 默认仍为官方镜像，并增加可选 image/npm registry 覆盖。验证机通过透明镜像拉取，MinIO 与 `mc` 最终 digest 与 Plan 固定值完全一致。
+- 将 PostgreSQL 18 数据卷改挂 `/var/lib/postgresql`，符合 18+ 官方镜像布局；宿主 `5432` 位于 Hyper-V 排除范围，因此本机验证使用可配置的 `15432`。Steam Web Helper 占用 `8080`，本机 Web 映射使用 `18080`；容器内部仍分别使用 `5432` 和 `8080`。
+- 修正 Compose 5 对一次性 `minio-init` 与 `--wait` 的退出码冲突：先等待 PostgreSQL/Redis/MinIO healthy，再运行 bucket 初始化。`pnpm infra:up` 返回 0，开发 bucket 可重复创建且保持 private。
+- 真实开发 API 暴露出 `tsx/esbuild` 不生成隐式 decorator metadata：为 Nest 类依赖加入显式 `@Inject`。同时用 `Promise.allSettled` 和安全 Redis close 保证探针只归一化为 up/down，未知服务端异常写结构化日志但不向客户端泄漏。
+- CORS allowlist 允许配置来源和 credentials；非 allowlist Origin 返回 `403 application/problem+json`，不再误报为 500。
+- 依赖故障矩阵通过：分别停止 PostgreSQL、Redis、MinIO 时，live 始终 200；ready 分别返回 503 并指出 `postgres`、`redis`、`objectStorage`，恢复后全部重新为 up。
+- Dockerfile 支持可选基础镜像/npm registry，使用 BuildKit pnpm cache；修正 pnpm symlink 被后续 COPY 覆盖、pnpm 11 deploy 门槛、生产 package 文件白名单和宿主 tsbuildinfo 污染。API 以非 root 用户运行且不含源码/测试或可解析的 Jest、TypeScript、ESLint、tsx、Playwright；Web 最终层只有 Nginx 与静态产物，不含 Node/API 源码。
+- `pnpm stack:down` 后 `pnpm stack:up` 完整返回 0；API、Web、PostgreSQL、Redis、MinIO 运行，API healthcheck healthy，MinIO 初始化退出 0；stack down 保留具名卷。
+
+## 最终自动验证（2026-09-09）
+
+- `pnpm install --frozen-lockfile` 通过；`pnpm validate` 通过，包含 lint、Prettier、typecheck、API 8/8、Web 3/3、三个 workspace build 与 `PROJECT_VALIDATION=PASSED`。
+- OpenAPI 与客户端连续两次生成无漂移：`openapi.json` SHA-256 `EE25AE627C0363AD5DFF7804B0C1CF97CD6B1430BDEF770E083E3FFA7E96BF71`，`schema.d.ts` SHA-256 `ADE9551AA00480C50CD1C9B58DD494FCF0CFA13BEDBA4EB3E8C5938EB361D60F`。
+- 普通开发 E2E：375/834/1440 × 加载/成功/错误共 9 passed，部署栈专用检查 3 skipped（未提供 `STACK_BASE_URL`，符合条件门禁）。
+- 已部署栈 E2E：以 `STACK_BASE_URL=http://localhost:18080` 直接访问 Nginx，三档视口均真实调用独立 API readiness；连同三态基线共 12/12 passed。
+- Nginx `/` 与 history fallback 返回 200，入口 HTML `Cache-Control: no-cache, no-store, must-revalidate`；API ready 返回三项 up 和追踪 ID，API 根路径不托管前端。
+- 平台结论仅覆盖本机 Windows 11、Docker Desktop Linux containers 和 Playwright Chromium；未声称覆盖其他操作系统或浏览器。
+
 ## 后续记录
 
-工程实现、依赖锁定、主机安装、自动检查、容器验证、候选提交与 PR 证据将在执行过程中追加。
+工程实现、依赖锁定、主机安装和自动/容器验证均已完成。下一步固定候选提交和 owned scope digest，完成 Review、Regression、远端新鲜度复检并创建 PR；合并与 Achievement 仍需用户后续验收授权。

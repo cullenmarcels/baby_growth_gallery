@@ -44,6 +44,19 @@ export class ProblemDetailsFilter implements ExceptionFilter {
       traceId,
     };
 
+    if (status === 500) {
+      console.error(
+        JSON.stringify({
+          timestamp: new Date().toISOString(),
+          level: 'error',
+          message: exception instanceof Error ? exception.message : String(exception),
+          ...(exception instanceof Error && exception.stack ? { stack: exception.stack } : {}),
+          traceId,
+          instance: request.originalUrl,
+        }),
+      );
+    }
+
     response.status(status).type('application/problem+json').send(problem);
   }
 

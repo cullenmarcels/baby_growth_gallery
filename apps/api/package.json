@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "files": [
+    "dist",
+    "prisma/schema.prisma"
+  ],
   "scripts": {
     "dev": "tsx watch src/main.ts",
     "build": "pnpm prisma:generate && tsc -p tsconfig.build.json",

@@ -84,7 +84,7 @@ describe('health API', () => {
     await request(app.getHttpServer())
       .get('/api/v1/health/live')
       .set('Origin', 'https://untrusted.example')
-      .expect(500)
+      .expect(403)
       .expect('content-type', /application\/problem\+json/);
   });
 

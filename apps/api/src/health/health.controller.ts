@@ -17,7 +17,7 @@ import { ApiProblemDto, HealthResponseDto } from './health.dto.js';
 export class HealthController {
   constructor(
     @Inject(APP_CONFIG) private readonly config: AppConfig,
-    private readonly infrastructure: InfrastructureService,
+    @Inject(InfrastructureService) private readonly infrastructure: InfrastructureService,
   ) {}
 
   @Get('live')

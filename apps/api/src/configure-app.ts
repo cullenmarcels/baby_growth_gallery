@@ -1,4 +1,4 @@
-import type { INestApplication } from '@nestjs/common';
+import { ForbiddenException, type INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule, type OpenAPIObject } from '@nestjs/swagger';
 import type { NextFunction, Request, Response } from 'express';
 import helmet from 'helmet';
@@ -21,7 +21,7 @@ export function configureApp(app: INestApplication): OpenAPIObject {
   app.enableCors({
     origin(origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) {
       if (!origin || config.webOrigins.includes(origin)) callback(null, true);
-      else callback(new Error('Origin is not allowed by CORS'));
+      else callback(new ForbiddenException('Origin is not allowed by CORS'));
     },
     credentials: true,
   });

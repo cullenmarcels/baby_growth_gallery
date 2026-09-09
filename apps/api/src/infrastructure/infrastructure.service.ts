@@ -13,7 +13,7 @@ export class InfrastructureService {
 
   constructor(
     @Inject(APP_CONFIG) private readonly config: AppConfig,
-    private readonly prisma: PrismaService,
+    @Inject(PrismaService) private readonly prisma: PrismaService,
   ) {
     this.s3Client = new S3Client({
       endpoint: config.s3.endpoint,
@@ -27,12 +27,16 @@ export class InfrastructureService {
   }
 
   async checkAll(): Promise<DependencyStatus> {
-    const [postgres, redis, objectStorage] = await Promise.all([
+    const [postgres, redis, objectStorage] = await Promise.allSettled([
       this.checkPostgres(),
       this.checkRedis(),
       this.checkObjectStorage(),
     ]);
-    return { postgres, redis, objectStorage };
+    return {
+      postgres: postgres.status === 'fulfilled' ? postgres.value : 'down',
+      redis: redis.status === 'fulfilled' ? redis.value : 'down',
+      objectStorage: objectStorage.status === 'fulfilled' ? objectStorage.value : 'down',
+    };
   }
 
   private async checkPostgres(): Promise<'up' | 'down'> {
@@ -54,7 +58,13 @@ export class InfrastructureService {
     } catch {
       return 'down';
     } finally {
-      if (client.isOpen) await client.close();
+      if (client.isOpen) {
+        try {
+          await client.close();
+        } catch {
+          // Readiness cleanup must not escape as an application error.
+        }
+      }
     }
   }
 
