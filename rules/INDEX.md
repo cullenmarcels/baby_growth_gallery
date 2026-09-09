@@ -1,6 +1,6 @@
 # 开发阶段与当前规则菜单
 
-> 先确定主要阶段，再打开对应菜单。Git 模式下 `RULESET-GIT-COLLABORATION` 是所有阶段必读模块；non_git 按条件读取。历史版本只从 [`archive/`](./archive/INDEX.md) 回溯。
+> 先确定主要阶段，再打开对应菜单。Git 模式下 `RULESET-GIT-COLLABORATION` 是所有阶段必读模块；涉及分支、PR、晋升或发布时同时必读 `RULESET-BRANCH-GOVERNANCE`。non_git 按条件读取。历史版本只从 [`archive/`](./archive/INDEX.md) 回溯。
 
 - 最后协议更新：`2026-09-08T11:34:45+08:00`
 - 索引状态：`active`
@@ -27,6 +27,7 @@
 | Ruleset ID | Version | 入口 | 适用阶段 | Status | Health | 最近验证 Plan |
 | --- | --- | --- | --- | --- | --- | --- |
 <!-- GENERATED:BEGIN MODULES -->
+| `RULESET-BRANCH-GOVERNANCE` | `1` | [branch-governance.md](./modules/branch-governance.md) | exploration, planning, development, review, regression, acceptance | `active` | `healthy` | `PLAN-20260909-PCVDMF5G` |
 | `RULESET-GIT-COLLABORATION` | `1` | [git-collaboration.md](./modules/git-collaboration.md) | exploration, planning, development, review, regression, acceptance | `active` | `healthy` | `PLAN-20260908-001` |
 | `RULESET-IMPLEMENTATION-QUALITY` | `1` | [implementation-quality.md](./modules/implementation-quality.md) | planning, development, review | `active` | `healthy` | `PLAN-20260908-001` |
 | `RULESET-REPOSITORY-SAFETY` | `2` | [repository-safety.md](./modules/repository-safety.md) | exploration, development, review | `active` | `healthy` | `PLAN-20260908-001` |
