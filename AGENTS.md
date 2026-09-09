@@ -5,7 +5,7 @@
 ## 1. 项目状态
 
 - 项目类型：PC、平板、移动端自适应网站。
-- 当前阶段：第一阶段前后端工程基础已归档；下一业务阶段尚未建立 Plan，需求仍只能来自已确认 Design、Spec 与 Plan。
+- 当前阶段：第一阶段工程基础已归档；五层分支治理正在 bootstrap 实施，业务需求仍只能来自已确认 Design、Spec 与 Plan。
 - 内容受众：项目资料和代码主要供 AI 检索、推理、实现与验收。
 - 最终目标：以已确认知识为准，持续交付可运行、可验证的最终网站。
 
@@ -73,11 +73,14 @@
 | 开发规则操作协议 | `rules/README.md` | 已生效 | 规则识别、生效、版本、归档和验证规范 |
 | 开发阶段菜单 | `rules/INDEX.md` | 已生效 | 按探查、规划、开发、Review、回归、验收定位规则 |
 | Git 协作规则 | `rules/modules/git-collaboration.md` | 已生效 | 仓库模式、基线、并行范围、候选验收与集成归档 |
+| 分支治理规则 | `rules/modules/branch-governance.md` | 已生效 | 分支角色、晋升链、PR 保护、审批和发布标记 |
 | 自动验证入口 | `hooks/validate-project.ps1` | 已生效 | 聚合规则、文档、索引、归档哈希和仓库检查 |
 | 首版 UI 设计基线 | `docs/designs/DES-20260908-ZVZKM07B-baby-growth-ui/design.md` | 已生效 | 设计来源、令牌、截图映射与未定义项 |
 | 工程基础规格 | `docs/specs/SPEC-20260908-5BD26QCA-project-foundation/spec.md` | 已生效 | 技术栈、目录、公共接口、部署与安全边界 |
 | 第一阶段 Plan | `docs/plans/PLAN-20260908-KP1B7472/plan.md` | 已归档 | Git 基线、owned scope、验证与 PR 交付 |
 | 第一阶段 Achievement | `docs/achievements/ACH-20260908-KP1B7472-project-foundation.md` | 已归档 | 工程基础、验收、集成复验与完成证据 |
+| 分支治理规格 | `docs/specs/SPEC-20260909-ASMC5N7Z-branch-governance/spec.md` | 已生效 | 五类分支、Ruleset、流向检查和 bootstrap 边界 |
+| 当前分支治理 Plan | `docs/plans/PLAN-20260909-PCVDMF5G/plan.md` | 实施中 | 治理文件、bootstrap PR、长期分支和远端保护 |
 
 执行任务时先用 `rules/INDEX.md` 定位阶段；进入 `docs/` 后读取 `docs/README.md` 和 `docs/INDEX.md`。不得仅按文件日期推断当前有效资料。
 
