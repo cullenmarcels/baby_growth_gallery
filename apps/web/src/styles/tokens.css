@@ -1,0 +1,30 @@
+:root {
+  --color-bg: #fbf4ec;
+  --color-primary: #e8914a;
+  --color-accent: #f2a08d;
+  --color-card: #ffffff;
+  --color-border: #f0e6da;
+  --color-border-light: #f2eadb;
+  --color-text-strong: #4a3b2f;
+  --color-text-default: #6b5a4a;
+  --color-text-sub: #9a8b7b;
+  --color-success: #4f8064;
+  --color-success-soft: #e7f3eb;
+  --color-error: #a34e43;
+  --color-error-soft: #f9e8e4;
+  --color-focus: #8f5a2e;
+
+  /* 字体 */
+  --font-family: 'Noto Sans SC', -apple-system, 'PingFang SC', sans-serif;
+
+  /* 圆角 */
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+  --radius-icon: 23px;
+
+  /* 阴影 */
+  --shadow-card: 0 8px 24px -8px rgba(233, 145, 74, 0.1);
+  --shadow-focus: 0 0 0 4px color-mix(in srgb, var(--color-primary) 24%, transparent);
+}

@@ -1,0 +1,26 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2023", "DOM"],
+    "jsx": "react-jsx",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "types": ["node", "jest", "vite/client"]
+  },
+  "include": [
+    "*.ts",
+    "*.mjs",
+    "apps/**/*.ts",
+    "apps/**/*.tsx",
+    "apps/**/*.mjs",
+    "packages/**/*.ts",
+    "packages/**/*.mjs",
+    "tests/**/*.ts"
+  ],
+  "exclude": ["**/dist/**", "**/node_modules/**", "apps/api/src/generated/**"]
+}

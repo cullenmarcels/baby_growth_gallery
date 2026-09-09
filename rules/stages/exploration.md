@@ -1,0 +1,57 @@
+---
+ruleset_id: STAGE-EXPLORATION
+title: "探查阶段菜单"
+version: 2
+status: active
+health: healthy
+scope: project-exploration
+stages: [exploration]
+effective_at: 2026-09-08T11:34:45+08:00
+updated_at: 2026-09-08T11:34:45+08:00
+source_refs: [AGENTS.md, rules/README.md]
+related_plan_ids: [PLAN-20260907-001, PLAN-20260908-001]
+related_achievement_ids: [ACH-20260907-001, ACH-20260908-001]
+supersedes_version: 1
+---
+
+# Exploration — 探查阶段菜单
+
+## 目标
+
+在不修改项目文件的前提下确定事实、来源、冲突、影响范围和未定义项，为 Planning 提供可靠输入。
+
+## 进入条件
+
+- 开始新任务、接手陌生范围、诊断问题或需要核对资料。
+- 尚未获得足以安全规划或修改的项目事实。
+
+## 必读
+
+1. 根目录 [`AGENTS.md`](../../AGENTS.md)。
+2. [`rules/README.md`](../README.md) 与 [`rules/INDEX.md`](../INDEX.md)。
+3. Required modules：[`RULESET-SOURCE-EVIDENCE`](../modules/source-and-evidence.md)。
+4. Conditional modules：所有任务先用 [`RULESET-GIT-COLLABORATION`](../modules/git-collaboration.md) 判断模式，Git 模式全文必读；涉及文件安全时读 [`RULESET-REPOSITORY-SAFETY`](../modules/repository-safety.md)；涉及敏感数据时读 [`RULESET-SECURITY-PRIVACY`](../modules/security-and-privacy.md)。
+5. [`docs/README.md`](../../docs/README.md) 与 [`docs/INDEX.md`](../../docs/INDEX.md)，再沿索引读取目标资料。
+
+## 强制动作
+
+- 优先用只读搜索、文件检查和现有测试发现事实。
+- 运行本地仓库预检；只在显式要求远端核对时使用 `-Remote`。
+- 区分用户确认事实、当前实现、AI 推断和未定义项。
+- 检查用户最新消息是否包含长期 Rule 候选；候选确认前不得修改文件。
+- 记录相关 Design、Spec、Rules、Plan、测试和代码入口。
+- 发现冲突时记录冲突双方、优先级和影响，不静默选择。
+- 不默认扫描 `rules/archive/` 或无关历史档案。
+
+## 输出证据
+
+- 普通探查结论写入后续 `plan.md` 的“现状与依据”。
+- 独立审计只有在 Plan 明确要求时才生成专项报告。
+- Rule 候选使用 `rules/README.md` 规定的确认卡，不提前落盘为 active Rule。
+
+## 退出门禁
+
+- 目标范围、权威来源、现状、冲突和未定义项已明确。
+- 所有可发现事实已通过项目资料核对。
+- 需要用户决定的高影响偏好已识别。
+- 满足后进入 [`Planning`](./planning.md)；若用户仅要求诊断报告，可直接交付只读结论。
