@@ -2,7 +2,7 @@
 id: PLAN-20260908-KP1B7472-STATE
 type: plan_state
 plan_id: PLAN-20260908-KP1B7472
-status: in_progress
+status: in_regression
 repository_mode: git_remote
 remote_name: origin
 integration_target: origin/main
@@ -12,8 +12,8 @@ remote_freshness: verified
 working_tree_state: clean
 owned_paths: [AGENTS.md, .codex, .dockerignore, .gitattributes, .gitignore, .node-version, .prettierrc.json, .env.example, README.md, package.json, pnpm-workspace.yaml, pnpm-lock.yaml, tsconfig.base.json, eslint.config.mjs, compose.yaml, apps, packages, infra, docs/README.md, docs/INDEX.md, docs/designs/DES-20260908-ZVZKM07B-baby-growth-ui, docs/specs/SPEC-20260908-5BD26QCA-project-foundation, docs/plans/PLAN-20260908-KP1B7472, rules, hooks, tests]
 overlapping_plan_ids: []
-reviewed_commit: null
-reviewed_scope_digest: null
+reviewed_commit: 493e318ad6ed2809e08809c98b359ed9a1a9a346
+reviewed_scope_digest: 3F07C9C53DB5BDC5999FF445F462DD429072CF6E011A35E94C37D66E667F8EB4
 accepted_commit: null
 accepted_scope_digest: null
 integrated_commit: null
@@ -22,4 +22,4 @@ integrated_scope_digest: null
 
 # Plan State
 
-当前处于 `in_progress`。系统重启后 Docker daemon、基础设施故障矩阵、独立镜像、完整栈、普通 E2E 与已部署栈 E2E 均已验证；实现工作树已准备形成正式 reviewed candidate。用户验收、合并和 Achievement 不在本状态中提前记录。
+Review 已绑定候选 `493e318ad6ed2809e08809c98b359ed9a1a9a346` 和 owned scope digest，并逐条通过全部适用 Rule。当前进入独立 Regression；用户验收、合并和 Achievement 不在本状态中提前记录。
