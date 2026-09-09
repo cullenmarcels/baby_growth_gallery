@@ -7,7 +7,7 @@ health: healthy
 scope: repository-branch-governance
 stages: [exploration, planning, development, review, regression, acceptance]
 effective_at: 2026-09-09T17:33:09+08:00
-updated_at: 2026-09-09T17:33:09+08:00
+updated_at: 2026-09-09T18:02:04+08:00
 source_refs: [AGENTS.md, docs/specs/SPEC-20260909-ASMC5N7Z-branch-governance/spec.md]
 related_plan_ids: [PLAN-20260909-PCVDMF5G]
 related_achievement_ids: []
@@ -101,9 +101,9 @@ supersedes_version: null
 - Stages: `development`, `review`, `regression`, `acceptance`
 - Applies to: 目标为四个长期分支的 PR。
 - Trigger: PR opened、synchronize、reopened、edited 或 ready for review。
-- Requirement: `branch-flow` 必须从受信任的 base revision 执行，只读 PR 元数据，不执行不受信任的 head 代码，并在保护启用后成为 `main`、`master`、`release` 的 required status check。
+- Requirement: `branch-flow` 必须从受信任的 base revision 执行，只读 PR 元数据，不执行不受信任的 head 代码；检查上下文必须按目标分支隔离为 `branch-flow-<base>`，并在保护启用后分别成为 `main`、`master`、`release` 的 required status check，禁止不同目标 PR 复用同一提交上的成功结果。
 - Verification modes: `automatic`, `review`, `regression`
-- Verification: 工作流使用最小权限、固定 Action commit、base SHA checkout；正负矩阵和真实测试 PR 证明流向检查有效。
+- Verification: 工作流使用最小权限、固定 Action commit、base SHA checkout；Ruleset 对每个受保护目标绑定对应检查名；正负矩阵和真实测试 PR 证明流向检查有效且上下文不跨目标复用。
 - Exceptions: bootstrap PR 在工作流和保护规则进入默认分支前无法成为 required check，必须在 Plan 中如实记录。
 - Source: 用户确认使用自动检查强制分支关系。
 

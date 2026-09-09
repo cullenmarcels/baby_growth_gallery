@@ -4,7 +4,7 @@ type: spec
 title: "五层分支治理与晋升保护规格"
 status: active
 created_at: 2026-09-09T17:33:09+08:00
-updated_at: 2026-09-09T17:33:09+08:00
+updated_at: 2026-09-09T18:02:04+08:00
 related_ids: [PLAN-20260909-PCVDMF5G, RULESET-BRANCH-GOVERNANCE]
 supersedes: []
 superseded_by: []
@@ -36,7 +36,7 @@ feature/* → develop → release → master → main
 
 ### 稳定与发布分支
 
-一个 active branch Ruleset 同时匹配 `main`、`master`、`release`：
+`main`、`master`、`release` 各使用一个 active branch Ruleset；三者的公共参数相同，但 required check 分别绑定 `branch-flow-main`、`branch-flow-master`、`branch-flow-release`，避免相同 head commit 在不同 base PR 之间复用检查结论：
 
 - require pull request before merging；
 - required approving review count 为 0；
@@ -45,7 +45,7 @@ feature/* → develop → release → master → main
 - block force pushes；
 - restrict deletions；
 - 无 bypass actor，管理员同样受规则约束；
-- `branch-flow` 首次成功运行后加入 required status checks；
+- 对应的 `branch-flow-<base>` 首次成功运行后加入 required status checks；
 - 当前不要求其他 CI 检查。
 
 ### develop
@@ -71,7 +71,7 @@ feature/* → develop → release → master → main
 | `master` | `release` |
 | `main` | `master` |
 
-其他组合退出非零。检查使用 `pull_request_target`，工作流与校验脚本从 PR base SHA checkout；只读取 base/head 名称，不 checkout 或执行 PR head 内容。工作流只授予 `contents: read`，第三方 Action 固定到精确 commit。
+其他组合退出非零。检查使用 `pull_request_target`，工作流与校验脚本从 PR base SHA checkout；只读取 base/head 名称，不 checkout 或执行 PR head 内容。工作流只授予 `contents: read`，第三方 Action 固定到精确 commit。单个验证 Job 的检查名动态包含 base ref，形成 `branch-flow-develop`、`branch-flow-release`、`branch-flow-master`、`branch-flow-main` 四个互不混用的上下文。
 
 ## Bootstrap
 
@@ -80,8 +80,8 @@ feature/* → develop → release → master → main
 用户合并 bootstrap PR 后：
 
 1. 从新的 `main` HEAD 创建 `develop`、`release`、`master`；
-2. 启用两个 Ruleset；
-3. 触发 `branch-flow` 并将其设为稳定/发布分支 required check；
+2. 启用一个 develop Ruleset 和三个稳定/发布 Ruleset；
+3. 分别触发目标隔离的 `branch-flow-<base>`，并将对应上下文设为各稳定/发布分支 required check；
 4. 使用合法和非法 base/head 矩阵验证本地脚本；
 5. 使用真实 PR/API 验证远端保护，不用破坏性 force/delete 作为生产探针；
 6. 后续工作严格沿正常晋升链，不再允许 bootstrap 例外。
