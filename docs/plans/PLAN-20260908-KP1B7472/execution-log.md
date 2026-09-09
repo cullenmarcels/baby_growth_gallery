@@ -4,7 +4,7 @@ type: execution_log
 title: "前后端工程基础执行记录"
 status: open
 created_at: 2026-09-08T17:41:41+08:00
-updated_at: 2026-09-09T11:06:30+08:00
+updated_at: 2026-09-09T11:09:55+08:00
 plan_id: PLAN-20260908-KP1B7472
 related_ids: [PLAN-20260908-KP1B7472, DES-20260908-ZVZKM07B, SPEC-20260908-5BD26QCA]
 supersedes: []
@@ -71,4 +71,4 @@ superseded_by: []
 
 ## 后续记录
 
-工程实现、依赖锁定、主机安装和自动/容器验证均已完成。reviewed candidate 固定为 `493e318ad6ed2809e08809c98b359ed9a1a9a346`，owned scope digest 为 `3F07C9C53DB5BDC5999FF445F462DD429072CF6E011A35E94C37D66E667F8EB4`；Review 与独立 Regression 均通过，Plan 进入 `acceptance_pending`。下一步复检远端新鲜度、推送功能分支并创建 PR；合并、集成复验与 Achievement 仍需用户后续验收授权。
+工程实现、依赖锁定、主机安装和自动/容器验证均已完成。reviewed candidate 固定为 `493e318ad6ed2809e08809c98b359ed9a1a9a346`，owned scope digest 为 `3F07C9C53DB5BDC5999FF445F462DD429072CF6E011A35E94C37D66E667F8EB4`；Review 与独立 Regression 均通过，Plan 进入 `acceptance_pending`。交付前 fetch 确认 `origin/main` 仍为基线 `8814674ce2b2c7add4572430159e34aa2d92d399`，preflight fresh/clean；功能分支已普通推送并创建 [Pull Request #1](https://github.com/cullenmarcels/baby_growth_gallery/pull/1)，状态 OPEN/CLEAN、CI `not_configured`。未自动合并；合并、集成复验与 Achievement 仍需用户后续验收授权。
