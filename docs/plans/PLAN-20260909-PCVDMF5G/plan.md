@@ -4,7 +4,7 @@ type: plan
 title: "建立五层分支治理与自动晋升检查"
 status: confirmed
 created_at: 2026-09-09T17:33:09+08:00
-updated_at: 2026-09-09T17:33:09+08:00
+updated_at: 2026-09-09T18:02:04+08:00
 related_ids: [SPEC-20260909-ASMC5N7Z, RULESET-BRANCH-GOVERNANCE]
 supersedes: []
 superseded_by: []
@@ -57,8 +57,8 @@ applicable_rules:
 - 添加 PR 模板和根脚本入口。
 - 创建一次 bootstrap PR，将治理能力带入 `main`。
 - 用户合并后从同一 `main` HEAD 创建 `develop`、`release`、`master`。
-- 通过 GitHub API 创建稳定/发布和 develop 两个 Ruleset，验证实际配置。
-- `branch-flow` 首次产生成功 check 后，将其配置为稳定/发布分支 required check。
+- 通过 GitHub API 创建 develop Ruleset，以及按目标检查上下文隔离的 main、master、release Ruleset，验证实际配置。
+- 对应的 `branch-flow-<base>` 首次产生成功 check 后，将其配置为各稳定/发布分支 required check。
 
 ## Bootstrap 例外
 
@@ -83,7 +83,7 @@ applicable_rules:
 
 - 五类分支职责和唯一晋升链有 active Rule、Spec、脚本和测试四层一致证据。
 - 正向矩阵全部通过，错误来源/目标全部非零失败。
-- `branch-flow` 不执行 PR head 代码，权限只有 `contents: read`，Action 固定精确 commit。
+- `branch-flow` 不执行 PR head 代码，权限只有 `contents: read`，Action 固定精确 commit；检查上下文按 base 隔离，不允许跨目标复用成功状态。
 - `main`、`master`、`release` 只能 PR 更新、0 审批、解决对话、普通 merge、禁止 force/delete、管理员无绕过。
 - `develop` 允许正常直接 push 和 PR，但禁止 force/delete。
 - 四个长期分支创建自同一 bootstrap `main` commit，默认分支仍为 `main`。

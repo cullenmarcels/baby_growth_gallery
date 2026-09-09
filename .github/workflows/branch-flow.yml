@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   validate:
-    name: branch-flow
+    name: branch-flow-${{ github.base_ref }}
     runs-on: ubuntu-latest
     steps:
       - name: Check out trusted base revision
