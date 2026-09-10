@@ -42,11 +42,12 @@ if($preflight -and $preflight.repository_mode -ne 'non_git'){
     }
     foreach($stateFile in @(Get-ChildItem (Join-Path $gitRoot 'docs/plans') -File -Filter 'state.md' -Recurse -ErrorAction SilentlyContinue)){
         $state=Get-ProjectFrontMatter $stateFile.FullName;$owned=@(ConvertFrom-InlineList $state.owned_paths)
+        $digestVersion=if($state.ContainsKey('scope_digest_version')){[int]$state.scope_digest_version}else{1}
         foreach($pair in @(@('reviewed_commit','reviewed_scope_digest'),@('accepted_commit','accepted_scope_digest'),@('integrated_commit','integrated_scope_digest'))){
             $commit=$state[$pair[0]];$digest=$state[$pair[1]]
             if($commit -and $commit-ne'null'){
                 if($commit-notmatch'^[A-Fa-f0-9]{40}$'){$failures.Add("Invalid full commit in $($state.plan_id): $($pair[0])");continue}
-                try{$actual=Get-GitScopeDigest $gitRoot $commit $owned;if($digest-ne$actual){$failures.Add("Scope digest mismatch in $($state.plan_id): $($pair[1])")}}catch{$failures.Add("Cannot verify scope digest in $($state.plan_id): $($_.Exception.Message)")}
+                try{$actual=Get-GitScopeDigest $gitRoot $commit $owned -Version $digestVersion;if($digest-ne$actual){$failures.Add("Scope digest mismatch in $($state.plan_id): $($pair[1])")}}catch{$failures.Add("Cannot verify scope digest in $($state.plan_id): $($_.Exception.Message)")}
             }
         }
         if($state.status-in@('integration_review','archived') -and $state.accepted_scope_digest-ne$state.integrated_scope_digest){$failures.Add("Acceptance is invalidated by integrated scope in $($state.plan_id)")}
