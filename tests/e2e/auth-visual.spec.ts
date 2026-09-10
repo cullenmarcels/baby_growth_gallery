@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test.skip(
-  Boolean(process.env.CI),
+  process.platform !== 'win32',
   'Visual baselines are fixed to the required Windows and Chromium candidate matrix.',
 );
 
