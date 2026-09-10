@@ -56,3 +56,20 @@ superseded_by: []
 - PR #3 与 #4 故意复用同一 head commit 后，GitHub 在该 SHA 上同时展示同名 `branch-flow` 的成功与失败结果，证明通用 context 存在跨目标状态复用风险。
 - 修正设计为单 Job 动态检查名 `branch-flow-<base>`，并将一个合并的稳定/发布 Ruleset 拆成 `main`、`master`、`release` 三个 Ruleset，各自要求对应 context。
 - 该发现属于实现阶段安全修复，不降低门禁；修复从 `feature/branch-governance-hardening` 开始，沿 `develop → release → master → main` 晋升后重新执行正负探针。
+
+## PR #8 后远端验证与证据链修复
+
+- PR #8 经用户人工确认后合并，merge commit 与 `refs/heads/main` 均为 `0978a9dc72fc3d4e731e9f515c406d493bd6f52d`。
+- 最终 active Ruleset：develop `22629637`；main `22709516`；master `22709517`；release `22709519`。四者均无 bypass，稳定/发布分支分别要求 `branch-flow-main`、`branch-flow-master`、`branch-flow-release`。
+- required status 的 strict 策略设为 false：检查仍为必需，但不要求 source 包含 target 上一轮生成的 merge commit，避免单向晋升链在第二轮被历史拓扑锁死。
+- develop 使用普通 fast-forward API 提交无内容验证 commit `a9e836a7eb2d23cad1f7951bf0e9b01fb4f85c2d`；PR #9 的 `branch-flow-release`、PR #10 的 `branch-flow-master`、PR #11 的 `branch-flow-main` 分别独立通过。#9、#10 使用 merge commit 完成验证晋升；#11 不是产品发布，验证后关闭且未合并。
+- 独立 SHA `1fb8bdb6acb582c1f8ae240c6f165cb566a18dd5` 的非法 PR #12（`feature/branch-flow-negative → release`）只产生 `branch-flow-release=FAILURE`，`mergeStateStatus=BLOCKED`；随后关闭 PR 并删除临时分支。
+- 计算候选 owned scope digest 时发现 `project-library.ps1` 使用 `TrimStart('./')`，会把 `.github` 误规范化为 `github` 并漏算工作流。已将修复纳入 scope，只剥离精确 `./` 前缀，并新增 PowerShell/Node 回归测试。
+- 为保持已归档 Plan 的既有摘要不可变，摘要算法显式版本化：没有 `scope_digest_version` 的历史状态继续使用 v1；当前 Plan 固定为 v2。验证器按状态版本重算，既不改写历史摘要，也不让新 Plan 漏算点号目录。
+
+## 候选 Review 与 Regression
+
+- 点号路径和 digest v2 修复后，`pnpm branch-flow:test` 为 5/5，`pnpm validate` 全部通过；历史 v1 digest 与当前 v2 digest 同时通过项目校验。
+- confirmed `plan.md` 曾在上下文隔离修正时被同步改写；候选前已恢复 bootstrap 时的冻结正文，实际偏差只保存在可变 Spec、State、Execution 和报告中。
+- Review 绑定候选 `113102a23f4ddafb7fbc056bf7585a22793c92c1`，v2 owned scope digest 为 `B950396F4AFEAEB7CD1F934B8BF84494944E957635664911F71388EA6221A13E`。
+- 独立候选 Regression 通过，Plan 进入 `acceptance_pending`；accepted/integrated 证据仍为 null，等待最终证据 PR head 和用户明确验收。
