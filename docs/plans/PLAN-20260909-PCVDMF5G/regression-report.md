@@ -2,14 +2,14 @@
 id: PLAN-20260909-PCVDMF5G-REGRESSION
 type: regression_report
 title: "五层分支治理 Regression"
-status: pending
+status: passed
 created_at: 2026-09-09T17:33:09+08:00
-updated_at: 2026-09-09T17:33:09+08:00
+updated_at: 2026-09-10T09:39:09+08:00
 plan_id: PLAN-20260909-PCVDMF5G
 repository_mode: git_remote
-candidate_commit: null
+candidate_commit: 113102a23f4ddafb7fbc056bf7585a22793c92c1
 integrated_commit: null
-ci_status: pending
+ci_status: configured_scope_passed
 related_ids: [PLAN-20260909-PCVDMF5G]
 supersedes: []
 superseded_by: []
@@ -17,4 +17,43 @@ superseded_by: []
 
 # Regression Report
 
-等待 Review 通过后独立执行。GitHub `branch-flow` 与 Ruleset 尚未完成真实远端验证，当前状态为 pending。
+## 结论
+
+`PASS`。候选 `113102a23f4ddafb7fbc056bf7585a22793c92c1` 的独立回归通过；没有遗留 FAIL 或 UNVERIFIED。最终证据候选尚未进入 `main`，因此 `integrated_commit` 保持 null，集成回归不能提前声明。
+
+## 候选回归矩阵
+
+| 范围 | 结果 | 证据 |
+| --- | --- | --- |
+| 分支流向矩阵 | PASS | 5 个允许组合、10 个禁止/边界组合全部符合预期。 |
+| 工作流隔离 | PASS | 单元测试确认动态 base context、base SHA checkout、无 head SHA checkout。 |
+| 点号路径规范化 | PASS | PowerShell/Node 测试确认 `.github` 保留前导点且不与 `github` 重叠。 |
+| Scope digest v2 | PASS | `.github` 产生非空 SHA-256；历史 Plan 默认 v1，全部既有 digest 仍通过校验。 |
+| 聚合项目质量 | PASS | `pnpm validate`：ESLint、Prettier、typecheck、API 8/8、Web 3/3、Node 5/5、三个 workspace build、Project Validation 全部通过。 |
+| 索引与知识库 | PASS | `update-indexes.ps1 -Write/-Check` 与 `validate-project.ps1 -Check` 通过，归档清单未改变。 |
+| develop 正向能力 | PASS | 无内容 fast-forward `f60e658… → a9e836a…` 成功；证明 direct push 未被误禁。 |
+| release 正向保护 | PASS | PR #9 `develop → release` 只产生 `branch-flow-release=SUCCESS`，CLEAN 后 merge。 |
+| master 正向保护 | PASS | PR #10 `release → master` 只产生 `branch-flow-master=SUCCESS`，CLEAN 后 merge。 |
+| main 正向保护 | PASS | PR #11 `master → main` 只产生 `branch-flow-main=SUCCESS`，CLEAN；非产品发布，随后关闭未合并。 |
+| 非法旁路 | PASS | 独立 SHA 的 PR #12 `feature/* → release` 只产生 `branch-flow-release=FAILURE` 且 BLOCKED。 |
+| Ruleset 回读 | PASS | 四个 active Ruleset 的 target、rules、approval、merge method、context、strict 与 bypass 逐字段符合 Spec。 |
+| 临时资源清理 | PASS | PR #3/#4/#11/#12 closed；probe branches 删除；open PR 列表为空。 |
+| 历史与现有分支 | PASS | 未 force/delete 长期分支；`feature/project-foundation` 保留。 |
+| UI/业务回归 | NOT_APPLICABLE | 没有修改 apps、运行时契约、样式、视口或业务状态。 |
+
+## 当前远端快照
+
+| Ref | SHA |
+| --- | --- |
+| `main` | `0978a9dc72fc3d4e731e9f515c406d493bd6f52d` |
+| `master` | `e974cbfdf9726df1448e18effd4db72ce20b3af4` |
+| `release` | `de07c69381ab1ee74bbda1df175e71631ed22dfb` |
+| `develop` | `a9e836a7eb2d23cad1f7951bf0e9b01fb4f85c2d` |
+
+分支树存在验证用 merge/no-content commit 差异，但文件树一致；这是普通晋升历史，不是代码漂移。`master` 的验证提交没有进入 `main`，因为 PR #11 明确不是产品发布。
+
+## 集成回归待办
+
+- 将本次 Review/Regression 和 digest v2 修复通过 `feature → develop → release → master → main` 提交。
+- 用户验收最终 PR head 后，合并至 `main` 并重算 accepted/integrated v2 digest。
+- 在精确集成提交上再次运行 `pnpm validate`、远端 Ruleset 回读和开放 PR/临时 ref 检查。

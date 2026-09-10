@@ -18,7 +18,7 @@
     "stack:down": "docker compose --profile app down",
     "api:generate": "pnpm --filter @baby-growth-gallery/api openapi:export && pnpm --filter @baby-growth-gallery/api-client generate",
     "branch-flow:check": "node hooks/validate-branch-flow.mjs",
-    "branch-flow:test": "node --test tests/branch-flow.test.mjs",
+    "branch-flow:test": "node --test tests/*.test.mjs",
     "lint": "eslint . --max-warnings 0",
     "format:check": "prettier --check \".github/**/*.{md,yml,yaml}\" \"apps/**/*.{ts,tsx,css,json}\" \"hooks/**/*.mjs\" \"packages/**/*.{ts,mjs,json}\" \"tests/**/*.{ts,mjs}\" \"*.{ts,mjs,json,yaml}\"",
     "typecheck": "pnpm -r --if-present typecheck",
