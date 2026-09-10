@@ -5,7 +5,7 @@
 ## 1. 项目状态
 
 - 项目类型：PC、平板、移动端自适应网站。
-- 当前阶段：工程基础和五层分支治理已归档；首个业务阶段 Plan A 正在按用户确认的“密码至少 6 位”修订重新形成候选。
+- 当前阶段：工程基础和五层分支治理已归档；首个业务阶段 Plan A 的“密码至少 6 位”修订候选已通过 Review/Regression，等待人工验收。
 - 内容受众：项目资料和代码主要供 AI 检索、推理、实现与验收。
 - 最终目标：以已确认知识为准，持续交付可运行、可验证的最终网站。
 
@@ -86,7 +86,7 @@
 | 原认证会话规格 | `docs/specs/SPEC-20260910-TAMMQYAH-auth-session/spec.md` | 已替代 | 旧 12 位密码策略及首轮候选历史依据 |
 | 认证会话修订规格 | `docs/specs/SPEC-20260910-VP1CDG7N-auth-session-password-revision/spec.md` | 已生效 | 手机号、至少 6 位密码、Session、CSRF 与 API 契约 |
 | 原认证会话 Plan | `docs/plans/PLAN-20260910-GK1XDGCG/plan.md` | 已替代 | 原候选 Review 与替代链历史证据 |
-| 认证密码修订 Plan | `docs/plans/PLAN-20260910-JBD9BWHZ/plan.md` | 实施中 | Plan A 修订、owned scope、重新 Review/Regression 与验收门禁 |
+| 认证密码修订 Plan | `docs/plans/PLAN-20260910-JBD9BWHZ/plan.md` | 待验收 | Plan A 修订、owned scope、Review/Regression 与人工验收门禁 |
 
 执行任务时先用 `rules/INDEX.md` 定位阶段；进入 `docs/` 后读取 `docs/README.md` 和 `docs/INDEX.md`。不得仅按文件日期推断当前有效资料。
 

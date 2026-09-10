@@ -2,7 +2,7 @@
 id: PLAN-20260910-JBD9BWHZ-STATE
 type: plan_state
 plan_id: PLAN-20260910-JBD9BWHZ
-status: in_regression
+status: acceptance_pending
 repository_mode: git_remote
 remote_name: origin
 integration_target: origin/develop
@@ -23,4 +23,4 @@ integrated_scope_digest: null
 
 # Plan State
 
-修订候选 `b8a36f4795c0378fe6652fc249ade83dc1c47104` 的正式 Review 已通过并绑定 v2 owned-scope digest；当前进入独立 Regression。
+修订候选 `b8a36f4795c0378fe6652fc249ade83dc1c47104` 的 Review 与独立 Regression 均已通过，且 PR #21 三项远端检查全部成功；当前等待用户对该候选进行人工试玩与明确验收。
