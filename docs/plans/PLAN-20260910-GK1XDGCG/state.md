@@ -2,7 +2,7 @@
 id: PLAN-20260910-GK1XDGCG-STATE
 type: plan_state
 plan_id: PLAN-20260910-GK1XDGCG
-status: in_regression
+status: superseded
 repository_mode: git_remote
 remote_name: origin
 integration_target: origin/develop
@@ -23,4 +23,4 @@ integrated_scope_digest: null
 
 # Plan State
 
-候选 `72e30f1f18245a6e0db18cac519ac3faf20885d2` 的正式 Review 已通过并绑定 v2 owned-scope digest；当前进入独立 Regression。
+候选 `72e30f1f18245a6e0db18cac519ac3faf20885d2` 的正式 Review 与 v2 owned-scope digest 保留为历史证据。用户在人工验收前将密码最小长度由 12 个字符调整为 6 个字符，原候选因此不再满足最新需求；本 Plan 由修订 Plan `PLAN-20260910-JBD9BWHZ` 替代，不再继续 Regression 或验收。

@@ -48,8 +48,8 @@ test('rejects missing Origin, missing CSRF, and URL session identifiers', async 
 
 test('regenerates sessions, consumes codes once, and revokes sessions after password reset', async () => {
   const phone = syntheticPhone('137');
-  const password = '测试长口令 beta 2026';
-  const nextPassword = '更新长口令 gamma 2026';
+  const password = 'abcdef';
+  const nextPassword = 'ghijkl';
   const first = await playwrightRequest.newContext({ baseURL: apiBaseUrl });
   const originalCsrf = await getCsrf(first);
   const registerChallenge = await first.post('/api/v1/auth/verification-challenges', {
@@ -59,6 +59,25 @@ test('regenerates sessions, consumes codes once, and revokes sessions after pass
   expect(registerChallenge.status()).toBe(202);
   const registerChallengeId = ((await registerChallenge.json()) as { challengeId: string })
     .challengeId;
+  const tooShortRegistration = await first.post('/api/v1/auth/register', {
+    headers: { Origin: webOrigin, 'x-csrf-token': originalCsrf },
+    data: {
+      phone,
+      challengeId: registerChallengeId,
+      code: '246810',
+      password: 'abcde',
+      termsVersion: 'draft-2026-09-10',
+      privacyVersion: 'draft-2026-09-10',
+    },
+  });
+  expect(tooShortRegistration.status()).toBe(400);
+  expect(
+    (await tooShortRegistration.json()) as { code: string; violations: unknown[] },
+  ).toMatchObject({
+    code: 'VALIDATION_FAILED',
+    violations: [{ field: 'password', code: 'too_small' }],
+  });
+
   const registration = await first.post('/api/v1/auth/register', {
     headers: { Origin: webOrigin, 'x-csrf-token': originalCsrf },
     data: {
@@ -151,9 +170,14 @@ test('registers, restores the protected account view, and logs out securely', as
   await page.getByLabel('手机号').fill(phone);
   await page.getByRole('button', { name: '获取验证码' }).click();
   await page.getByLabel('验证码').fill('246810');
-  await page.getByLabel('设置密码').fill('测试长口令 alpha 2026');
-  await page.getByLabel('确认密码').fill('测试长口令 alpha 2026');
+  await page.getByLabel('设置密码').fill('abcde');
+  await page.getByLabel('确认密码').fill('abcde');
   await page.getByLabel(/我已阅读并同意/).check();
+  await page.getByRole('button', { name: '注册并登录' }).click();
+  await expect(page.getByText('密码至少需要 6 个字符')).toBeVisible();
+
+  await page.getByLabel('设置密码').fill('abcdef');
+  await page.getByLabel('确认密码').fill('abcdef');
   await page.getByRole('button', { name: '注册并登录' }).click();
 
   await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();

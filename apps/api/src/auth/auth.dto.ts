@@ -20,14 +20,14 @@ export class RegisterRequestDto {
   @ApiProperty({ type: String, example: '13800138000' }) phone!: string;
   @ApiProperty({ type: String, format: 'uuid' }) challengeId!: string;
   @ApiProperty({ type: String, example: '123456' }) code!: string;
-  @ApiProperty({ type: String, minLength: 12, maxLength: 128 }) password!: string;
+  @ApiProperty({ type: String, minLength: 6, maxLength: 128 }) password!: string;
   @ApiProperty({ type: String, example: 'draft-2026-09-10' }) termsVersion!: string;
   @ApiProperty({ type: String, example: 'draft-2026-09-10' }) privacyVersion!: string;
 }
 
 export class PasswordLoginRequestDto {
   @ApiProperty({ type: String, example: '13800138000' }) phone!: string;
-  @ApiProperty({ type: String, minLength: 12, maxLength: 128 }) password!: string;
+  @ApiProperty({ type: String, minLength: 6, maxLength: 128 }) password!: string;
   @ApiProperty({ type: Boolean, default: false }) remember!: boolean;
 }
 
@@ -42,7 +42,7 @@ export class PasswordResetRequestDto {
   @ApiProperty({ type: String, example: '13800138000' }) phone!: string;
   @ApiProperty({ type: String, format: 'uuid' }) challengeId!: string;
   @ApiProperty({ type: String, example: '123456' }) code!: string;
-  @ApiProperty({ type: String, minLength: 12, maxLength: 128 }) newPassword!: string;
+  @ApiProperty({ type: String, minLength: 6, maxLength: 128 }) newPassword!: string;
 }
 
 export class AccountSummaryDto {

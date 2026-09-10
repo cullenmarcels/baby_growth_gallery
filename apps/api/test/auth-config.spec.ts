@@ -1,6 +1,39 @@
 import { loadAppConfig } from '../src/config/app-config.js';
+import {
+  passwordLoginSchema,
+  passwordResetSchema,
+  registerSchema,
+} from '../src/auth/auth.schemas.js';
 
 describe('authentication configuration', () => {
+  it('enforces the shared 6 to 128 character password boundary', () => {
+    const registerBase = {
+      phone: '13800138000',
+      challengeId: '00000000-0000-4000-8000-000000000000',
+      code: '246810',
+      termsVersion: 'draft-2026-09-10',
+      privacyVersion: 'draft-2026-09-10',
+    } as const;
+
+    expect(registerSchema.safeParse({ ...registerBase, password: 'abcde' }).success).toBe(false);
+    expect(registerSchema.safeParse({ ...registerBase, password: 'abcdef' }).success).toBe(true);
+    expect(
+      passwordLoginSchema.safeParse({
+        phone: registerBase.phone,
+        password: '长口令 允许空格',
+        remember: false,
+      }).success,
+    ).toBe(true);
+    expect(
+      passwordResetSchema.safeParse({
+        phone: registerBase.phone,
+        challengeId: registerBase.challengeId,
+        code: registerBase.code,
+        newPassword: 'a'.repeat(129),
+      }).success,
+    ).toBe(false);
+  });
+
   it('allows explicitly enabled fixed verification delivery in test only', () => {
     const config = loadAppConfig({
       NODE_ENV: 'test',

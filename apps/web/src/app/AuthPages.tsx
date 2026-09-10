@@ -15,7 +15,7 @@ const phoneSchema = z
   .regex(/^1[3-9]\d{9}$/, '请输入有效的中国大陆手机号');
 const passwordSchema = z
   .string()
-  .min(12, '密码至少需要 12 个字符')
+  .min(6, '密码至少需要 6 个字符')
   .max(128, '密码不能超过 128 个字符');
 const codeSchema = z.string().regex(/^\d{6}$/, '请输入 6 位验证码');
 

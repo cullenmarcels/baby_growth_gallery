@@ -6,7 +6,7 @@ export const LEGAL_DRAFT_VERSION = 'draft-2026-09-10';
 const phone = z.string().trim().min(1).max(32);
 const challengeId = z.uuid();
 const code = z.string().regex(/^\d{6}$/);
-const password = z.string().min(12).max(128);
+const password = z.string().min(6).max(128);
 
 export const verificationChallengeSchema = z.object({
   phone,
