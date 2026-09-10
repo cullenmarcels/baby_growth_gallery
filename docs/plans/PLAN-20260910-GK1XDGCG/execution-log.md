@@ -4,7 +4,7 @@ type: execution_log
 title: "手机号认证与 Redis 会话执行记录"
 status: open
 created_at: 2026-09-10T13:23:11+08:00
-updated_at: 2026-09-10T16:03:00+08:00
+updated_at: 2026-09-10T16:07:52+08:00
 plan_id: PLAN-20260910-GK1XDGCG
 related_ids: [PLAN-20260910-GK1XDGCG, DES-20260910-V9P4SBX8, SPEC-20260910-TAMMQYAH]
 supersedes: []
@@ -28,6 +28,7 @@ superseded_by: []
 | 2026-09-10T13:23:11+08:00 | — | confirmed | 用户明确要求实施完整确认方案。 |
 | 2026-09-10T13:31:00+08:00 | confirmed | in_progress | 修改前门禁通过，开始 Plan A Development。 |
 | 2026-09-10T15:34:59+08:00 | in_progress | in_review | 实现、迁移、三视口 E2E、视觉基线与 Docker 部署态候选门禁通过，固定候选进入 Review。 |
+| 2026-09-10T16:07:52+08:00 | in_review | in_regression | PR #21 最终三项检查通过；Review 绑定候选 `72e30f1f…` 与 v2 digest `F0615EB3…`，无 FAIL/UNVERIFIED。 |
 
 ## 实施记录
 

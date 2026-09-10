@@ -2,7 +2,7 @@
 id: PLAN-20260910-GK1XDGCG-STATE
 type: plan_state
 plan_id: PLAN-20260910-GK1XDGCG
-status: in_review
+status: in_regression
 repository_mode: git_remote
 remote_name: origin
 integration_target: origin/develop
@@ -13,8 +13,8 @@ working_tree_state: clean
 scope_digest_version: 2
 owned_paths: [.github/workflows/quality.yml, AGENTS.md, README.md, package.json, pnpm-lock.yaml, compose.yaml, apps/api, apps/web, packages/api-client, playwright.config.ts, tests/e2e, docs/INDEX.md, docs/designs/DES-20260910-V9P4SBX8-auth-session-ui, docs/specs/SPEC-20260910-TAMMQYAH-auth-session, docs/plans/PLAN-20260910-GK1XDGCG]
 overlapping_plan_ids: []
-reviewed_commit: null
-reviewed_scope_digest: null
+reviewed_commit: 72e30f1f18245a6e0db18cac519ac3faf20885d2
+reviewed_scope_digest: F0615EB33B87B335026A377E0704F8497D197470F91E78B5E7B3FA1710D5038F
 accepted_commit: null
 accepted_scope_digest: null
 integrated_commit: null
@@ -23,4 +23,4 @@ integrated_scope_digest: null
 
 # Plan State
 
-Plan A Development 已完成并通过本地及 Docker 候选门禁；当前固定实现候选，进入正式 Review。
+候选 `72e30f1f18245a6e0db18cac519ac3faf20885d2` 的正式 Review 已通过并绑定 v2 owned-scope digest；当前进入独立 Regression。
