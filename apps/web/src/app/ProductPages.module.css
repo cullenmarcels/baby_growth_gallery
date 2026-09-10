@@ -1,0 +1,166 @@
+.appPage,
+.legalPage,
+.notFound {
+  min-height: 100vh;
+  background: var(--color-bg);
+}
+.appHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 72px;
+  padding: 0 clamp(20px, 6vw, 88px);
+  background: var(--color-card);
+  border-bottom: 1px solid var(--color-border);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-text-strong);
+  font-weight: 800;
+}
+.brand span {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  color: var(--color-card);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  border-radius: 50%;
+}
+.appHeader button,
+.notFound a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 16px;
+  color: var(--color-text-strong);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  text-decoration: none;
+}
+.welcomeCard {
+  width: min(calc(100% - 32px), 680px);
+  margin: clamp(48px, 10vh, 120px) auto;
+  padding: clamp(28px, 5vw, 52px);
+  text-align: center;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+.securityIcon {
+  display: grid;
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 20px;
+  place-items: center;
+  color: var(--color-success);
+  background: var(--color-success-soft);
+  border-radius: 50%;
+}
+.eyebrow {
+  color: var(--color-primary);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.welcomeCard h1,
+.legalCard h1,
+.notFound h1 {
+  color: var(--color-text-strong);
+}
+.welcomeCard strong {
+  color: var(--color-text-strong);
+}
+.muted {
+  max-width: 520px;
+  margin: 28px auto 0;
+  color: var(--color-text-sub);
+  line-height: 1.8;
+}
+.error {
+  color: var(--color-error);
+}
+.legalPage {
+  padding: clamp(24px, 6vw, 72px);
+}
+.legalCard {
+  width: min(100%, 820px);
+  margin: auto;
+  padding: clamp(24px, 5vw, 56px);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 28px;
+  color: var(--color-text-default);
+  text-decoration: none;
+}
+.draftNotice {
+  display: flex;
+  gap: 14px;
+  padding: 18px;
+  color: var(--color-error);
+  background: var(--color-error-soft);
+  border-radius: var(--radius-md);
+}
+.draftNotice div {
+  display: grid;
+  gap: 4px;
+}
+.draftNotice span {
+  font-size: 14px;
+  line-height: 1.6;
+}
+.legalCard h2 {
+  margin-top: 34px;
+  color: var(--color-text-strong);
+  font-size: 18px;
+}
+.legalCard p {
+  line-height: 1.9;
+}
+.notFound {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  padding: 24px;
+  text-align: center;
+}
+.notFound > p {
+  margin: 0;
+  color: var(--color-primary);
+  font-size: clamp(72px, 18vw, 160px);
+  font-weight: 900;
+  line-height: 1;
+}
+.notFound span {
+  margin: 0 0 28px;
+  color: var(--color-text-sub);
+}
+@media (max-width: 767px) {
+  .appHeader {
+    min-height: 60px;
+    padding: 0 16px;
+  }
+  .appHeader button {
+    padding: 0 12px;
+  }
+  .welcomeCard {
+    margin-top: 32px;
+  }
+  .brand {
+    font-size: 14px;
+  }
+}

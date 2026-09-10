@@ -7,4 +7,35 @@ datasource db {
   provider = "postgresql"
 }
 
-// Business models are intentionally deferred to their confirmed feature plans.
+enum AccountStatus {
+  ACTIVE
+  DISABLED
+}
+
+model Account {
+  id                String            @id @default(uuid()) @db.Uuid
+  phoneE164         String            @unique @map("phone_e164") @db.VarChar(16)
+  passwordHash      String            @map("password_hash")
+  displayName       String?           @map("display_name") @db.VarChar(80)
+  status            AccountStatus     @default(ACTIVE)
+  authVersion       Int               @default(1) @map("auth_version")
+  phoneVerifiedAt   DateTime          @map("phone_verified_at") @db.Timestamptz(3)
+  passwordChangedAt DateTime          @map("password_changed_at") @db.Timestamptz(3)
+  createdAt         DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+  legalAcceptances  LegalAcceptance[]
+
+  @@map("accounts")
+}
+
+model LegalAcceptance {
+  id             String   @id @default(uuid()) @db.Uuid
+  accountId      String   @map("account_id") @db.Uuid
+  termsVersion   String   @map("terms_version") @db.VarChar(40)
+  privacyVersion String   @map("privacy_version") @db.VarChar(40)
+  acceptedAt     DateTime @default(now()) @map("accepted_at") @db.Timestamptz(3)
+  account        Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, acceptedAt])
+  @@map("legal_acceptances")
+}

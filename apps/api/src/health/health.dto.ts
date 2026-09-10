@@ -35,4 +35,14 @@ export class ApiProblemDto {
   @ApiProperty({ type: String }) detail!: string;
   @ApiProperty({ type: String }) instance!: string;
   @ApiProperty({ type: String }) traceId!: string;
+  @ApiPropertyOptional({ type: String }) code?: string;
+  @ApiPropertyOptional({
+    type: 'array',
+    items: {
+      type: 'object',
+      required: ['field', 'code'],
+      properties: { field: { type: 'string' }, code: { type: 'string' } },
+    },
+  })
+  violations?: Array<{ field: string; code: string }>;
 }
