@@ -63,16 +63,28 @@ function ConvertFrom-InlineList {
 
 function Test-ProjectPathOverlap {
     param([Parameter(Mandatory)][string]$Left, [Parameter(Mandatory)][string]$Right)
-    $a = $Left.Replace('\', '/').Trim('./').TrimEnd('/')
-    $b = $Right.Replace('\', '/').Trim('./').TrimEnd('/')
+    $a = Normalize-ProjectRepositoryPath $Left
+    $b = Normalize-ProjectRepositoryPath $Right
     return $a -eq $b -or $a.StartsWith($b + '/', [StringComparison]::OrdinalIgnoreCase) -or $b.StartsWith($a + '/', [StringComparison]::OrdinalIgnoreCase)
 }
 
+function Normalize-ProjectRepositoryPath {
+    param([Parameter(Mandatory)][string]$Path)
+    $normalized = $Path.Replace('\', '/')
+    while ($normalized.StartsWith('./', [StringComparison]::Ordinal)) { $normalized = $normalized.Substring(2) }
+    return $normalized.TrimEnd('/')
+}
+
 function Get-GitScopeDigest {
-    param([Parameter(Mandatory)][string]$RepositoryRoot, [Parameter(Mandatory)][string]$Commit, [Parameter(Mandatory)][string[]]$OwnedPaths)
+    param(
+        [Parameter(Mandatory)][string]$RepositoryRoot,
+        [Parameter(Mandatory)][string]$Commit,
+        [Parameter(Mandatory)][string[]]$OwnedPaths,
+        [ValidateSet(1, 2)][int]$Version = 1
+    )
     $records = [System.Collections.Generic.List[string]]::new()
     foreach ($owned in @($OwnedPaths | Sort-Object -Unique)) {
-        $path = $owned.Replace('\', '/').TrimStart('./')
+        $path = if ($Version -eq 1) { $owned.Replace('\', '/').TrimStart('./') } else { Normalize-ProjectRepositoryPath $owned }
         $lines = @(& git -C $RepositoryRoot ls-tree -r $Commit -- $path 2>&1)
         if ($LASTEXITCODE -ne 0) { throw "Cannot read Git tree for $Commit/${path}: $($lines -join ' ')" }
         foreach ($line in $lines) { if ($line) { $records.Add([string]$line) } }
