@@ -2,7 +2,7 @@
 id: PLAN-20260910-JBD9BWHZ-STATE
 type: plan_state
 plan_id: PLAN-20260910-JBD9BWHZ
-status: in_progress
+status: in_regression
 repository_mode: git_remote
 remote_name: origin
 integration_target: origin/develop
@@ -13,8 +13,8 @@ working_tree_state: clean
 scope_digest_version: 2
 owned_paths: [.github/workflows/quality.yml, AGENTS.md, README.md, package.json, pnpm-lock.yaml, compose.yaml, apps/api, apps/web, packages/api-client, playwright.config.ts, tests/e2e, docs/INDEX.md, docs/designs/DES-20260910-V9P4SBX8-auth-session-ui, docs/specs/SPEC-20260910-TAMMQYAH-auth-session, docs/specs/SPEC-20260910-VP1CDG7N-auth-session-password-revision, docs/plans/PLAN-20260910-GK1XDGCG, docs/plans/PLAN-20260910-JBD9BWHZ]
 overlapping_plan_ids: []
-reviewed_commit: null
-reviewed_scope_digest: null
+reviewed_commit: b8a36f4795c0378fe6652fc249ade83dc1c47104
+reviewed_scope_digest: 042C04A117C6B02B7FAC7264A32B81994C012B6AAE15B7BA468CD0A8AD1DE27D
 accepted_commit: null
 accepted_scope_digest: null
 integrated_commit: null
@@ -23,4 +23,4 @@ integrated_scope_digest: null
 
 # Plan State
 
-用户已确认密码最小长度修订；仓库与范围门禁通过，当前正在实现并重新形成认证候选。
+修订候选 `b8a36f4795c0378fe6652fc249ade83dc1c47104` 的正式 Review 已通过并绑定 v2 owned-scope digest；当前进入独立 Regression。

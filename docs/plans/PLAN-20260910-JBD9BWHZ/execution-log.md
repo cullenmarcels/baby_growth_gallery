@@ -4,7 +4,7 @@ type: execution_log
 title: "认证密码长度修订执行记录"
 status: open
 created_at: 2026-09-10T16:23:24+08:00
-updated_at: 2026-09-10T16:36:23+08:00
+updated_at: 2026-09-10T16:41:10+08:00
 plan_id: PLAN-20260910-JBD9BWHZ
 related_ids: [PLAN-20260910-JBD9BWHZ, PLAN-20260910-GK1XDGCG, SPEC-20260910-VP1CDG7N]
 supersedes: []
@@ -27,6 +27,7 @@ superseded_by: []
 | --- | --- | --- | --- |
 | 2026-09-10T16:23:24+08:00 | — | confirmed | 用户明确确认把密码限制调整为至少 6 位。 |
 | 2026-09-10T16:23:24+08:00 | confirmed | in_progress | 修订 Spec/Plan、仓库与 owned scope 门禁通过，开始修改。 |
+| 2026-09-10T16:41:10+08:00 | in_progress | in_regression | 新候选 `b8a36f4…` 的本地、Docker 和 PR #21 三项检查全部通过；Review 绑定 v2 digest `042C04A1…`，无 FAIL/UNVERIFIED。 |
 
 ## 实施记录
 
@@ -39,5 +40,7 @@ superseded_by: []
 - 本地 Chromium 认证三视口 24 项 PASS，状态页三视口 9 项 PASS；覆盖 5 位提示、6 位注册/登录/重置、旧会话撤销、CSRF/Origin、Cookie、加载/错误与无溢出。
 - Docker API/Web 以 frozen lockfile 重建并达到 healthy；部署态 1440 视口的 6 位认证主流程、Session 撤销与跨服务 readiness 共 3 项 PASS。
 - 用户预览继续运行于 `http://localhost:5173/register`，固定开发验证码为 `246810`；API readiness 的 PostgreSQL、Redis、objectStorage 均为 up。
+- 候选提交 `b8a36f4795c0378fe6652fc249ade83dc1c47104`，v2 owned-scope digest `042C04A117C6B02B7FAC7264A32B81994C012B6AAE15B7BA468CD0A8AD1DE27D`。
+- PR #21 的 `branch-flow-develop`、`quality`、`e2e-auth` 全部 PASS；Quality run `34456226183` 的 quality 为 1m00s、e2e-auth 为 1m22s。
 
-后续候选提交、CI、Review 与 Regression 证据在真实完成后追加。
+正式 Review 已通过；后续独立 Regression 证据在真实完成后追加。
