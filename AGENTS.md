@@ -5,7 +5,7 @@
 ## 1. 项目状态
 
 - 项目类型：PC、平板、移动端自适应网站。
-- 当前阶段：第一阶段工程基础已归档；五层分支治理与目标隔离检查已完成候选回归，正在提交验收证据，业务需求仍只能来自已确认 Design、Spec 与 Plan。
+- 当前阶段：工程基础和五层分支治理均已完成验收并归档；下一业务阶段尚未建立 Plan，需求仍只能来自已确认 Design、Spec 与 Plan。
 - 内容受众：项目资料和代码主要供 AI 检索、推理、实现与验收。
 - 最终目标：以已确认知识为准，持续交付可运行、可验证的最终网站。
 
@@ -80,7 +80,8 @@
 | 第一阶段 Plan | `docs/plans/PLAN-20260908-KP1B7472/plan.md` | 已归档 | Git 基线、owned scope、验证与 PR 交付 |
 | 第一阶段 Achievement | `docs/achievements/ACH-20260908-KP1B7472-project-foundation.md` | 已归档 | 工程基础、验收、集成复验与完成证据 |
 | 分支治理规格 | `docs/specs/SPEC-20260909-ASMC5N7Z-branch-governance/spec.md` | 已生效 | 五类分支、Ruleset、流向检查和 bootstrap 边界 |
-| 当前分支治理 Plan | `docs/plans/PLAN-20260909-PCVDMF5G/plan.md` | 实施中 | 治理文件、bootstrap PR、长期分支和远端保护 |
+| 分支治理 Plan | `docs/plans/PLAN-20260909-PCVDMF5G/plan.md` | 已归档 | 治理文件、bootstrap PR、长期分支和远端保护 |
+| 分支治理 Achievement | `docs/achievements/ACH-20260909-PCVDMF5G-branch-governance.md` | 已归档 | 五层分支、Ruleset、目标隔离检查、验收与集成证据 |
 
 执行任务时先用 `rules/INDEX.md` 定位阶段；进入 `docs/` 后读取 `docs/README.md` 和 `docs/INDEX.md`。不得仅按文件日期推断当前有效资料。
 
