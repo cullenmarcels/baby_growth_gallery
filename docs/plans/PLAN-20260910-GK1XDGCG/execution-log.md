@@ -4,7 +4,7 @@ type: execution_log
 title: "手机号认证与 Redis 会话执行记录"
 status: open
 created_at: 2026-09-10T13:23:11+08:00
-updated_at: 2026-09-10T15:48:00+08:00
+updated_at: 2026-09-10T15:52:00+08:00
 plan_id: PLAN-20260910-GK1XDGCG
 related_ids: [PLAN-20260910-GK1XDGCG, DES-20260910-V9P4SBX8, SPEC-20260910-TAMMQYAH]
 supersedes: []
@@ -72,6 +72,7 @@ superseded_by: []
 - 首轮部署态回归错误访问生产构建中按设计隐藏的 `/system/status`；测试改为由生产 Web 页面直接跨源请求 readiness，开发状态页用例在部署态明确跳过，复验通过。
 - 候选收口时发现 Playwright 的 API 子进程未显式透传外层数据库、Redis 和隔离前缀，导致本地持久测试库复跑出现合成账号 409；现已固定透传，并将合成手机号改为每次随机生成，连续候选复验恢复为 30 通过、3 条部署态检查跳过。
 - PR #21 首次远端 `quality` 在全新 Linux checkout 的 Lint 步骤失败：被忽略的 Prisma Client 尚未生成，使类型感知规则把 Prisma 调用识别为 unsafe；已在 `quality` 和独立 `e2e-auth` Job 的静态检查/迁移前显式生成 Prisma Client，原候选不再作为最终 Review 对象。
+- PR #21 第二次远端 `quality` 已通过生成、格式、Lint、类型、测试、确定性与构建，最后发现 Actions 默认浅克隆且 detached，项目校验器因无法重算历史归档提交而按规则失败；checkout 现固定完整历史并检出 PR 源分支，不放宽项目校验规则。
 - 为避免测试运行间限流污染，仅清除了本次创建的隔离 Redis 测试库临时键；未删除 PostgreSQL 记录或任何用户数据。
 - 候选提交前重新刷新 `origin`，`origin/develop` 仍为固定基线 `1b22fa7b97155dd616442e1a34f4453b2cacfc39`，当前分支相对基线为 `0/0`。
 
