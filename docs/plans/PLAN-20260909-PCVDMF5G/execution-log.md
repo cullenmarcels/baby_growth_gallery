@@ -73,3 +73,12 @@ superseded_by: []
 - confirmed `plan.md` 曾在上下文隔离修正时被同步改写；候选前已恢复 bootstrap 时的冻结正文，实际偏差只保存在可变 Spec、State、Execution 和报告中。
 - Review 绑定候选 `113102a23f4ddafb7fbc056bf7585a22793c92c1`，v2 owned scope digest 为 `B950396F4AFEAEB7CD1F934B8BF84494944E957635664911F71388EA6221A13E`。
 - 独立候选 Regression 通过，Plan 进入 `acceptance_pending`；accepted/integrated 证据仍为 null，等待最终证据 PR head 和用户明确验收。
+
+## 人工验收、集成复验与归档
+
+- 最终证据依次经 PR #13 `feature → develop`、PR #14 `develop → release`、PR #15 `release → master`，三个目标隔离检查均通过并使用 merge commit；PR #16 `master → main` 的 `branch-flow-main` 通过。
+- 用户明确回复“PR #16 已合并，验收通过并归档”，授权范围同时包含验收与归档。
+- GitHub API 和 fetch 复核 PR #16 Head 为 `5d573665f1b3c97d4654ae0bb2e2bd18a7aee26d`、merge commit 与 `origin/main` 均为 `19590f9db9bc55c85e9beb3608bdaec684a6a8a3`；Head 是 main 的祖先。
+- Head/merge Git tree 均为 `f728834b74b182487de555f3d46a1db50ea36ee6`；v2 accepted/integrated owned scope digest 均为 `42404B8635F421B55D31816B6794807DB36EC3AED326D554832A65AEFF1A09AA`，验收持续有效。
+- fetch 后在与 main tree 相同的工作树再次运行 `pnpm validate`，全部通过；四个 Ruleset 回读无漂移，集成 Regression 通过。
+- 从 `origin/develop@3665777a29605b75358a62ac8d53d62f08adab53` 创建 `feature/branch-governance-archive`，归档资料将继续沿标准晋升链交付，不直接更新受保护分支。

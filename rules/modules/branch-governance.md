@@ -10,7 +10,7 @@ effective_at: 2026-09-09T17:33:09+08:00
 updated_at: 2026-09-09T18:02:04+08:00
 source_refs: [AGENTS.md, docs/specs/SPEC-20260909-ASMC5N7Z-branch-governance/spec.md]
 related_plan_ids: [PLAN-20260909-PCVDMF5G]
-related_achievement_ids: []
+related_achievement_ids: [ACH-20260909-PCVDMF5G]
 supersedes_version: null
 ---
 
