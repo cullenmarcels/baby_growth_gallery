@@ -3,10 +3,7 @@
 > 本文件是所有 AI 进入项目后的第一阅读入口。探索、扫描、核对、设计、编码或测试前，必须先读取本文件，再按下方索引定位资料。
 ## 1. 项目状态
 
-- 项目类型：PC、平板、移动端自适应网站。
-- 当前阶段：工程基础、五层分支治理和首个业务阶段 Plan A（手机号认证与 Redis 会话）已归档；下一步是刷新 `origin/develop` 后规划 Plan B 家庭身份基础。
-- 内容受众：项目资料和代码主要供 AI 检索、推理、实现与验收。
-- 最终目标：以已确认知识为准，持续交付可运行、可验证的最终网站。
+- 项目为 PC、平板、移动端自适应网站，资料与代码主要供 AI 检索、推理、实现和验收；工程基础、分支治理和 Plan A 已归档，Plan B 家庭身份、权限、邀请与动态基础正在实施，最终持续交付以已确认知识为准的可运行、可验证网站。
 
 ## 2. 权威性与冲突优先级
 
@@ -87,6 +84,9 @@
 | 原认证会话 Plan | `docs/plans/PLAN-20260910-GK1XDGCG/plan.md` | 已替代 | 原候选 Review 与替代链历史证据 |
 | 认证密码修订 Plan | `docs/plans/PLAN-20260910-JBD9BWHZ/plan.md` | 已归档 | Plan A 修订、owned scope、Review/Regression、人工验收与集成证据 |
 | 认证会话 Achievement | `docs/achievements/ACH-20260910-JBD9BWHZ-auth-session-foundation.md` | 已归档 | 账号、验证码、密码、Redis Session、响应式与 CI 完成证据 |
+| 家庭身份补充设计 | `docs/designs/DES-20260911-9Z3KRKCQ-family-identity-ui/design.md` | 已生效 | 家庭引导、应用壳、权限、邀请和动态响应式状态 |
+| 家庭身份规格 | `docs/specs/SPEC-20260911-3YV4GCRZ-family-identity/spec.md` | 已生效 | 多家庭、角色、单次邀请、Session 与活动契约 |
+| 家庭身份 Plan | `docs/plans/PLAN-20260911-X27F6QNT/plan.md` | 实施中 | Plan B 基线、owned scope、实现和验收门禁 |
 
 执行任务时先用 `rules/INDEX.md` 定位阶段；进入 `docs/` 后读取 `docs/README.md` 和 `docs/INDEX.md`。不得仅按文件日期推断当前有效资料。
 
