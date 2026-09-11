@@ -7,6 +7,10 @@ export type ApiProblem =
   paths['/api/v1/health/ready']['get']['responses'][503]['content']['application/problem+json'];
 export type AccountSummary = components['schemas']['AccountSummaryDto'];
 export type VerificationChallenge = components['schemas']['VerificationChallengeResponseDto'];
+export type FamilySummary = components['schemas']['FamilySummaryDto'];
+export type FamilyMember = components['schemas']['FamilyMemberDto'];
+export type ActiveInvitation = components['schemas']['ActiveInvitationDto'];
+export type FamilyActivityPage = components['schemas']['FamilyActivityPageDto'];
 
 export class ApiClientError extends Error {
   constructor(
@@ -138,6 +142,128 @@ export function createApiClient({ baseUrl, fetchImpl }: ApiClientOptions) {
       });
       if (!result.response.ok) requireData(result.data, result.error, result.response);
       csrfToken = undefined;
+    },
+    async listFamilies(): Promise<components['schemas']['FamilyListResponseDto']> {
+      const result = await client.GET('/api/v1/families');
+      return requireData<components['schemas']['FamilyListResponseDto']>(
+        result.data,
+        result.error,
+        result.response,
+      );
+    },
+    async createFamily(
+      body: components['schemas']['CreateFamilyRequestDto'],
+    ): Promise<FamilySummary> {
+      const result = await client.POST('/api/v1/families', {
+        body,
+        headers: await mutationHeaders(),
+      });
+      return requireData<FamilySummary>(result.data, result.error, result.response);
+    },
+    async activateFamily(familyId: string): Promise<AccountSummary> {
+      const result = await client.POST('/api/v1/families/{familyId}/activate', {
+        params: { path: { familyId } },
+        headers: await mutationHeaders(),
+      });
+      return requireData<AccountSummary>(result.data, result.error, result.response);
+    },
+    async getFamily(familyId: string): Promise<FamilySummary> {
+      const result = await client.GET('/api/v1/families/{familyId}', {
+        params: { path: { familyId } },
+      });
+      return requireData<FamilySummary>(result.data, result.error, result.response);
+    },
+    async listFamilyMembers(
+      familyId: string,
+    ): Promise<components['schemas']['FamilyMemberListResponseDto']> {
+      const result = await client.GET('/api/v1/families/{familyId}/members', {
+        params: { path: { familyId } },
+      });
+      return requireData<components['schemas']['FamilyMemberListResponseDto']>(
+        result.data,
+        result.error,
+        result.response,
+      );
+    },
+    async changeFamilyMemberRole(
+      familyId: string,
+      membershipId: string,
+      body: components['schemas']['ChangeMemberRoleRequestDto'],
+    ): Promise<FamilyMember> {
+      const result = await client.PATCH('/api/v1/families/{familyId}/members/{membershipId}/role', {
+        params: { path: { familyId, membershipId } },
+        body,
+        headers: await mutationHeaders(),
+      });
+      return requireData<FamilyMember>(result.data, result.error, result.response);
+    },
+    async removeFamilyMember(familyId: string, membershipId: string): Promise<void> {
+      const result = await client.DELETE('/api/v1/families/{familyId}/members/{membershipId}', {
+        params: { path: { familyId, membershipId } },
+        headers: await mutationHeaders(),
+      });
+      if (!result.response.ok) requireData(result.data, result.error, result.response);
+    },
+    async leaveFamily(familyId: string): Promise<AccountSummary> {
+      const result = await client.DELETE('/api/v1/families/{familyId}/membership', {
+        params: { path: { familyId } },
+        headers: await mutationHeaders(),
+      });
+      return requireData<AccountSummary>(result.data, result.error, result.response);
+    },
+    async createFamilyInvitation(
+      familyId: string,
+    ): Promise<components['schemas']['CreatedInvitationDto']> {
+      const result = await client.POST('/api/v1/families/{familyId}/invitations', {
+        params: { path: { familyId } },
+        headers: await mutationHeaders(),
+      });
+      return requireData<components['schemas']['CreatedInvitationDto']>(
+        result.data,
+        result.error,
+        result.response,
+      );
+    },
+    async listFamilyInvitations(
+      familyId: string,
+    ): Promise<components['schemas']['InvitationListResponseDto']> {
+      const result = await client.GET('/api/v1/families/{familyId}/invitations', {
+        params: { path: { familyId } },
+      });
+      return requireData<components['schemas']['InvitationListResponseDto']>(
+        result.data,
+        result.error,
+        result.response,
+      );
+    },
+    async revokeFamilyInvitation(familyId: string, invitationId: string): Promise<void> {
+      const result = await client.DELETE('/api/v1/families/{familyId}/invitations/{invitationId}', {
+        params: { path: { familyId, invitationId } },
+        headers: await mutationHeaders(),
+      });
+      if (!result.response.ok) requireData(result.data, result.error, result.response);
+    },
+    async acceptFamilyInvitation(
+      body: components['schemas']['AcceptInvitationRequestDto'],
+    ): Promise<components['schemas']['AcceptInvitationResponseDto']> {
+      const result = await client.POST('/api/v1/family-invitations/accept', {
+        body,
+        headers: await mutationHeaders(),
+      });
+      return requireData<components['schemas']['AcceptInvitationResponseDto']>(
+        result.data,
+        result.error,
+        result.response,
+      );
+    },
+    async listFamilyActivities(
+      familyId: string,
+      query: { limit?: number; cursor?: string } = {},
+    ): Promise<FamilyActivityPage> {
+      const result = await client.GET('/api/v1/families/{familyId}/activities', {
+        params: { path: { familyId }, query },
+      });
+      return requireData<FamilyActivityPage>(result.data, result.error, result.response);
     },
   };
 }

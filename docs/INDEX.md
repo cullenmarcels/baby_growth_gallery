@@ -20,6 +20,8 @@
 | `DES-20260910-V9P4SBX8` | `design` | 账号认证与会话界面补充设计 | `active` | `[]` | `[]` | [source](./designs/DES-20260910-V9P4SBX8-auth-session-ui/design.md) |
 | `SPEC-20260910-TAMMQYAH` | `spec` | 手机号认证与 Redis 会话规格 | `superseded` | `[]` | `[SPEC-20260910-VP1CDG7N]` | [source](./specs/SPEC-20260910-TAMMQYAH-auth-session/spec.md) |
 | `SPEC-20260910-VP1CDG7N` | `spec` | 手机号认证与 Redis 会话规格（密码长度修订） | `active` | `[SPEC-20260910-TAMMQYAH]` | `[]` | [source](./specs/SPEC-20260910-VP1CDG7N-auth-session-password-revision/spec.md) |
+| `DES-20260911-9Z3KRKCQ` | `design` | 家庭身份、成员权限与动态界面补充设计 | `active` | `[]` | `[]` | [source](./designs/DES-20260911-9Z3KRKCQ-family-identity-ui/design.md) |
+| `SPEC-20260911-3YV4GCRZ` | `spec` | 家庭身份、成员权限、单次邀请与家庭动态规格 | `active` | `[]` | `[]` | [source](./specs/SPEC-20260911-3YV4GCRZ-family-identity/spec.md) |
 <!-- GENERATED:END DESIGNS_SPECS -->
 
 ## Plan 台账
@@ -27,6 +29,7 @@
 | Plan ID | 标题 | 状态 | 仓库模式 | 基线提交 | 候选提交 | 集成提交 | Review | Regression | 验收有效性 | Achievement |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 <!-- GENERATED:BEGIN PLANS -->
+| [PLAN-20260911-X27F6QNT](./plans/PLAN-20260911-X27F6QNT/plan.md) | 建立家庭身份、成员权限、单次邀请与家庭动态基础 | `in_progress` | `git_remote` | `701f26aef605ccac7c1bded89fcb0e3c5e53a54c` | `-` | `-` | [pending](./plans/PLAN-20260911-X27F6QNT/review-report.md) | [pending](./plans/PLAN-20260911-X27F6QNT/regression-report.md) | pending | - |
 | [PLAN-20260910-JBD9BWHZ](./plans/PLAN-20260910-JBD9BWHZ/plan.md) | 修订认证密码最小长度并重新形成候选 | `archived` | `git_remote` | `1b22fa7b97155dd616442e1a34f4453b2cacfc39` | `b8a36f4795c0378fe6652fc249ade83dc1c47104` | `7354720b400f098e539b65a6211756aaffa6b21e` | [passed](./plans/PLAN-20260910-JBD9BWHZ/review-report.md) | [passed](./plans/PLAN-20260910-JBD9BWHZ/regression-report.md) | confirmed 2026-09-11T09:31:53+08:00 | [ACH-20260910-JBD9BWHZ](./achievements/ACH-20260910-JBD9BWHZ-auth-session-foundation.md) |
 | [PLAN-20260910-GK1XDGCG](./plans/PLAN-20260910-GK1XDGCG/plan.md) | 建立手机号认证与 Redis 服务端会话 | `superseded` | `git_remote` | `1b22fa7b97155dd616442e1a34f4453b2cacfc39` | `72e30f1f18245a6e0db18cac519ac3faf20885d2` | `-` | [passed](./plans/PLAN-20260910-GK1XDGCG/review-report.md) | [pending](./plans/PLAN-20260910-GK1XDGCG/regression-report.md) | pending | - |
 | [PLAN-20260909-PCVDMF5G](./plans/PLAN-20260909-PCVDMF5G/plan.md) | 建立五层分支治理与自动晋升检查 | `archived` | `git_remote` | `3665777a29605b75358a62ac8d53d62f08adab53` | `113102a23f4ddafb7fbc056bf7585a22793c92c1` | `19590f9db9bc55c85e9beb3608bdaec684a6a8a3` | [passed](./plans/PLAN-20260909-PCVDMF5G/review-report.md) | [passed](./plans/PLAN-20260909-PCVDMF5G/regression-report.md) | confirmed 2026-09-10T09:56:49+08:00 | [ACH-20260909-PCVDMF5G](./achievements/ACH-20260909-PCVDMF5G-branch-governance.md) |

@@ -19,7 +19,11 @@ async function getCsrf(context: APIRequestContext): Promise<string> {
   return ((await response.json()) as { csrfToken: string }).csrfToken;
 }
 
-test('rejects missing Origin, missing CSRF, and URL session identifiers', async () => {
+test('rejects missing Origin, missing CSRF, and URL session identifiers', async ({
+  request: _request,
+}, testInfo) => {
+  void _request;
+  test.skip(testInfo.project.name !== 'chromium-1440', 'API contract is viewport-independent');
   const api = await playwrightRequest.newContext({ baseURL: apiBaseUrl });
   const csrfResponse = await api.get('/api/v1/auth/csrf');
   expect(csrfResponse.ok()).toBe(true);
@@ -46,7 +50,11 @@ test('rejects missing Origin, missing CSRF, and URL session identifiers', async 
   await second.dispose();
 });
 
-test('regenerates sessions, consumes codes once, and revokes sessions after password reset', async () => {
+test('regenerates sessions, consumes codes once, and revokes sessions after password reset', async ({
+  request: _request,
+}, testInfo) => {
+  void _request;
+  test.skip(testInfo.project.name !== 'chromium-1440', 'API contract is viewport-independent');
   const phone = syntheticPhone('137');
   const password = 'abcdef';
   const nextPassword = 'ghijkl';
@@ -180,8 +188,7 @@ test('registers, restores the protected account view, and logs out securely', as
   await page.getByLabel('确认密码').fill('abcdef');
   await page.getByRole('button', { name: '注册并登录' }).click();
 
-  await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
-  await expect(page.getByText(`+86 ${phone.slice(0, 3)}****${phone.slice(-4)}`)).toBeVisible();
+  await expect(page.getByRole('heading', { name: '把珍贵时刻分享给最亲近的人' })).toBeVisible();
   const sessionCookie = (await page.context().cookies()).find((cookie) =>
     cookie.name.includes('session'),
   );
@@ -204,7 +211,10 @@ test('registers, restores the protected account view, and logs out securely', as
   ).toBe(false);
 
   await page.reload();
-  await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '把珍贵时刻分享给最亲近的人' })).toBeVisible();
+  if ((page.viewportSize()?.width ?? 1440) < 1024) {
+    await page.getByRole('button', { name: '打开家庭切换器' }).click();
+  }
   await page.getByRole('button', { name: '退出登录' }).click();
   await expect(page).toHaveURL(/\/login$/);
 });
@@ -213,7 +223,7 @@ test('keeps protected content hidden while session recovery is unresolved', asyn
   await page.route('**/api/v1/auth/session', () => new Promise(() => undefined));
   await page.goto('/app');
   await expect(page.getByText('正在恢复安全会话…')).toBeVisible();
-  await expect(page.getByRole('heading', { name: '欢迎回来' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: '把珍贵时刻分享给最亲近的人' })).toHaveCount(0);
 });
 
 test('rejects an external return path and exposes keyboard-friendly validation', async ({

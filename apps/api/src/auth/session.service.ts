@@ -34,6 +34,8 @@ export class AuthSessionService {
     request.session.absoluteExpiresAt = now + absoluteTimeoutMs;
     request.session.idleTimeoutMs = idleTimeoutMs;
     request.session.cookie.maxAge = idleTimeoutMs;
+    const activeFamilyId = await this.findFallbackFamily(account.id);
+    if (activeFamilyId) request.session.activeFamilyId = activeFamilyId;
     await this.save(request);
   }
 
@@ -64,6 +66,7 @@ export class AuthSessionService {
       1,
       Math.min(session.idleTimeoutMs, session.absoluteExpiresAt - now),
     );
+    await this.reconcileActiveFamily(request, account.id);
     await this.save(request);
     return account;
   }
@@ -72,7 +75,7 @@ export class AuthSessionService {
     id: string;
     displayName: string | null;
     phoneMasked: string;
-    activeFamilyId: null;
+    activeFamilyId: string | null;
   } {
     return {
       id: account.id,
@@ -80,6 +83,39 @@ export class AuthSessionService {
       phoneMasked: this.auth.maskPhone(account.phoneE164),
       activeFamilyId: null,
     };
+  }
+
+  summaryForRequest(
+    request: Request,
+    account: Account,
+  ): {
+    id: string;
+    displayName: string | null;
+    phoneMasked: string;
+    activeFamilyId: string | null;
+  } {
+    return { ...this.summary(account), activeFamilyId: request.session.activeFamilyId ?? null };
+  }
+
+  async setActiveFamily(request: Request, familyId: string | null): Promise<void> {
+    if (familyId) request.session.activeFamilyId = familyId;
+    else delete request.session.activeFamilyId;
+    await this.save(request);
+  }
+
+  async reconcileActiveFamily(request: Request, accountId: string): Promise<string | null> {
+    const currentId = request.session.activeFamilyId;
+    if (currentId) {
+      const current = await this.prisma.familyMembership.findUnique({
+        where: { familyId_accountId: { familyId: currentId, accountId } },
+        select: { status: true },
+      });
+      if (current?.status === 'ACTIVE') return currentId;
+    }
+    const fallback = await this.findFallbackFamily(accountId);
+    if (fallback) request.session.activeFamilyId = fallback;
+    else delete request.session.activeFamilyId;
+    return fallback;
   }
 
   async logout(request: Request, response: Response): Promise<void> {
@@ -120,6 +156,15 @@ export class AuthSessionService {
       }
       request.session.destroy(() => resolve());
     });
+  }
+
+  private async findFallbackFamily(accountId: string): Promise<string | null> {
+    const membership = await this.prisma.familyMembership.findFirst({
+      where: { accountId, status: 'ACTIVE' },
+      orderBy: [{ joinedAt: 'desc' }, { id: 'desc' }],
+      select: { familyId: true },
+    });
+    return membership?.familyId ?? null;
   }
 
   private unauthorized(): ApiProblemException {
