@@ -321,6 +321,142 @@ test('reconciles an invalid current family to the most recently joined active me
   await multiFamilyMember.context.dispose();
 });
 
+test('consumes one invitation exactly once under concurrency and enforces API permission boundaries', async ({
+  request: _request,
+}, testInfo) => {
+  void _request;
+  test.skip(testInfo.project.name !== 'chromium-1440', 'API contract is viewport-independent');
+  const owner = await registerAccount();
+  const firstInvitee = await registerAccount();
+  const secondInvitee = await registerAccount();
+  const created = await post(owner.context, '/api/v1/families', owner.csrf, {
+    name: '并发家庭',
+    displayName: '创建者',
+  });
+  const family = (await created.json()) as { id: string };
+  const invitationResponse = await post(
+    owner.context,
+    `/api/v1/families/${family.id}/invitations`,
+    owner.csrf,
+  );
+  const token = ((await invitationResponse.json()) as { token: string }).token;
+
+  const results = await Promise.all([
+    post(firstInvitee.context, '/api/v1/family-invitations/accept', firstInvitee.csrf, {
+      token,
+      displayName: '并发成员甲',
+    }),
+    post(secondInvitee.context, '/api/v1/family-invitations/accept', secondInvitee.csrf, {
+      token,
+      displayName: '并发成员乙',
+    }),
+  ]);
+  expect(results.map((response) => response.status()).sort()).toEqual([200, 400]);
+  const winner = results[0]!.status() === 200 ? firstInvitee : secondInvitee;
+  const outsider = results[0]!.status() === 200 ? secondInvitee : firstInvitee;
+
+  const members = (await (
+    await owner.context.get(`/api/v1/families/${family.id}/members`)
+  ).json()) as { items: Array<{ id: string; isCurrentAccount: boolean }> };
+  expect(members.items).toHaveLength(2);
+  const joinedMember = members.items.find((item) => !item.isCurrentAccount)!;
+
+  const memberCannotInvite = await post(
+    winner.context,
+    `/api/v1/families/${family.id}/invitations`,
+    winner.csrf,
+  );
+  expect(memberCannotInvite.status()).toBe(403);
+  expect(((await memberCannotInvite.json()) as { code: string }).code).toBe(
+    'FAMILY_PERMISSION_DENIED',
+  );
+  const hiddenFamily = await outsider.context.get(`/api/v1/families/${family.id}`);
+  expect(hiddenFamily.status()).toBe(404);
+  expect(((await hiddenFamily.json()) as { code: string }).code).toBe('FAMILY_NOT_FOUND');
+
+  const promote = await owner.context.patch(
+    `/api/v1/families/${family.id}/members/${joinedMember.id}/role`,
+    {
+      headers: { Origin: webOrigin, 'x-csrf-token': owner.csrf },
+      data: { role: 'ADMIN' },
+    },
+  );
+  expect(promote.status()).toBe(200);
+  const beforeNoOp = (await (
+    await owner.context.get(`/api/v1/families/${family.id}/activities?limit=20`)
+  ).json()) as { items: unknown[] };
+  const noOp = await owner.context.patch(
+    `/api/v1/families/${family.id}/members/${joinedMember.id}/role`,
+    {
+      headers: { Origin: webOrigin, 'x-csrf-token': owner.csrf },
+      data: { role: 'ADMIN' },
+    },
+  );
+  expect(noOp.status()).toBe(200);
+  const afterNoOp = (await (
+    await owner.context.get(`/api/v1/families/${family.id}/activities?limit=20`)
+  ).json()) as { items: unknown[] };
+  expect(afterNoOp.items).toHaveLength(beforeNoOp.items.length);
+
+  const invalidCursor = await owner.context.get(
+    `/api/v1/families/${family.id}/activities?cursor=not%2Ba%2Bcursor`,
+  );
+  expect(invalidCursor.status()).toBe(400);
+  expect(((await invalidCursor.json()) as { code: string }).code).toBe('CURSOR_INVALID');
+
+  const revokedInvitation = await post(
+    owner.context,
+    `/api/v1/families/${family.id}/invitations`,
+    owner.csrf,
+  );
+  const revoked = (await revokedInvitation.json()) as {
+    token: string;
+    invitation: { id: string };
+  };
+  const revoke = await owner.context.delete(
+    `/api/v1/families/${family.id}/invitations/${revoked.invitation.id}`,
+    { headers: { Origin: webOrigin, 'x-csrf-token': owner.csrf } },
+  );
+  expect(revoke.status()).toBe(204);
+  const invalidAfterRevoke = await post(
+    outsider.context,
+    '/api/v1/family-invitations/accept',
+    outsider.csrf,
+    { token: revoked.token, displayName: '外部成员' },
+  );
+  expect(invalidAfterRevoke.status()).toBe(400);
+  expect(((await invalidAfterRevoke.json()) as { code: string }).code).toBe('INVITATION_INVALID');
+
+  await owner.context.dispose();
+  await firstInvitee.context.dispose();
+  await secondInvitee.context.dispose();
+});
+
+test('rate-limits invitation acceptance per account after ten attempts', async ({
+  request: _request,
+}, testInfo) => {
+  void _request;
+  test.skip(testInfo.project.name !== 'chromium-1440', 'API contract is viewport-independent');
+  const account = await registerAccount();
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    const response = await post(
+      account.context,
+      '/api/v1/family-invitations/accept',
+      account.csrf,
+      { token: '0000-0000-0000', displayName: '限流测试' },
+    );
+    expect(response.status()).toBe(400);
+    expect(((await response.json()) as { code: string }).code).toBe('INVITATION_INVALID');
+  }
+  const limited = await post(account.context, '/api/v1/family-invitations/accept', account.csrf, {
+    token: '0000-0000-0000',
+    displayName: '限流测试',
+  });
+  expect(limited.status()).toBe(429);
+  expect(((await limited.json()) as { code: string }).code).toBe('RATE_LIMITED');
+  await account.context.dispose();
+});
+
 test('creates a real family from onboarding without horizontal overflow', async ({ page }) => {
   const phone = syntheticPhone();
   await page.goto('/register');

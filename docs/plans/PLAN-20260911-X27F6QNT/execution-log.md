@@ -4,7 +4,7 @@ type: execution_log
 title: "家庭身份基础执行记录"
 status: open
 created_at: 2026-09-11T10:21:26+08:00
-updated_at: 2026-09-11T14:25:00+08:00
+updated_at: 2026-09-11T14:43:27+08:00
 plan_id: PLAN-20260911-X27F6QNT
 related_ids: [PLAN-20260911-X27F6QNT, DES-20260911-9Z3KRKCQ, SPEC-20260911-3YV4GCRZ]
 supersedes: []
@@ -42,11 +42,20 @@ superseded_by: []
 
 ## 候选前验证
 
-- `pnpm lint`、`pnpm format:check`、`pnpm typecheck`、`pnpm test`、`pnpm build` 均 PASS / exit 0；API 18 项、Web 9 项和 branch-flow 5 项测试全部通过。
+- `pnpm lint`、`pnpm format:check`、`pnpm typecheck`、`pnpm test`、`pnpm build` 均 PASS / exit 0；API 20 项、Web 9 项和 branch-flow 5 项测试全部通过。
 - `pnpm validate` 与 `hooks/validate-project.ps1 -Check` 均 PASS / exit 0，项目知识库和仓库模式校验通过。
-- Windows Chromium 完整本地矩阵：26 passed、19 个按设计 skip、0 failed；viewport-independent API 契约只在 1440 project 执行，UI 创建家庭、导航与视觉基线在 375/834/1440 全部执行。
+- Windows Chromium 完整本地矩阵：28 passed、23 个按设计 skip、0 failed；viewport-independent API 契约只在 1440 project 执行，UI 创建家庭、导航与视觉基线在 375/834/1440 全部执行。
 - Docker frozen-lockfile API/Web 镜像完整重建并 healthy；部署态家庭与 readiness 矩阵为 9 passed、6 个 viewport-independent skip、0 failed，PostgreSQL、Redis、objectStorage 均为 up。
 - 现有 Plan A 数据库前向应用 Plan B migration PASS；全新临时空数据库依次应用 Plan A 和 Plan B 两个 migration PASS，验证后已删除临时数据库。
 - OpenAPI 与 schema client 连续两次重新生成 SHA-256 组合值一致，确定性检查 PASS。
 - 新增三个 Windows 视觉基线，只使用合成家庭“晨光之家”和合成称呼“家人甲”；邀请码在视觉截取后才生成，不进入截图。
 - 首轮全量回归暴露并修复两项真实问题：FamilyActivityService 缺少显式 Nest 注入导致动态 500；React Query 全量 clear 与退出路由竞争导致回跳 `/app`。修复后对应专项和全量回归均通过。
+
+## 候选审查补强
+
+- 候选预查没有把并发邀请消费、账号级邀请接受限流、无效 cursor 和墓碑公共序列化标记为已验证；先返回 Development 补充自动化证据，再重新固定候选。
+- 新增真实数据库/API 并发验收：两个账号并行接受同一口令，结果严格为一个 `200`、一个统一 `400 INVITATION_INVALID`，最终家庭只有一个新 Membership。
+- 新增账号限流边界验收：前 10 次有效格式的无效口令均返回中性 `INVITATION_INVALID`，第 11 次返回 `429 RATE_LIMITED`；测试使用独立 Redis 前缀，未清除成功后的账号或 IP 计数。
+- 补充未加入家庭隐藏 404、MEMBER 无邀请权限 403、角色 no-op 不新增 Activity、撤销口令统一无效、无效/未知版本 cursor，以及墓碑公共响应不泄漏原 type、actor、subject、summary 的验证。
+- 使用回滚事务实测家庭数据库级联：删除 Family 后 Membership、Invitation、Activity 计数均为 0，随后 ROLLBACK，不留下审查数据。
+- 补强后 `pnpm validate` PASS / exit 0；使用 `bgg-planb-review-a0acfe9` 隔离前缀的三视口完整 E2E 为 28 passed、23 skipped、0 failed。
