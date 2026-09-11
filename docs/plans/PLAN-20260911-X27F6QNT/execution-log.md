@@ -4,7 +4,7 @@ type: execution_log
 title: "家庭身份基础执行记录"
 status: open
 created_at: 2026-09-11T10:21:26+08:00
-updated_at: 2026-09-11T14:50:00+08:00
+updated_at: 2026-09-11T15:01:00+08:00
 plan_id: PLAN-20260911-X27F6QNT
 related_ids: [PLAN-20260911-X27F6QNT, DES-20260911-9Z3KRKCQ, SPEC-20260911-3YV4GCRZ]
 supersedes: []
@@ -29,6 +29,7 @@ superseded_by: []
 | 2026-09-11T10:21:26+08:00 | confirmed | in_progress | 远端、工作树、基线和 owned scope 门禁通过。 |
 | 2026-09-11T14:49:00+08:00 | in_progress | in_review | 固定候选 `3b8b92f…` 和 v2 digest，候选工作树 clean。 |
 | 2026-09-11T14:50:00+08:00 | in_review | in_regression | 63 条固定 Rule 无 FAIL/UNVERIFIED，正式 Review 通过。 |
+| 2026-09-11T15:01:00+08:00 | in_regression | acceptance_pending | 独立 Regression、Docker readiness 和 PR #22 三项 CI 全部通过。 |
 
 ## 实施记录
 
@@ -69,3 +70,11 @@ superseded_by: []
 - v2 owned-scope digest：`1C58DCEDEFDF3BCAC991FAC4EB5AAE029DB3F4673CB2DFA587F878B6DDBBBA6E`。
 - 所有 63 条固定 Rule 均为 PASS 或有触发条件依据的 NOT_APPLICABLE；无 FAIL/UNVERIFIED。
 - 远端分支尚未推送、PR 尚未创建，CI 如实为 pending；Review 只覆盖本地 feature 候选。
+
+## 候选 Regression 与 PR
+
+- 独立 Regression 使用新 Redis 前缀 `bgg-planb-regression-3b8b92f`，再次执行 `pnpm validate` 与三视口完整 E2E：28 passed、23 designed skips、0 failed。
+- PostgreSQL 18.6 当前两项 migration 无 pending；OpenAPI/client 连续两次生成确定性一致且没有生成文件差异。
+- Docker 五项服务保持运行，API readiness 的 PostgreSQL、Redis、objectStorage 均为 up；用户预览地址保持 `http://localhost:8080`。
+- 已普通推送 feature 分支并创建 PR #22，目标 `develop`；未执行 merge、force push、Tag 或稳定分支操作。
+- PR #22 CI：run `34572223616` 的 `branch-flow-develop` PASS；run `34572224205` 的 `quality` 与 `e2e-auth` PASS。

@@ -4,12 +4,12 @@ type: review_report
 title: "家庭身份基础 Review"
 status: passed
 created_at: 2026-09-11T10:21:26+08:00
-updated_at: 2026-09-11T14:50:00+08:00
+updated_at: 2026-09-11T15:01:00+08:00
 plan_id: PLAN-20260911-X27F6QNT
 repository_mode: git_remote
 reviewed_commit: 3b8b92fdcf3ed6eaa575c35c3ab2466152d0b673
 reviewed_scope_digest: 1C58DCEDEFDF3BCAC991FAC4EB5AAE029DB3F4673CB2DFA587F878B6DDBBBA6E
-ci_status: pending
+ci_status: passed
 related_ids: [PLAN-20260911-X27F6QNT, SPEC-20260911-3YV4GCRZ, DES-20260911-9Z3KRKCQ]
 supersedes: []
 superseded_by: []
@@ -21,7 +21,7 @@ superseded_by: []
 
 `PASS`。Review 绑定已提交候选 `3b8b92fdcf3ed6eaa575c35c3ab2466152d0b673`；按 `scope_digest_version: 2` 对 Plan B 的 `owned_paths` 重算为 `1C58DCEDEFDF3BCAC991FAC4EB5AAE029DB3F4673CB2DFA587F878B6DDBBBA6E`。全部 63 条固定 Rule 均为 `PASS` 或有明确触发条件依据的 `NOT_APPLICABLE`，没有 `FAIL` 或 `UNVERIFIED`。
 
-本结论仅覆盖本地 feature 候选。远端分支尚未推送、PR 尚未创建，因此 `branch-flow-develop`、`quality`、`e2e-auth` 保持 `pending`；它们必须在 Regression/人工验收前成功，且本 Review 不替代合并后 `origin/develop` 的 integrated regression。
+本结论只绑定 feature 候选，不替代合并后 `origin/develop` 的 integrated regression。Review 后已创建 PR #22，远端 `branch-flow-develop`、`quality`、`e2e-auth` 在候选代码及 Review 证据头上全部成功。
 
 ## 功能与安全核对
 
@@ -80,7 +80,7 @@ superseded_by: []
 | `GIT-007` | NOT_APPLICABLE | 尚未进入人工验收；accepted commit/digest 必须继续为空。 |
 | `GIT-008` | NOT_APPLICABLE | 尚未集成，不生成 Achievement 或归档。 |
 | `GIT-009` | PASS | 当前仅本地普通 commit；尚未 push/merge/改写远端。 |
-| `GIT-010` | PASS | CI 如实为 pending；现有本地、Docker、迁移与测试结果均记录真实退出结果。 |
+| `GIT-010` | PASS | CI 从 pending 到 passed 均如实记录；本地、Docker、迁移与测试结果记录真实退出结果。 |
 | `BRANCH-001` | PASS | feature 开发、develop 集成及 release/master/main 晋升职责未混淆。 |
 | `BRANCH-002` | PASS | 计划流向固定 `feature/family-identity-foundation → develop`。 |
 | `BRANCH-003` | NOT_APPLICABLE | 本 Plan 不直接更新 release/master/main。 |
@@ -105,7 +105,7 @@ superseded_by: []
 | `TEST-006` | PASS | Regression 矩阵由 DB、Session、Redis、API、Web、三视口、认证回归和部署影响推导。 |
 | `TEST-007` | PASS | 只复用 Prisma/Jest/Vitest/Testing Library/Playwright/Docker/hooks，无新增依赖。 |
 | `TEST-008` | PASS | 当前仅是 candidate Review；报告明确 integrated regression 仍是后续独立门禁。 |
-| `TEST-009` | NOT_APPLICABLE | PR 尚未创建，CI 未失败也未被当作成功；进入验收前必须转为 PASS。 |
+| `TEST-009` | PASS | PR #22 的 branch-flow-develop、quality、e2e-auth 全部成功；失败仍会阻止验收/归档。 |
 | `TEST-010` | PASS | 只声明 Windows 本地 Chromium、Docker Desktop 容器与后续实际 CI 平台，不夸大其他平台。 |
 | `RESP-001` | PASS | 375、834、1440 同一 Plan 实现和验证。 |
 | `RESP-002` | PASS | 桌面 Navbar 与移动/平板 MobileTabBar 随主体功能同期实现。 |
@@ -132,5 +132,5 @@ superseded_by: []
 
 - 真实短信供应商未接入；固定 `246810` 只允许显式 development/test，生产未配置真实适配器时验证码能力返回 503。
 - 用户协议和隐私政策仍是待正式审核草案，不代表具备公开运营条件。
-- 当前 Review 的远端 CI 为 pending；CI 成功前不能进入人工验收，用户明确授权前不能合并 PR。
+- PR #22 远端 CI 已成功；用户明确验收和授权前仍不能合并 PR。
 - Node 24 下固定版本 `libphonenumber-js` 的 Jest JSON import deprecation warning 不影响当前结果，但应在后续依赖维护 Plan 处理。

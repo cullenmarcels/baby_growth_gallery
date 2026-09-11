@@ -2,7 +2,7 @@
 id: PLAN-20260911-X27F6QNT-STATE
 type: plan_state
 plan_id: PLAN-20260911-X27F6QNT
-status: in_regression
+status: acceptance_pending
 repository_mode: git_remote
 remote_name: origin
 integration_target: origin/develop
@@ -23,4 +23,4 @@ integrated_scope_digest: null
 
 # Plan State
 
-候选 `3b8b92fdcf3ed6eaa575c35c3ab2466152d0b673` 的 v2 owned-scope digest 已固定；正式 Review 无 FAIL/UNVERIFIED，进入独立 Regression。远端 PR/CI 尚未开始。
+候选 `3b8b92fdcf3ed6eaa575c35c3ab2466152d0b673` 的 Review、独立 Regression 与 PR #22 三项 CI 均通过；保持 accepted/integrated 字段为空，等待用户在 Docker 候选上人工验收和明确合并授权。
