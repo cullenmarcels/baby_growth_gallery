@@ -76,13 +76,20 @@ services:
         NODE_IMAGE: ${NODE_IMAGE:-node:24.20.0-alpine}
         NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmjs.org}
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
       PORT: 3000
       APP_VERSION: 0.1.0
       WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:8080}
       SWAGGER_ENABLED: 'true'
       DATABASE_URL: postgresql://${POSTGRES_USER:-baby_gallery}:${POSTGRES_PASSWORD:-baby_gallery_dev_password}@postgres:5432/${POSTGRES_DB:-baby_growth_gallery}
       REDIS_URL: redis://redis:6379
+      REDIS_KEY_PREFIX: bgg-compose
+      AUTH_SESSION_SECRET: compose-only-session-secret-never-use-in-production
+      AUTH_HMAC_SECRET: compose-only-hmac-secret-never-use-in-production-now
+      AUTH_COOKIE_SECURE: 'false'
+      TRUST_PROXY: 0
+      VERIFICATION_DELIVERY_MODE: fixed
+      TEST_VERIFICATION_CODE: '246810'
       S3_ENDPOINT: http://minio:9000
       S3_REGION: us-east-1
       S3_BUCKET: ${S3_BUCKET:-baby-growth-gallery-dev}

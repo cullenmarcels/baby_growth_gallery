@@ -1,8 +1,8 @@
 import { HeadBucketCommand, S3Client } from '@aws-sdk/client-s3';
 import { Inject, Injectable } from '@nestjs/common';
-import { createClient } from 'redis';
 import { APP_CONFIG, type AppConfig } from '../config/app-config.js';
 import { PrismaService } from './prisma.service.js';
+import { RedisService } from './redis.service.js';
 
 export type DependencyName = 'postgres' | 'redis' | 'objectStorage';
 export type DependencyStatus = Record<DependencyName, 'up' | 'down'>;
@@ -14,6 +14,7 @@ export class InfrastructureService {
   constructor(
     @Inject(APP_CONFIG) private readonly config: AppConfig,
     @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(RedisService) private readonly redis: RedisService,
   ) {
     this.s3Client = new S3Client({
       endpoint: config.s3.endpoint,
@@ -49,22 +50,11 @@ export class InfrastructureService {
   }
 
   private async checkRedis(): Promise<'up' | 'down'> {
-    const client = createClient({ url: this.config.redisUrl, socket: { connectTimeout: 2_000 } });
-    client.on('error', () => undefined);
     try {
-      await this.withTimeout(client.connect(), 3_000);
-      await this.withTimeout(client.ping(), 3_000);
+      await this.withTimeout(this.redis.ping(), 3_000);
       return 'up';
     } catch {
       return 'down';
-    } finally {
-      if (client.isOpen) {
-        try {
-          await client.close();
-        } catch {
-          // Readiness cleanup must not escape as an application error.
-        }
-      }
     }
   }
 

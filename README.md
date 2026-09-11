@@ -1,6 +1,6 @@
 # baby_growth_gallery
 
-小福宝成长记的前后端分离 Monorepo。当前阶段提供可启动的工程基础、API 健康检查、生成式 API 客户端、响应式工程状态页，以及 PostgreSQL、Redis、MinIO 本地开发设施；尚未实现任何宝宝数据业务。
+小福宝成长记的前后端分离 Monorepo。当前阶段提供手机号注册、密码与短信验证码登录、密码找回、Redis 服务端会话、响应式认证页面、API 健康检查与本地数据设施；家庭和宝宝数据业务仍未开放。
 
 ## 环境要求
 
@@ -19,13 +19,16 @@ pnpm dev
 ```
 
 - Web：<http://localhost:5173>
+- 开发状态页：<http://localhost:5173/system/status>
 - API live：<http://localhost:3000/api/v1/health/live>
 - API ready：<http://localhost:3000/api/v1/health/ready>
 - OpenAPI：<http://localhost:3000/api/openapi.json>
 - Swagger UI：<http://localhost:3000/api/docs>
 - MinIO Console：<http://localhost:9001>
 
-默认开发凭据只用于本机，不可用于生产。所有运行参数和占位值见根目录及各应用的 `.env.example`。
+默认开发凭据和固定验证码 `246810` 只用于本机开发，不会由 API 或页面回显，也不可用于生产。生产环境禁止启用固定验证码，并要求单独配置足够强度的 Session 与 HMAC 秘密。所有运行参数和占位值见根目录及各应用的 `.env.example`。
+
+本阶段的用户协议与隐私政策是待正式法律审核的开发草案；当前实现不代表已经具备公开运营条件。
 
 若本机网络无法直接访问 Docker Hub 或 Quay，可先把根目录 `.env.example` 复制为不入库的根 `.env`，再仅替换其中镜像变量的 registry 前缀；版本标签和 MinIO digest 必须保持不变。项目默认配置仍使用官方镜像地址。
 

@@ -18,6 +18,8 @@ export interface ApiProblem {
   detail: string;
   instance: string;
   traceId: string;
+  code?: string;
+  violations?: Array<{ field: string; code: string }>;
 }
 
 @Catch()
@@ -28,7 +30,7 @@ export class ProblemDetailsFilter implements ExceptionFilter {
     const response = context.getResponse<Response>();
     const status =
       exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
-    const detail = this.getDetail(exception, status);
+    const metadata = this.getMetadata(exception, status);
     const traceId =
       request.id ??
       request.header('x-request-id') ??
@@ -39,9 +41,11 @@ export class ProblemDetailsFilter implements ExceptionFilter {
       type: `https://httpstatuses.com/${status}`,
       title: status === 503 ? 'Service Unavailable' : 'Request Failed',
       status,
-      detail,
+      detail: metadata.detail,
       instance: request.originalUrl,
       traceId,
+      ...(metadata.code ? { code: metadata.code } : {}),
+      ...(metadata.violations ? { violations: metadata.violations } : {}),
     };
 
     if (status === 500) {
@@ -49,8 +53,8 @@ export class ProblemDetailsFilter implements ExceptionFilter {
         JSON.stringify({
           timestamp: new Date().toISOString(),
           level: 'error',
-          message: exception instanceof Error ? exception.message : String(exception),
-          ...(exception instanceof Error && exception.stack ? { stack: exception.stack } : {}),
+          message: 'Unhandled request failure',
+          errorType: exception instanceof Error ? exception.name : 'UnknownError',
           traceId,
           instance: request.originalUrl,
         }),
@@ -60,16 +64,32 @@ export class ProblemDetailsFilter implements ExceptionFilter {
     response.status(status).type('application/problem+json').send(problem);
   }
 
-  private getDetail(exception: unknown, status: number): string {
+  private getMetadata(
+    exception: unknown,
+    status: number,
+  ): { detail: string; code?: string; violations?: Array<{ field: string; code: string }> } {
     if (exception instanceof HttpException) {
       const response = exception.getResponse();
-      if (typeof response === 'string') return response;
-      if (typeof response === 'object' && response !== null && 'message' in response) {
-        const message = response.message;
-        return Array.isArray(message) ? message.join('; ') : String(message);
+      if (typeof response === 'string') return { detail: response };
+      if (typeof response === 'object' && response !== null) {
+        const record = response as Record<string, unknown>;
+        const detailValue = record.detail ?? record.message;
+        const detail = Array.isArray(detailValue)
+          ? detailValue.join('; ')
+          : typeof detailValue === 'string'
+            ? detailValue
+            : 'The request could not be completed.';
+        const code = typeof record.code === 'string' ? record.code : undefined;
+        const violations = Array.isArray(record.violations)
+          ? (record.violations as Array<{ field: string; code: string }>)
+          : undefined;
+        return { detail, ...(code ? { code } : {}), ...(violations ? { violations } : {}) };
       }
     }
 
-    return status === 500 ? 'An unexpected error occurred.' : 'The request could not be completed.';
+    return {
+      detail:
+        status === 500 ? 'An unexpected error occurred.' : 'The request could not be completed.',
+    };
   }
 }
