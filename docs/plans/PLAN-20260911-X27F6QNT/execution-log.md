@@ -4,7 +4,7 @@ type: execution_log
 title: "家庭身份基础执行记录"
 status: open
 created_at: 2026-09-11T10:21:26+08:00
-updated_at: 2026-09-11T14:43:27+08:00
+updated_at: 2026-09-11T14:48:30+08:00
 plan_id: PLAN-20260911-X27F6QNT
 related_ids: [PLAN-20260911-X27F6QNT, DES-20260911-9Z3KRKCQ, SPEC-20260911-3YV4GCRZ]
 supersedes: []
@@ -42,7 +42,7 @@ superseded_by: []
 
 ## 候选前验证
 
-- `pnpm lint`、`pnpm format:check`、`pnpm typecheck`、`pnpm test`、`pnpm build` 均 PASS / exit 0；API 20 项、Web 9 项和 branch-flow 5 项测试全部通过。
+- `pnpm lint`、`pnpm format:check`、`pnpm typecheck`、`pnpm test`、`pnpm build` 均 PASS / exit 0；API 20 项、Web 14 项和 branch-flow 5 项测试全部通过。
 - `pnpm validate` 与 `hooks/validate-project.ps1 -Check` 均 PASS / exit 0，项目知识库和仓库模式校验通过。
 - Windows Chromium 完整本地矩阵：28 passed、23 个按设计 skip、0 failed；viewport-independent API 契约只在 1440 project 执行，UI 创建家庭、导航与视觉基线在 375/834/1440 全部执行。
 - Docker frozen-lockfile API/Web 镜像完整重建并 healthy；部署态家庭与 readiness 矩阵为 9 passed、6 个 viewport-independent skip、0 failed，PostgreSQL、Redis、objectStorage 均为 up。
@@ -57,5 +57,6 @@ superseded_by: []
 - 新增真实数据库/API 并发验收：两个账号并行接受同一口令，结果严格为一个 `200`、一个统一 `400 INVITATION_INVALID`，最终家庭只有一个新 Membership。
 - 新增账号限流边界验收：前 10 次有效格式的无效口令均返回中性 `INVITATION_INVALID`，第 11 次返回 `429 RATE_LIMITED`；测试使用独立 Redis 前缀，未清除成功后的账号或 IP 计数。
 - 补充未加入家庭隐藏 404、MEMBER 无邀请权限 403、角色 no-op 不新增 Activity、撤销口令统一无效、无效/未知版本 cursor，以及墓碑公共响应不泄漏原 type、actor、subject、summary 的验证。
+- 新增 5 项 Family Web 组件集成测试，覆盖 onboarding 模式/字段错误、mutation 服务错误、无家庭跳转、MEMBER 权限隐藏与空动态，以及家庭访问失败的安全错误状态；全部复用现有 Vitest、Testing Library 和 React Query 测试能力，不新增依赖。
 - 使用回滚事务实测家庭数据库级联：删除 Family 后 Membership、Invitation、Activity 计数均为 0，随后 ROLLBACK，不留下审查数据。
 - 补强后 `pnpm validate` PASS / exit 0；使用 `bgg-planb-review-a0acfe9` 隔离前缀的三视口完整 E2E 为 28 passed、23 skipped、0 failed。
