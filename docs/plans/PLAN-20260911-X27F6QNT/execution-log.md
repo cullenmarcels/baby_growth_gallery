@@ -4,7 +4,7 @@ type: execution_log
 title: "家庭身份基础执行记录"
 status: open
 created_at: 2026-09-11T10:21:26+08:00
-updated_at: 2026-09-11T14:48:30+08:00
+updated_at: 2026-09-11T14:50:00+08:00
 plan_id: PLAN-20260911-X27F6QNT
 related_ids: [PLAN-20260911-X27F6QNT, DES-20260911-9Z3KRKCQ, SPEC-20260911-3YV4GCRZ]
 supersedes: []
@@ -27,6 +27,8 @@ superseded_by: []
 | --- | --- | --- | --- |
 | 2026-09-11T10:21:26+08:00 | — | confirmed | 用户明确要求实施完整 Plan B。 |
 | 2026-09-11T10:21:26+08:00 | confirmed | in_progress | 远端、工作树、基线和 owned scope 门禁通过。 |
+| 2026-09-11T14:49:00+08:00 | in_progress | in_review | 固定候选 `3b8b92f…` 和 v2 digest，候选工作树 clean。 |
+| 2026-09-11T14:50:00+08:00 | in_review | in_regression | 63 条固定 Rule 无 FAIL/UNVERIFIED，正式 Review 通过。 |
 
 ## 实施记录
 
@@ -60,3 +62,10 @@ superseded_by: []
 - 新增 5 项 Family Web 组件集成测试，覆盖 onboarding 模式/字段错误、mutation 服务错误、无家庭跳转、MEMBER 权限隐藏与空动态，以及家庭访问失败的安全错误状态；全部复用现有 Vitest、Testing Library 和 React Query 测试能力，不新增依赖。
 - 使用回滚事务实测家庭数据库级联：删除 Family 后 Membership、Invitation、Activity 计数均为 0，随后 ROLLBACK，不留下审查数据。
 - 补强后 `pnpm validate` PASS / exit 0；使用 `bgg-planb-review-a0acfe9` 隔离前缀的三视口完整 E2E 为 28 passed、23 skipped、0 failed。
+
+## Review 证据
+
+- 最终 Review 候选：`3b8b92fdcf3ed6eaa575c35c3ab2466152d0b673`。
+- v2 owned-scope digest：`1C58DCEDEFDF3BCAC991FAC4EB5AAE029DB3F4673CB2DFA587F878B6DDBBBA6E`。
+- 所有 63 条固定 Rule 均为 PASS 或有触发条件依据的 NOT_APPLICABLE；无 FAIL/UNVERIFIED。
+- 远端分支尚未推送、PR 尚未创建，CI 如实为 pending；Review 只覆盖本地 feature 候选。
