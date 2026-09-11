@@ -2,7 +2,7 @@
 id: PLAN-20260910-JBD9BWHZ-STATE
 type: plan_state
 plan_id: PLAN-20260910-JBD9BWHZ
-status: acceptance_pending
+status: archived
 repository_mode: git_remote
 remote_name: origin
 integration_target: origin/develop
@@ -15,12 +15,12 @@ owned_paths: [.github/workflows/quality.yml, AGENTS.md, README.md, package.json,
 overlapping_plan_ids: []
 reviewed_commit: b8a36f4795c0378fe6652fc249ade83dc1c47104
 reviewed_scope_digest: 042C04A117C6B02B7FAC7264A32B81994C012B6AAE15B7BA468CD0A8AD1DE27D
-accepted_commit: null
-accepted_scope_digest: null
-integrated_commit: null
-integrated_scope_digest: null
+accepted_commit: ec39b105cd868fb08132a1f076d5161072f7fc5b
+accepted_scope_digest: B20F1287996C98151E1CDBC5BFA8A7368387D107AC8B15CFCE161F385B538801
+integrated_commit: 7354720b400f098e539b65a6211756aaffa6b21e
+integrated_scope_digest: B20F1287996C98151E1CDBC5BFA8A7368387D107AC8B15CFCE161F385B538801
 ---
 
 # Plan State
 
-修订候选 `b8a36f4795c0378fe6652fc249ade83dc1c47104` 的 Review 与独立 Regression 均已通过，且 PR #21 三项远端检查全部成功；当前等待用户对该候选进行人工试玩与明确验收。
+修订候选 `b8a36f4795c0378fe6652fc249ade83dc1c47104` 的 Review 与独立 Regression 通过；用户试玩后明确验收该实现候选并授权合并 PR #21。最终 PR Head `ec39b105…` 只增加 Review/Regression 证据，无产品代码差异；其与 `origin/develop@7354720b…` 的 accepted/integrated v2 digest 相同，集成复验及 develop 远端 CI 通过，Plan 已归档。
