@@ -10,6 +10,7 @@ declare module 'express-session' {
     absoluteExpiresAt?: number;
     idleTimeoutMs?: number;
     returnPath?: string;
+    activeFamilyId?: string;
   }
 }
 

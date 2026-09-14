@@ -11,6 +11,12 @@ function typeForSchema(schema, indent = '      ') {
     const name = schema.$ref.split('/').at(-1);
     return `components['schemas']['${name}']${nullable}`;
   }
+  if (schema.oneOf) {
+    return `(${schema.oneOf.map((entry) => typeForSchema(entry, indent)).join(' | ')})${nullable}`;
+  }
+  if (schema.allOf) {
+    return `(${schema.allOf.map((entry) => typeForSchema(entry, indent)).join(' & ')})${nullable}`;
+  }
   if (schema.enum)
     return `${schema.enum.map((value) => JSON.stringify(value)).join(' | ')}${nullable}`;
   if (schema.type === 'array') return `Array<${typeForSchema(schema.items, indent)}>${nullable}`;
@@ -55,6 +61,38 @@ function requestBodyType(requestBody, indent) {
   return `      requestBody: {\n        content: {\n${entries.join('\n')}\n        };\n      };\n`;
 }
 
+function parametersType(parameters = []) {
+  const groups = new Map();
+  for (const parameter of parameters) {
+    if (
+      !parameter ||
+      parameter.$ref ||
+      !['path', 'query', 'header', 'cookie'].includes(parameter.in)
+    ) {
+      continue;
+    }
+    const entries = groups.get(parameter.in) ?? [];
+    entries.push(parameter);
+    groups.set(parameter.in, entries);
+  }
+  if (!groups.size) return '';
+  const lines = [...groups.entries()]
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([location, entries]) => {
+      const requiredGroup = entries.some((parameter) => parameter.required);
+      const properties = entries
+        .sort((left, right) => left.name.localeCompare(right.name))
+        .map(
+          (parameter) =>
+            `          ${JSON.stringify(parameter.name)}${parameter.required ? '' : '?'}: ${typeForSchema(parameter.schema, '            ')};`,
+        )
+        .join('\n');
+      return `        ${JSON.stringify(location)}${requiredGroup ? '' : '?'}: {\n${properties}\n        };`;
+    })
+    .join('\n');
+  return `      parameters: {\n${lines}\n      };\n`;
+}
+
 const schemas = Object.entries(document.components?.schemas ?? {})
   .sort(([left], [right]) => left.localeCompare(right))
   .map(([name, schema]) => `    ${JSON.stringify(name)}: ${typeForSchema(schema, '      ')};`)
@@ -67,6 +105,10 @@ const paths = Object.entries(document.paths ?? {})
       .filter(([method]) => ['get', 'post', 'put', 'patch', 'delete'].includes(method))
       .sort(([left], [right]) => left.localeCompare(right))
       .map(([method, operation]) => {
+        const parameters = parametersType([
+          ...(pathItem.parameters ?? []),
+          ...(operation.parameters ?? []),
+        ]);
         const requestBody = operation.requestBody
           ? requestBodyType(operation.requestBody, '          ')
           : '';
@@ -77,7 +119,7 @@ const paths = Object.entries(document.paths ?? {})
               `        ${JSON.stringify(status)}: ${responseType(response, '            ')};`,
           )
           .join('\n');
-        return `    ${method}: {\n${requestBody}      responses: {\n${responses}\n      };\n    };`;
+        return `    ${method}: {\n${parameters}${requestBody}      responses: {\n${responses}\n      };\n    };`;
       })
       .join('\n');
     return `  ${JSON.stringify(path)}: {\n${methods}\n  };`;

@@ -1,0 +1,716 @@
+.shell {
+  min-height: 100vh;
+  background: var(--color-bg);
+}
+.header {
+  position: sticky;
+  z-index: 20;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  min-height: 72px;
+  padding: 0 clamp(20px, 5vw, 76px);
+  background: var(--color-card);
+  border-bottom: 1px solid var(--color-border);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-text-strong);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.brand > span,
+.heroIcon,
+.familyMark {
+  display: grid;
+  place-items: center;
+  color: var(--color-card);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  border-radius: 50%;
+}
+.brand > span {
+  width: 36px;
+  height: 36px;
+}
+.desktopNav {
+  display: flex;
+  align-items: stretch;
+  align-self: stretch;
+  gap: 4px;
+  margin: auto;
+}
+.desktopNav a {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 12px;
+  color: var(--color-text-sub);
+  font-size: 14px;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+.desktopNav a[aria-current='page'] {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+.headerActions {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.familySwitch,
+.iconButton,
+.mobileMenuButton {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 0 13px;
+  color: var(--color-text-strong);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+.iconButton,
+.mobileMenuButton {
+  width: 40px;
+  padding: 0;
+  justify-content: center;
+}
+.mobileMenuButton {
+  display: none;
+}
+.switchMenu {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  display: grid;
+  width: 250px;
+  padding: 10px;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+.switchMenu p {
+  margin: 6px 10px;
+  color: var(--color-text-sub);
+  font-size: 12px;
+  font-weight: 700;
+}
+.switchMenu button,
+.switchMenu a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 42px;
+  padding: 0 10px;
+  color: var(--color-text-default);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: left;
+  text-decoration: none;
+}
+.switchMenu button:hover,
+.switchMenu a:hover {
+  background: color-mix(in srgb, var(--color-primary) 9%, var(--color-card));
+}
+.mobileLogout {
+  display: none !important;
+}
+.globalNotice,
+.inlineNotice {
+  padding: 12px 20px;
+  color: var(--color-error);
+  background: var(--color-error-soft);
+  text-align: center;
+}
+.inlineNotice {
+  margin-bottom: 18px;
+  border-radius: var(--radius-sm);
+}
+.main {
+  width: min(100%, 1280px);
+  margin: auto;
+  padding: clamp(20px, 4vw, 52px);
+}
+.mobileTabs {
+  display: none;
+}
+.onboarding,
+.comingSoon {
+  width: min(100%, 690px);
+  margin: clamp(12px, 6vh, 70px) auto;
+  text-align: center;
+}
+.heroIcon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 18px;
+}
+.eyebrow {
+  margin: 0 0 8px;
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+.onboarding h1,
+.familyHero h1,
+.comingSoon h1 {
+  margin: 0;
+  color: var(--color-text-strong);
+  font-size: clamp(28px, 4vw, 44px);
+}
+.lead {
+  color: var(--color-text-sub);
+  line-height: 1.8;
+}
+.modeTabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 28px auto 12px;
+  padding: 5px;
+  background: color-mix(in srgb, var(--color-border) 70%, transparent);
+  border-radius: var(--radius-md);
+}
+.modeTabs button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  color: var(--color-text-sub);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.modeTabs button[aria-selected='true'] {
+  color: var(--color-text-strong);
+  background: var(--color-card);
+  box-shadow: var(--shadow-card);
+}
+.formCard,
+.panel,
+.familyHero,
+.comingSoon {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+.formCard {
+  display: grid;
+  gap: 8px;
+  padding: clamp(24px, 4vw, 40px);
+  text-align: left;
+}
+.formCard label {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+  color: var(--color-text-strong);
+  font-weight: 700;
+}
+.formCard input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  color: var(--color-text-strong);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+.formCard input:focus {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+.primaryButton,
+.secondaryButton,
+.dangerButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 17px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+.primaryButton {
+  margin-top: 12px;
+  color: var(--color-card);
+  background: var(--color-primary);
+  border: 0;
+}
+.secondaryButton {
+  color: var(--color-text-strong);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+}
+.dangerButton {
+  color: var(--color-card);
+  background: var(--color-error);
+  border: 0;
+}
+.primaryButton:disabled,
+.secondaryButton:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.hint {
+  color: var(--color-text-sub);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.fieldError,
+.formError,
+.errorText {
+  color: var(--color-error);
+  font-size: 13px;
+}
+.formError {
+  padding: 12px;
+  background: var(--color-error-soft);
+  border-radius: var(--radius-sm);
+}
+.familyPage {
+  display: grid;
+}
+.familyHero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: clamp(24px, 4vw, 40px);
+  margin-bottom: 22px;
+}
+.familyHero h1 {
+  font-size: clamp(28px, 4vw, 40px);
+}
+.familyHero p:last-child {
+  margin-bottom: 0;
+  color: var(--color-text-sub);
+}
+.familyMark {
+  width: 62px;
+  height: 62px;
+}
+.familyGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.72fr);
+  gap: 20px;
+}
+.panel {
+  padding: clamp(20px, 3vw, 30px);
+}
+.activityPanel {
+  grid-column: 1/-1;
+}
+.panelHeading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+.panelHeading > span {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-card));
+  border-radius: var(--radius-sm);
+}
+.panelHeading h2 {
+  margin: 0;
+  color: var(--color-text-strong);
+  font-size: 19px;
+}
+.panelHeading p {
+  margin: 4px 0 0;
+  color: var(--color-text-sub);
+  font-size: 12px;
+}
+.memberList,
+.inviteList,
+.activityList {
+  display: grid;
+  gap: 10px;
+}
+.memberRow {
+  display: grid;
+  grid-template-columns: auto minmax(100px, 1fr) auto auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border-light);
+}
+.avatar {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  color: var(--color-card);
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  border-radius: 50%;
+}
+.memberRow > div {
+  display: grid;
+  gap: 3px;
+}
+.memberRow strong {
+  color: var(--color-text-strong);
+}
+.memberRow strong small {
+  margin-left: 6px;
+  padding: 2px 6px;
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-card));
+  border-radius: var(--radius-pill);
+}
+.memberRow > div span {
+  color: var(--color-text-sub);
+  font-size: 12px;
+}
+.memberRow select {
+  min-height: 36px;
+  color: var(--color-text-default);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+.roleBadge {
+  padding: 4px 8px;
+  color: var(--color-text-default);
+  font-size: 12px;
+  background: var(--color-border-light);
+  border-radius: var(--radius-pill);
+}
+.roleBadge[data-role='OWNER'] {
+  color: var(--color-primary);
+}
+.roleBadge[data-role='ADMIN'] {
+  color: var(--color-success);
+}
+.dangerIcon,
+.closeButton {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  color: var(--color-error);
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.tokenPanel {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 22px;
+  color: var(--color-text-default);
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-card));
+  border: 1px dashed var(--color-primary);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+.tokenPanel > span {
+  color: var(--color-error);
+  font-size: 12px;
+}
+.tokenPanel > strong {
+  color: var(--color-text-strong);
+  font-size: clamp(21px, 4vw, 28px);
+  letter-spacing: 0.12em;
+  user-select: all;
+}
+.tokenPanel > button:not(.closeButton) {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  color: var(--color-primary);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+.tokenPanel small {
+  color: var(--color-text-sub);
+}
+.closeButton {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+}
+.inviteList {
+  margin-top: 16px;
+}
+.inviteList > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--color-border-light);
+}
+.inviteList > div > div {
+  display: grid;
+  gap: 4px;
+}
+.inviteList strong {
+  color: var(--color-text-strong);
+  font-size: 13px;
+}
+.inviteList span {
+  color: var(--color-text-sub);
+  font-size: 12px;
+}
+.inviteList button {
+  color: var(--color-error);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.activityList article {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  padding: 10px 0 10px 3px;
+}
+.activityList article:not(:last-of-type)::before {
+  position: absolute;
+  top: 27px;
+  bottom: -12px;
+  left: 8px;
+  width: 1px;
+  background: var(--color-border);
+  content: '';
+}
+.activityDot {
+  z-index: 1;
+  width: 12px;
+  height: 12px;
+  margin-top: 5px;
+  background: var(--color-accent);
+  border: 3px solid var(--color-card);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--color-border);
+}
+.activityList article > div {
+  display: grid;
+  gap: 5px;
+}
+.activityList strong {
+  color: var(--color-text-strong);
+  font-size: 14px;
+}
+.activityList time,
+.endText {
+  color: var(--color-text-sub);
+  font-size: 12px;
+}
+.endText {
+  text-align: center;
+}
+.emptyState,
+.pageState {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 40px 16px;
+  color: var(--color-text-sub);
+  text-align: center;
+}
+.pageState {
+  min-height: 40vh;
+  place-content: center;
+}
+.compactState {
+  min-height: 120px;
+  padding: 20px;
+}
+.pageState a,
+.comingSoon a {
+  color: var(--color-primary);
+}
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.comingSoon {
+  padding: clamp(34px, 6vw, 70px);
+}
+.comingSoon > span {
+  display: grid;
+  width: 66px;
+  height: 66px;
+  margin: 0 auto 18px;
+  place-items: center;
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-card));
+  border-radius: 50%;
+}
+.comingSoon > p:not(.eyebrow) {
+  max-width: 450px;
+  margin: 16px auto 24px;
+  color: var(--color-text-sub);
+  line-height: 1.8;
+}
+.dialogBackdrop {
+  position: fixed;
+  z-index: 50;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: color-mix(in srgb, var(--color-text-strong) 45%, transparent);
+}
+.dialog {
+  width: min(100%, 430px);
+  padding: 26px;
+  background: var(--color-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+.dialog h2 {
+  margin-top: 0;
+  color: var(--color-text-strong);
+}
+.dialog p {
+  color: var(--color-text-sub);
+  line-height: 1.7;
+}
+.dialog > div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+}
+@media (max-width: 1023px) {
+  .header {
+    min-height: 60px;
+    padding: 0 16px;
+  }
+  .desktopNav,
+  .familySwitch,
+  .iconButton {
+    display: none;
+  }
+  .brand {
+    margin-right: auto;
+  }
+  .mobileMenuButton,
+  .mobileTabs {
+    display: flex;
+  }
+  .switchMenu {
+    position: fixed;
+    top: 62px;
+    right: 12px;
+  }
+  .mobileLogout {
+    display: flex !important;
+  }
+  .main {
+    padding: 24px 18px 94px;
+  }
+  .mobileTabs {
+    position: fixed;
+    z-index: 20;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    justify-content: space-around;
+    min-height: 68px;
+    padding-bottom: env(safe-area-inset-bottom);
+    background: var(--color-card);
+    border-top: 1px solid var(--color-border);
+  }
+  .mobileTabs a {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    color: var(--color-text-sub);
+    font-size: 11px;
+    text-decoration: none;
+  }
+  .mobileTabs a[aria-current='page'] {
+    color: var(--color-primary);
+  }
+  .familyGrid {
+    grid-template-columns: 1fr;
+  }
+  .activityPanel {
+    grid-column: auto;
+  }
+}
+@media (max-width: 560px) {
+  .brand strong {
+    font-size: 14px;
+  }
+  .onboarding {
+    margin-top: 6px;
+  }
+  .onboarding h1 {
+    font-size: 28px;
+  }
+  .modeTabs {
+    margin-top: 22px;
+  }
+  .formCard {
+    padding: 22px 18px;
+  }
+  .familyHero {
+    align-items: flex-start;
+  }
+  .familyMark {
+    width: 48px;
+    height: 48px;
+  }
+  .memberRow {
+    grid-template-columns: auto minmax(90px, 1fr) auto;
+  }
+  .memberRow select,
+  .memberRow .dangerIcon {
+    grid-column: auto;
+  }
+  .roleBadge {
+    display: none;
+  }
+  .panel {
+    padding: 19px 16px;
+  }
+  .tokenPanel > strong {
+    font-size: 19px;
+  }
+  .dialog > div {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}

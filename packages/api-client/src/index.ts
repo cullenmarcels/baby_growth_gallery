@@ -4,6 +4,10 @@ export type {
   ApiClient,
   ApiClientOptions,
   ApiProblem,
+  ActiveInvitation,
+  FamilyActivityPage,
+  FamilyMember,
+  FamilySummary,
   ReadinessResponse,
   VerificationChallenge,
 } from './client.js';

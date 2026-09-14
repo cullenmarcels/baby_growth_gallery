@@ -75,7 +75,7 @@ export class AuthController {
     const input = parseBody(registerSchema, body);
     const account = await this.auth.register(input);
     await this.sessions.establish(request, account, 'register', false);
-    return this.sessions.summary(account);
+    return this.sessions.summaryForRequest(request, account);
   }
 
   @Post('login/password')
@@ -90,7 +90,7 @@ export class AuthController {
       request.ip ?? 'unknown',
     );
     await this.sessions.establish(request, account, 'password', input.remember);
-    return this.sessions.summary(account);
+    return this.sessions.summaryForRequest(request, account);
   }
 
   @Post('login/code')
@@ -101,14 +101,14 @@ export class AuthController {
     const input = parseBody(codeLoginSchema, body);
     const account = await this.auth.loginWithCode(input);
     await this.sessions.establish(request, account, 'code', input.remember);
-    return this.sessions.summary(account);
+    return this.sessions.summaryForRequest(request, account);
   }
 
   @Get('session')
   @ApiCookieAuth()
   @ApiResponse({ status: 200, type: AccountSummaryDto })
   async session(@Req() request: Request): Promise<AccountSummaryDto> {
-    return this.sessions.summary(await this.sessions.current(request));
+    return this.sessions.summaryForRequest(request, await this.sessions.current(request));
   }
 
   @Post('logout')

@@ -29,6 +29,10 @@ export function AuthProvider({ children }: PropsWithChildren): React.JSX.Element
         account: session.isError ? null : (session.data ?? null),
         isLoading: session.isPending,
         setAccount(account) {
+          if (!account) {
+            queryClient.removeQueries({ queryKey: ['families'] });
+            queryClient.removeQueries({ queryKey: ['family'] });
+          }
           queryClient.setQueryData(sessionKey, account);
         },
       }}
