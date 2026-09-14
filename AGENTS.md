@@ -86,7 +86,7 @@
 | 认证会话 Achievement | `docs/achievements/ACH-20260910-JBD9BWHZ-auth-session-foundation.md` | 已归档 | 账号、验证码、密码、Redis Session、响应式与 CI 完成证据 |
 | 家庭身份补充设计 | `docs/designs/DES-20260911-9Z3KRKCQ-family-identity-ui/design.md` | 已生效 | 家庭引导、应用壳、权限、邀请和动态响应式状态 |
 | 家庭身份规格 | `docs/specs/SPEC-20260911-3YV4GCRZ-family-identity/spec.md` | 已生效 | 多家庭、角色、单次邀请、Session 与活动契约 |
-| 家庭身份 Plan | `docs/plans/PLAN-20260911-X27F6QNT/plan.md` | 实施中 | Plan B 基线、owned scope、实现和验收门禁 |
+| 家庭邀请修订 Plan | `docs/plans/PLAN-20260911-JBANR2J8/plan.md` | 实施中 | 中文错误、撤销确认及 Plan B 新候选门禁 |
 
 执行任务时先用 `rules/INDEX.md` 定位阶段；进入 `docs/` 后读取 `docs/README.md` 和 `docs/INDEX.md`。不得仅按文件日期推断当前有效资料。
 

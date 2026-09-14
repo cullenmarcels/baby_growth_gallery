@@ -2,7 +2,7 @@
 id: PLAN-20260911-X27F6QNT-STATE
 type: plan_state
 plan_id: PLAN-20260911-X27F6QNT
-status: acceptance_pending
+status: superseded
 repository_mode: git_remote
 remote_name: origin
 integration_target: origin/develop
@@ -23,4 +23,4 @@ integrated_scope_digest: null
 
 # Plan State
 
-候选 `3b8b92fdcf3ed6eaa575c35c3ab2466152d0b673` 的 Review、独立 Regression 与 PR #22 三项 CI 均通过；保持 accepted/integrated 字段为空，等待用户在 Docker 候选上人工验收和明确合并授权。
+候选 `3b8b92fdcf3ed6eaa575c35c3ab2466152d0b673` 的 Review、独立 Regression 与 PR #22 三项 CI 均通过，但人工验收发现家庭错误提示会直接显示英文服务端详情，且撤销邀请缺少二次确认。原候选因此不再满足用户最新要求；本 Plan 由修订 Plan `PLAN-20260911-JBANR2J8` 替代，accepted/integrated 字段保持为空。

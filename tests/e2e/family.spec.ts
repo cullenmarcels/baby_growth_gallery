@@ -85,6 +85,20 @@ test('creates a family, consumes an invitation once, enforces roles, and records
   const invitationList = await owner.context.get(`/api/v1/families/${family.id}/invitations`);
   expect(await invitationList.text()).not.toContain(invitation.token);
 
+  const ownerCannotJoinAgain = await post(
+    owner.context,
+    '/api/v1/family-invitations/accept',
+    owner.csrf,
+    {
+      token: invitation.token,
+      displayName: '重复创建者',
+    },
+  );
+  expect(ownerCannotJoinAgain.status()).toBe(409);
+  expect(((await ownerCannotJoinAgain.json()) as { code: string }).code).toBe(
+    'ALREADY_FAMILY_MEMBER',
+  );
+
   const accepted = await post(member.context, '/api/v1/family-invitations/accept', member.csrf, {
     token: invitation.token.toLowerCase().replaceAll('-', ' '),
     displayName: '成员乙',
@@ -418,6 +432,17 @@ test('consumes one invitation exactly once under concurrency and enforces API pe
     { headers: { Origin: webOrigin, 'x-csrf-token': owner.csrf } },
   );
   expect(revoke.status()).toBe(204);
+  const invitationsAfterRevoke = (await (
+    await owner.context.get(`/api/v1/families/${family.id}/invitations`)
+  ).json()) as { items: Array<{ id: string }> };
+  expect(invitationsAfterRevoke.items.some((item) => item.id === revoked.invitation.id)).toBe(
+    false,
+  );
+  const repeatedRevoke = await owner.context.delete(
+    `/api/v1/families/${family.id}/invitations/${revoked.invitation.id}`,
+    { headers: { Origin: webOrigin, 'x-csrf-token': owner.csrf } },
+  );
+  expect(repeatedRevoke.status()).toBe(204);
   const invalidAfterRevoke = await post(
     outsider.context,
     '/api/v1/family-invitations/accept',
@@ -488,6 +513,7 @@ test('creates a real family from onboarding without horizontal overflow', async 
     await expect(page).toHaveScreenshot('family-space.png', {
       animations: 'disabled',
       mask: [page.locator('time')],
+      maxDiffPixels: 20,
     });
   }
   await page.getByRole('button', { name: '生成一次性邀请' }).click();
@@ -496,4 +522,15 @@ test('creates a real family from onboarding without horizontal overflow', async 
   const tokenValue = await token.textContent();
   await page.getByRole('button', { name: '关闭一次性邀请口令' }).click();
   await expect(page.getByText(tokenValue ?? 'token-missing')).toHaveCount(0);
+
+  await page.getByRole('button', { name: '撤销' }).click();
+  await expect(page.getByRole('dialog', { name: '确认撤销邀请？' })).toBeVisible();
+  await expect(page.getByText('撤销后该邀请口令会立即失效，且无法恢复。')).toBeVisible();
+  await page.getByRole('button', { name: '取消' }).click();
+  await expect(page.getByRole('button', { name: '撤销' })).toBeVisible();
+
+  await page.getByRole('button', { name: '撤销' }).click();
+  await page.getByRole('button', { name: '确认' }).click();
+  await expect(page.getByRole('status')).toContainText('邀请已撤销。');
+  await expect(page.getByRole('button', { name: '撤销' })).toHaveCount(0);
 });

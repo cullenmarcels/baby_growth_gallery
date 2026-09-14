@@ -4,7 +4,7 @@ type: execution_log
 title: "家庭身份基础执行记录"
 status: open
 created_at: 2026-09-11T10:21:26+08:00
-updated_at: 2026-09-11T15:01:00+08:00
+updated_at: 2026-09-11T15:18:21+08:00
 plan_id: PLAN-20260911-X27F6QNT
 related_ids: [PLAN-20260911-X27F6QNT, DES-20260911-9Z3KRKCQ, SPEC-20260911-3YV4GCRZ]
 supersedes: []
@@ -30,6 +30,13 @@ superseded_by: []
 | 2026-09-11T14:49:00+08:00 | in_progress | in_review | 固定候选 `3b8b92f…` 和 v2 digest，候选工作树 clean。 |
 | 2026-09-11T14:50:00+08:00 | in_review | in_regression | 63 条固定 Rule 无 FAIL/UNVERIFIED，正式 Review 通过。 |
 | 2026-09-11T15:01:00+08:00 | in_regression | acceptance_pending | 独立 Regression、Docker readiness 和 PR #22 三项 CI 全部通过。 |
+| 2026-09-11T15:18:21+08:00 | acceptance_pending | superseded | 人工验收发现页面英文错误和撤销邀请缺少二次确认；由修订 Plan `PLAN-20260911-JBANR2J8` 接续。 |
+
+## 人工验收发现
+
+- 家庭创建者使用自己刚生成的有效邀请尝试重复加入时，服务端正确返回 `409 ALREADY_FAMILY_MEMBER` 且不消费口令，但 Web 直接渲染英文 Problem Details，违反用户最新中文错误要求。
+- 邀请撤销 API 已持久化 `revokedAt`，接受接口也会拒绝已撤销口令；现有 UI 在点击“撤销”后立即执行，缺少用户要求的二次确认与更完整的幂等/列表证据。
+- 原候选和既有 Review/Regression 作为历史事实保留，不用于新候选验收。
 
 ## 实施记录
 

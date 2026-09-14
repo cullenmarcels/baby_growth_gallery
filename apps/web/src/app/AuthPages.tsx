@@ -1,4 +1,3 @@
-import { ApiClientError } from '@baby-growth-gallery/api-client';
 import { Eye, EyeOff } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm, type FieldValues, type Path, type UseFormSetError } from 'react-hook-form';
@@ -8,6 +7,7 @@ import { useAuth } from './AuthContext';
 import { api } from './api';
 import styles from './AuthPages.module.css';
 import { safeReturnPath } from './safe-return-path';
+import { userFacingError } from './user-facing-error';
 
 const phoneSchema = z
   .string()
@@ -18,20 +18,6 @@ const passwordSchema = z
   .min(6, '密码至少需要 6 个字符')
   .max(128, '密码不能超过 128 个字符');
 const codeSchema = z.string().regex(/^\d{6}$/, '请输入 6 位验证码');
-
-function errorCopy(error: unknown): string {
-  if (!(error instanceof ApiClientError)) return '网络连接失败，请稍后再试。';
-  const code = (error.problem as { code?: string } | undefined)?.code;
-  if (code === 'RATE_LIMITED') return '请求过于频繁，请稍后再试。';
-  if (code === 'VERIFICATION_INVALID') return '验证码无效或已过期，请重新确认。';
-  if (code === 'VERIFICATION_ATTEMPTS_EXHAUSTED') return '验证码错误次数已用尽，请重新获取。';
-  if (code === 'VERIFICATION_DELIVERY_UNAVAILABLE') return '验证码服务暂未配置，请稍后再试。';
-  if (code === 'CSRF_INVALID' || code === 'ORIGIN_INVALID') {
-    return '页面安全状态已更新，请重新提交。';
-  }
-  if (error.status === 401) return '手机号或登录凭据不正确。';
-  return '暂时无法完成操作，请稍后再试。';
-}
 
 function applyZodErrors<T extends FieldValues>(
   error: z.ZodError,
@@ -128,7 +114,7 @@ function useChallenge(purpose: 'REGISTER' | 'LOGIN' | 'RESET_PASSWORD') {
         setRemaining(result.resendAfterSeconds);
         setExpiresRemaining(result.expiresInSeconds);
       } catch (requestError) {
-        setError(errorCopy(requestError));
+        setError(userFacingError(requestError, '网络连接失败，请稍后再试。'));
       } finally {
         setRequesting(false);
       }
@@ -166,7 +152,7 @@ function PasswordLoginForm(): React.JSX.Element {
       const state = location.state as { returnPath?: unknown } | null;
       await navigate(safeReturnPath(state?.returnPath), { replace: true });
     } catch (error) {
-      setSummary(errorCopy(error));
+      setSummary(userFacingError(error, '暂时无法完成操作，请稍后再试。'));
     }
   }
 
@@ -241,7 +227,7 @@ function CodeLoginForm(): React.JSX.Element {
       const state = location.state as { returnPath?: unknown } | null;
       await navigate(safeReturnPath(state?.returnPath), { replace: true });
     } catch (error) {
-      setSummary(errorCopy(error));
+      setSummary(userFacingError(error, '暂时无法完成操作，请稍后再试。'));
     }
   }
 
@@ -379,7 +365,7 @@ export function RegisterPage(): React.JSX.Element {
       auth.setAccount(account);
       await navigate('/app', { replace: true });
     } catch (error) {
-      setSummary(errorCopy(error));
+      setSummary(userFacingError(error, '暂时无法完成操作，请稍后再试。'));
     }
   }
   return (
@@ -502,7 +488,7 @@ export function ForgotPasswordPage(): React.JSX.Element {
       });
       await navigate('/login', { replace: true, state: { resetComplete: true } });
     } catch (error) {
-      setSummary(errorCopy(error));
+      setSummary(userFacingError(error, '暂时无法完成操作，请稍后再试。'));
     }
   }
   return (

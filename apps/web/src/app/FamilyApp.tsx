@@ -32,6 +32,7 @@ import { z } from 'zod';
 import { useAuth } from './AuthContext';
 import { api } from './api';
 import styles from './FamilyApp.module.css';
+import { userFacingError } from './user-facing-error';
 
 type Role = FamilyMember['role'];
 
@@ -54,10 +55,6 @@ const familyKeys = {
   invitations: (id: string) => ['family', id, 'invitations'] as const,
   activities: (id: string) => ['family', id, 'activities'] as const,
 };
-
-function errorMessage(error: unknown, fallback = '操作失败，请稍后重试。'): string {
-  return error instanceof Error && error.message ? error.message : fallback;
-}
 
 function roleLabel(role: Role): string {
   return role === 'OWNER' ? '创建者' : role === 'ADMIN' ? '管理员' : '成员';
@@ -94,7 +91,7 @@ export function FamilyShell(): React.JSX.Element {
       void navigate(`/app/families/${familyId}`);
     },
     onError(error) {
-      setNotice(errorMessage(error, '切换家庭失败，请重试。'));
+      setNotice(userFacingError(error, '切换家庭失败，请重试。'));
     },
   });
 
@@ -105,7 +102,7 @@ export function FamilyShell(): React.JSX.Element {
       auth.setAccount(null);
       await navigate('/login', { replace: true });
     } catch (error) {
-      setNotice(errorMessage(error, '退出失败，请检查网络后重试。'));
+      setNotice(userFacingError(error, '退出失败，请检查网络后重试。'));
     }
   }
 
@@ -277,7 +274,7 @@ function CreateFamilyForm(): React.JSX.Element {
       await queryClient.invalidateQueries({ queryKey: familyKeys.all });
       await navigate(`/app/families/${family.id}`, { replace: true });
     } catch (error) {
-      setServerError(errorMessage(error));
+      setServerError(userFacingError(error));
     }
   });
 
@@ -339,7 +336,7 @@ function JoinFamilyForm(): React.JSX.Element {
       await queryClient.invalidateQueries({ queryKey: familyKeys.all });
       await navigate(`/app/families/${result.family.id}`, { replace: true });
     } catch (error) {
-      setServerError(errorMessage(error, '邀请口令无效或已失效。'));
+      setServerError(userFacingError(error, '邀请口令无效或已失效。'));
     }
   });
   return (
@@ -501,7 +498,7 @@ function MembersPanel({
       onNotice(success);
     } catch (error) {
       await refresh();
-      onNotice(errorMessage(error));
+      onNotice(userFacingError(error));
     }
   }
   function canRemove(member: FamilyMember): boolean {
@@ -589,7 +586,7 @@ function MembersPanel({
                     { replace: true },
                   );
                 } catch (error) {
-                  onNotice(errorMessage(error));
+                  onNotice(userFacingError(error));
                 }
               },
             })
@@ -625,6 +622,7 @@ function InvitationsPanel({
   const queryClient = useQueryClient();
   const [created, setCreated] = useState<{ token: string; expiresAt: string }>();
   const [creating, setCreating] = useState(false);
+  const [revokeTarget, setRevokeTarget] = useState<string>();
   const invitations = useQuery({
     queryKey: familyKeys.invitations(familyId),
     queryFn: () => api.listFamilyInvitations(familyId),
@@ -637,7 +635,7 @@ function InvitationsPanel({
       setCreated({ token: result.token, expiresAt: result.invitation.expiresAt });
       await queryClient.invalidateQueries({ queryKey: familyKeys.invitations(familyId) });
     } catch (error) {
-      onNotice(errorMessage(error));
+      onNotice(userFacingError(error));
     } finally {
       setCreating(false);
     }
@@ -657,7 +655,7 @@ function InvitationsPanel({
       await queryClient.invalidateQueries({ queryKey: familyKeys.invitations(familyId) });
       onNotice('邀请已撤销。');
     } catch (error) {
-      onNotice(errorMessage(error));
+      onNotice(userFacingError(error));
     }
   }
   return (
@@ -702,7 +700,7 @@ function InvitationsPanel({
                 {new Date(invitation.expiresAt).toLocaleDateString('zh-CN')} 到期
               </span>
             </div>
-            <button type="button" onClick={() => void revoke(invitation.id)}>
+            <button type="button" onClick={() => setRevokeTarget(invitation.id)}>
               撤销
             </button>
           </div>
@@ -711,6 +709,18 @@ function InvitationsPanel({
           <p className={styles.hint}>当前没有待使用的邀请。</p>
         ) : null}
       </div>
+      {revokeTarget ? (
+        <ConfirmDialog
+          title="确认撤销邀请？"
+          message="撤销后该邀请口令会立即失效，且无法恢复。"
+          onCancel={() => setRevokeTarget(undefined)}
+          onConfirm={async () => {
+            const invitationId = revokeTarget;
+            setRevokeTarget(undefined);
+            await revoke(invitationId);
+          }}
+        />
+      ) : null}
     </div>
   );
 }
