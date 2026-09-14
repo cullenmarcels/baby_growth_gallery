@@ -4,7 +4,7 @@ type: execution_log
 title: "家庭邀请中文错误与撤销确认执行记录"
 status: open
 created_at: 2026-09-11T15:18:21+08:00
-updated_at: 2026-09-14T10:42:45+08:00
+updated_at: 2026-09-14T10:49:33+08:00
 plan_id: PLAN-20260911-JBANR2J8
 related_ids: [PLAN-20260911-JBANR2J8, PLAN-20260911-X27F6QNT, DES-20260911-9Z3KRKCQ, SPEC-20260911-3YV4GCRZ]
 supersedes: []
@@ -27,6 +27,8 @@ superseded_by: []
 | 2026-09-11T15:18:21+08:00 | — | confirmed | 用户明确提出人工验收修订与长期中文错误规则。 |
 | 2026-09-11T15:18:21+08:00 | confirmed | in_progress | 远端、工作树、修订范围和规则入库门禁通过。 |
 | 2026-09-14T10:42:45+08:00 | in_progress | in_review | 中文错误、撤销确认与失效证据实现完成，候选前本地/Docker/三视口验证通过。 |
+| 2026-09-14T10:45:27+08:00 | in_review | in_regression | Review 绑定候选 `66344d7…` 与 v2 digest，64 条固定 Rule 无 FAIL/UNVERIFIED。 |
+| 2026-09-14T10:49:33+08:00 | in_regression | acceptance_pending | 独立 `pnpm validate`、Docker 全量三视口 E2E 与 readiness 全部通过；等待 PR 新候选 CI。 |
 
 ## 实施记录
 
@@ -45,3 +47,17 @@ superseded_by: []
 - 数据库 2 个 migration 均已应用且 schema up to date；本修订未改变数据库或 API 契约。
 - OpenAPI/client 连续两次重生成无 Git 差异；哈希读取与确定性检查通过。
 - 自动化前仅清除 `bgg-compose:rl:*` 临时限流键，不删除 Session、Challenge、账号、家庭或其他持久数据。
+
+## Review 证据
+
+- 候选提交：`66344d706a7b572d7c7af2b796af0bdd819d67c2`。
+- v2 owned-scope digest：`AA322064285FD1EEE1C3C650DA7602DB1E4E33FCB43D3C714890EFD940DFF7D3`。
+- 64 条固定 Rule 全部 PASS 或有触发条件依据的 NOT_APPLICABLE，无 FAIL/UNVERIFIED；PR 新候选 CI 如实为 pending。
+- 针对初次瞬时 500，再以 5 个并行 worker 重复“创建者自用 409 后成员成功加入”关键路径，5/5 通过。
+
+## 独立 Regression
+
+- Review 后重新执行 `pnpm validate`：exit 0；项目聚合校验 PASS。
+- 清除 32 个自动化临时限流键后，在最新 Docker 候选上独立执行全量 E2E：28 passed、23 designed skips、0 failed。
+- 回归结束后 API readiness 为 ok，PostgreSQL、Redis、objectStorage 均为 up；Docker 服务继续保留供用户试玩。
+- Regression 状态为 passed，但 PR #22 新提交 CI 仍为 pending，未将本地结果冒充远端结果。

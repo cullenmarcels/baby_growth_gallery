@@ -2,7 +2,7 @@
 id: PLAN-20260911-JBANR2J8-STATE
 type: plan_state
 plan_id: PLAN-20260911-JBANR2J8
-status: in_review
+status: acceptance_pending
 repository_mode: git_remote
 remote_name: origin
 integration_target: origin/develop
@@ -13,8 +13,8 @@ working_tree_state: clean
 scope_digest_version: 2
 owned_paths: [AGENTS.md, README.md, apps/web, packages/api-client, tests/e2e, docs/INDEX.md, docs/plans/PLAN-20260911-X27F6QNT/state.md, docs/plans/PLAN-20260911-X27F6QNT/execution-log.md, docs/plans/PLAN-20260911-JBANR2J8, rules/INDEX.md, rules/modules/implementation-quality.md, rules/archive/INDEX.md, rules/archive/MANIFEST.sha256, rules/archive/RULESET-IMPLEMENTATION-QUALITY]
 overlapping_plan_ids: []
-reviewed_commit: null
-reviewed_scope_digest: null
+reviewed_commit: 66344d706a7b572d7c7af2b796af0bdd819d67c2
+reviewed_scope_digest: AA322064285FD1EEE1C3C650DA7602DB1E4E33FCB43D3C714890EFD940DFF7D3
 accepted_commit: null
 accepted_scope_digest: null
 integrated_commit: null
@@ -23,4 +23,4 @@ integrated_scope_digest: null
 
 # Plan State
 
-用户人工验收问题已修复；代码、组件、真实 API、三视口、Docker 与全量 E2E 候选前验证通过，进入候选固定与正式 Review。原候选 Review/Regression 不沿用。
+候选 `66344d706a7b572d7c7af2b796af0bdd819d67c2` 的正式 Review 与独立 Regression 均通过；PR #22 尚待推送新候选并取得三项 CI 成功，成功后才可交付用户试玩。accepted/integrated 字段保持为空。
