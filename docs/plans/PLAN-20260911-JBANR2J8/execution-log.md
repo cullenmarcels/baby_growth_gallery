@@ -2,9 +2,9 @@
 id: PLAN-20260911-JBANR2J8-EXEC
 type: execution_log
 title: "家庭邀请中文错误与撤销确认执行记录"
-status: open
+status: closed
 created_at: 2026-09-11T15:18:21+08:00
-updated_at: 2026-09-14T10:53:44+08:00
+updated_at: 2026-09-14T13:50:23+08:00
 plan_id: PLAN-20260911-JBANR2J8
 related_ids: [PLAN-20260911-JBANR2J8, PLAN-20260911-X27F6QNT, DES-20260911-9Z3KRKCQ, SPEC-20260911-3YV4GCRZ]
 supersedes: []
@@ -29,6 +29,9 @@ superseded_by: []
 | 2026-09-14T10:42:45+08:00 | in_progress | in_review | 中文错误、撤销确认与失效证据实现完成，候选前本地/Docker/三视口验证通过。 |
 | 2026-09-14T10:45:27+08:00 | in_review | in_regression | Review 绑定候选 `66344d7…` 与 v2 digest，64 条固定 Rule 无 FAIL/UNVERIFIED。 |
 | 2026-09-14T10:49:33+08:00 | in_regression | acceptance_pending | 独立 `pnpm validate`、Docker 全量三视口 E2E 与 readiness 全部通过；等待 PR 新候选 CI。 |
+| 2026-09-14T13:31:00+08:00 | acceptance_pending | integration_pending | 用户明确验收 `8c740de…` 并授权合并 PR #22 到 develop。 |
+| 2026-09-14T13:31:59+08:00 | integration_pending | integration_review | PR #22 普通合并为 `origin/develop@b3f2b46…`；accepted/integrated v2 digest 完全相同。 |
+| 2026-09-14T13:50:23+08:00 | integration_review | archived | 集成静态门禁、migration、OpenAPI、Docker 三视口 E2E、readiness 和 develop CI 全部通过，Achievement 与归档哈希原子生成。 |
 
 ## 实施记录
 
@@ -67,3 +70,18 @@ superseded_by: []
 - 已普通推送功能候选与 Review/Regression 证据到现有 PR #22；目标保持 `develop`，未 merge、rebase、force push 或创建 Tag。
 - PR 证据头 `d3a785720ad8f09185e5b271358fc1e69c4f4a64`：`branch-flow-develop` PASS（3s）、`quality` PASS（1m6s）、`e2e-auth` PASS（1m19s）。
 - 记录 CI 的最终证据提交会再次触发检查；只有最终 PR head 三项仍成功才交付人工验收。
+
+## 人工验收、集成与归档
+
+- 最终 PR Head `8c740de3587abd7791b5415e54e315efb8cfaac9` 的 `branch-flow-develop`、`quality`、`e2e-auth` 全部成功；PR 为 OPEN/CLEAN 且目标精确为 `develop`。
+- 用户明确指示：“确认验收候选 8c740de，并授权合并 PR #22 到 develop”。
+- PR #22 于 `2026-09-14T05:31:59Z` 按授权使用普通 merge commit 合并，集成提交为 `b3f2b4682f2b7a831069eab147334b5183c7892b`；未 squash、rebase、force-push、删除分支或创建 Tag。
+- 验收 PR Head 与集成提交的 v2 owned-scope digest 均为 `F0A052EE1C47F58A63640EF1F51862246C351EED6BF59367EF86DCF2230856EA`，摘要差异为空，原人工确认继续有效。
+- `develop@b3f2b46…` 集成 `pnpm validate` PASS：lint、format、typecheck、API 20、Web 18、branch-flow 5、build 和项目校验全部成功。
+- 首次集成 `pnpm validate` 因 Windows 系统级 `core.autocrlf=true` 将新检出文件展开为 CRLF，Prettier 报 26 个文件；只归一化工作树换行后 `git diff`/暂存差异均为空，复跑通过，没有改变提交或摘要。
+- OpenAPI/client 连续两次重生成没有实际 Git 内容差异；Windows 换行状态经索引刷新恢复 clean。PostgreSQL 检出 2 个 migration，deploy 无 pending，schema up to date。
+- API/Web 使用 frozen lockfile 重新构建；网络响应较慢期间 pnpm 自动重试成功，最终镜像构建、API/Web 切换及 healthcheck 全部通过。
+- 首次直接执行 `pnpm e2e` 错用默认 5173 开发 Origin，而 Docker API 只允许预览 Origin `http://localhost:8080`，产生预期的 Origin/CSRF 403 连锁失败；未修改产品候选。
+- 按 Docker 回归契约设置 `STACK_BASE_URL=http://localhost:8080`、`E2E_API_BASE_URL=http://localhost:3000` 后，完整 51 项矩阵为 28 passed、23 designed skips、0 failed；覆盖 375/834/1440、认证、家庭、邀请、权限、并发、视觉与跨服务 readiness。
+- 集成前只删除 18 个 `bgg-compose:rl:*` 临时限流键；没有删除 Session、Challenge、账号、家庭、邀请码或数据卷。最终 readiness 为 ok，PostgreSQL、Redis、objectStorage 均为 up。
+- 合并触发的 GitHub Actions Quality run `34809978508` 在精确的 `develop@b3f2b46…` 上为 success。

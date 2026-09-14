@@ -4,7 +4,7 @@
 
 - 最后协议更新：`2026-09-08T11:34:45+08:00`
 - 索引状态：`consistent`
-- 当前阶段：工程基础和五层分支治理已归档；`PLAN-20260910-GK1XDGCG` 账号认证与 Redis 会话处于 Development。
+- 当前阶段：工程基础、五层分支治理、账号认证与 Redis 会话、家庭身份与邀请基础均已归档；下一业务阶段尚未规划。
 - 仓库协作状态：不缓存；每次运行 [`repository-preflight.ps1`](../hooks/repository-preflight.ps1)。分支治理验收集成提交为 `origin/main@19590f9db9bc55c85e9beb3608bdaec684a6a8a3`；归档工作分支为 `feature/branch-governance-archive`。
 - 归档基线：[`ARCHIVE.sha256`](./ARCHIVE.sha256)
 - 生成命令：`hooks/update-indexes.ps1 -Write`；核对命令：`hooks/update-indexes.ps1 -Check`
@@ -29,7 +29,7 @@
 | Plan ID | 标题 | 状态 | 仓库模式 | 基线提交 | 候选提交 | 集成提交 | Review | Regression | 验收有效性 | Achievement |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 <!-- GENERATED:BEGIN PLANS -->
-| [PLAN-20260911-JBANR2J8](./plans/PLAN-20260911-JBANR2J8/plan.md) | 修订家庭邀请中文错误与撤销确认 | `acceptance_pending` | `git_remote` | `805a979d3927c828127c441b3fd5c07e48aa8768` | `66344d706a7b572d7c7af2b796af0bdd819d67c2` | `-` | [passed](./plans/PLAN-20260911-JBANR2J8/review-report.md) | [passed](./plans/PLAN-20260911-JBANR2J8/regression-report.md) | pending | - |
+| [PLAN-20260911-JBANR2J8](./plans/PLAN-20260911-JBANR2J8/plan.md) | 修订家庭邀请中文错误与撤销确认 | `archived` | `git_remote` | `805a979d3927c828127c441b3fd5c07e48aa8768` | `66344d706a7b572d7c7af2b796af0bdd819d67c2` | `b3f2b4682f2b7a831069eab147334b5183c7892b` | [passed](./plans/PLAN-20260911-JBANR2J8/review-report.md) | [passed](./plans/PLAN-20260911-JBANR2J8/regression-report.md) | confirmed 2026-09-14T13:31:00+08:00 | [ACH-20260911-JBANR2J8](./achievements/ACH-20260911-JBANR2J8-family-identity-foundation.md) |
 | [PLAN-20260911-X27F6QNT](./plans/PLAN-20260911-X27F6QNT/plan.md) | 建立家庭身份、成员权限、单次邀请与家庭动态基础 | `superseded` | `git_remote` | `701f26aef605ccac7c1bded89fcb0e3c5e53a54c` | `3b8b92fdcf3ed6eaa575c35c3ab2466152d0b673` | `-` | [passed](./plans/PLAN-20260911-X27F6QNT/review-report.md) | [passed](./plans/PLAN-20260911-X27F6QNT/regression-report.md) | pending | - |
 | [PLAN-20260910-JBD9BWHZ](./plans/PLAN-20260910-JBD9BWHZ/plan.md) | 修订认证密码最小长度并重新形成候选 | `archived` | `git_remote` | `1b22fa7b97155dd616442e1a34f4453b2cacfc39` | `b8a36f4795c0378fe6652fc249ade83dc1c47104` | `7354720b400f098e539b65a6211756aaffa6b21e` | [passed](./plans/PLAN-20260910-JBD9BWHZ/review-report.md) | [passed](./plans/PLAN-20260910-JBD9BWHZ/regression-report.md) | confirmed 2026-09-11T09:31:53+08:00 | [ACH-20260910-JBD9BWHZ](./achievements/ACH-20260910-JBD9BWHZ-auth-session-foundation.md) |
 | [PLAN-20260910-GK1XDGCG](./plans/PLAN-20260910-GK1XDGCG/plan.md) | 建立手机号认证与 Redis 服务端会话 | `superseded` | `git_remote` | `1b22fa7b97155dd616442e1a34f4453b2cacfc39` | `72e30f1f18245a6e0db18cac519ac3faf20885d2` | `-` | [passed](./plans/PLAN-20260910-GK1XDGCG/review-report.md) | [pending](./plans/PLAN-20260910-GK1XDGCG/regression-report.md) | pending | - |
@@ -49,6 +49,7 @@
 | Achievement ID | Plan ID | 标题 | 确认时间 | 归档文件 |
 | --- | --- | --- | --- | --- |
 <!-- GENERATED:BEGIN ACHIEVEMENTS -->
+| `ACH-20260911-JBANR2J8` | [PLAN-20260911-JBANR2J8](./plans/PLAN-20260911-JBANR2J8/plan.md) | 家庭身份、成员权限、单次邀请与家庭动态基础：完成归档 | 2026-09-14T13:31:00+08:00 | [archive](./achievements/ACH-20260911-JBANR2J8-family-identity-foundation.md) |
 | `ACH-20260910-JBD9BWHZ` | [PLAN-20260910-JBD9BWHZ](./plans/PLAN-20260910-JBD9BWHZ/plan.md) | 手机号认证与 Redis 服务端会话：完成归档 | 2026-09-11T09:31:53+08:00 | [archive](./achievements/ACH-20260910-JBD9BWHZ-auth-session-foundation.md) |
 | `ACH-20260909-PCVDMF5G` | [PLAN-20260909-PCVDMF5G](./plans/PLAN-20260909-PCVDMF5G/plan.md) | 五层分支治理与目标隔离晋升保护：完成归档 | 2026-09-10T09:56:49+08:00 | [archive](./achievements/ACH-20260909-PCVDMF5G-branch-governance.md) |
 | `ACH-20260908-KP1B7472` | [PLAN-20260908-KP1B7472](./plans/PLAN-20260908-KP1B7472/plan.md) | 可启动的前后端分离 Monorepo 工程基础：完成归档 | 2026-09-09T15:39:42+08:00 | [archive](./achievements/ACH-20260908-KP1B7472-project-foundation.md) |

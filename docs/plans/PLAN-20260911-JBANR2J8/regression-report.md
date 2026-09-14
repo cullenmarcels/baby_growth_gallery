@@ -4,11 +4,15 @@ type: regression_report
 title: "家庭邀请中文错误与撤销确认候选回归"
 status: passed
 created_at: 2026-09-14T10:49:33+08:00
-updated_at: 2026-09-14T10:53:44+08:00
+updated_at: 2026-09-14T13:50:23+08:00
 plan_id: PLAN-20260911-JBANR2J8
-phase: candidate
+phase: candidate_and_integration
 reviewed_commit: 66344d706a7b572d7c7af2b796af0bdd819d67c2
 reviewed_scope_digest: AA322064285FD1EEE1C3C650DA7602DB1E4E33FCB43D3C714890EFD940DFF7D3
+accepted_commit: 8c740de3587abd7791b5415e54e315efb8cfaac9
+accepted_scope_digest: F0A052EE1C47F58A63640EF1F51862246C351EED6BF59367EF86DCF2230856EA
+integrated_commit: b3f2b4682f2b7a831069eab147334b5183c7892b
+integrated_scope_digest: F0A052EE1C47F58A63640EF1F51862246C351EED6BF59367EF86DCF2230856EA
 ci_status: passed
 related_ids: [PLAN-20260911-JBANR2J8, PLAN-20260911-X27F6QNT, ACH-20260910-JBD9BWHZ]
 supersedes: []
@@ -55,3 +59,17 @@ superseded_by: []
 - PR #22 的 `branch-flow-develop`、`quality`、`e2e-auth` 均已通过；最终证据提交仍需再次取得相同检查结果。
 - 未覆盖真实短信、正式法律文本和非 Chromium 浏览器；这些均为既有明确非目标/上线边界，不被本修订宣称已完成。
 - 本报告仅是 candidate regression；合并到 `origin/develop` 后仍必须在 integrated commit 上独立复验。
+
+## 集成 Regression
+
+| 检查 | 结果 | 证据 |
+| --- | --- | --- |
+| 集成身份 | PASS | 本地与远端均为 `develop@b3f2b468…`；PR #22 状态 MERGED，最终 PR Head `8c740de…` 是集成提交父提交。 |
+| 验收摘要 | PASS | accepted/integrated v2 digest 均为 `F0A052EE…0856EA`，合并未改变验收范围。 |
+| 项目总门禁 | PASS | `pnpm validate` exit 0：lint、format、typecheck、API 20、Web 18、branch-flow 5、build、项目校验通过。首次 Windows CRLF 格式失败没有 Git 内容差异，归一化工作树后通过。 |
+| OpenAPI/migration | PASS | OpenAPI/client 连续重生成无实际内容差异；2 个 migration 全部应用，schema up to date。 |
+| Docker/依赖 | PASS | frozen-lockfile API/Web 镜像构建成功；PostgreSQL、Redis、MinIO、API、Web 正常，readiness 三依赖为 up。 |
+| 三视口 E2E | PASS | 明确使用 Docker URL 后 28 passed、23 designed skips、0 failed；首次默认 5173 Origin 运行产生 403，确认是测试调用配置错误而非产品回归。 |
+| 远端 CI | PASS | `develop@b3f2b46…` 的 GitHub Actions Quality run `34809978508` 为 success。 |
+
+集成 Regression 结论为 `passed`。候选阶段记录的瞬时接受邀请 500 在集成全量并行矩阵中没有复现；真实短信、正式法律文本与非 Chromium 浏览器仍是明确非目标，不扩大本次完成声明。
