@@ -23,4 +23,4 @@ integrated_scope_digest: null
 
 # Plan State
 
-候选 `66344d706a7b572d7c7af2b796af0bdd819d67c2` 的正式 Review 与独立 Regression 均通过；PR #22 尚待推送新候选并取得三项 CI 成功，成功后才可交付用户试玩。accepted/integrated 字段保持为空。
+候选 `66344d706a7b572d7c7af2b796af0bdd819d67c2` 的正式 Review、独立 Regression 与 PR #22 三项 CI 均通过；等待最终证据头复验后交付用户试玩。accepted/integrated 字段保持为空。

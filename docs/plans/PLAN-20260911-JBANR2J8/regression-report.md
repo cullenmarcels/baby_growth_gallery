@@ -4,12 +4,12 @@ type: regression_report
 title: "家庭邀请中文错误与撤销确认候选回归"
 status: passed
 created_at: 2026-09-14T10:49:33+08:00
-updated_at: 2026-09-14T10:49:33+08:00
+updated_at: 2026-09-14T10:53:44+08:00
 plan_id: PLAN-20260911-JBANR2J8
 phase: candidate
 reviewed_commit: 66344d706a7b572d7c7af2b796af0bdd819d67c2
 reviewed_scope_digest: AA322064285FD1EEE1C3C650DA7602DB1E4E33FCB43D3C714890EFD940DFF7D3
-ci_status: pending
+ci_status: passed
 related_ids: [PLAN-20260911-JBANR2J8, PLAN-20260911-X27F6QNT, ACH-20260910-JBD9BWHZ]
 supersedes: []
 superseded_by: []
@@ -52,6 +52,6 @@ superseded_by: []
 
 - 候选前首次 Docker 并行运行曾出现一次接受邀请 500；其后单项、两轮完整并行家庭专项、全量 Regression 及 5 路并行重复均通过，日志没有新的 unhandled failure。当前判定为不可复现瞬时环境/事务失败，不阻断候选，但集成 Regression 仍须观察。
 - 自动化每轮只清除 `bgg-compose:rl:*` 临时限流计数，未清理 Session、账号、家庭或持久业务数据。
-- CI 尚未运行新提交，状态为 pending；CI 失败会使本报告失效并返回 Development。
+- PR #22 的 `branch-flow-develop`、`quality`、`e2e-auth` 均已通过；最终证据提交仍需再次取得相同检查结果。
 - 未覆盖真实短信、正式法律文本和非 Chromium 浏览器；这些均为既有明确非目标/上线边界，不被本修订宣称已完成。
 - 本报告仅是 candidate regression；合并到 `origin/develop` 后仍必须在 integrated commit 上独立复验。

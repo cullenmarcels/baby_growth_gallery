@@ -4,12 +4,12 @@ type: review_report
 title: "家庭邀请中文错误与撤销确认 Review"
 status: passed
 created_at: 2026-09-14T10:45:27+08:00
-updated_at: 2026-09-14T10:45:27+08:00
+updated_at: 2026-09-14T10:53:44+08:00
 plan_id: PLAN-20260911-JBANR2J8
 repository_mode: git_remote
 reviewed_commit: 66344d706a7b572d7c7af2b796af0bdd819d67c2
 reviewed_scope_digest: AA322064285FD1EEE1C3C650DA7602DB1E4E33FCB43D3C714890EFD940DFF7D3
-ci_status: pending
+ci_status: passed
 related_ids: [PLAN-20260911-JBANR2J8, PLAN-20260911-X27F6QNT, SPEC-20260911-3YV4GCRZ, DES-20260911-9Z3KRKCQ]
 supersedes: []
 superseded_by: []
@@ -21,7 +21,7 @@ superseded_by: []
 
 `PASS`。Review 绑定已提交候选 `66344d706a7b572d7c7af2b796af0bdd819d67c2`，按 `scope_digest_version: 2` 对修订 Plan 的 `owned_paths` 重算为 `AA322064285FD1EEE1C3C650DA7602DB1E4E33FCB43D3C714890EFD940DFF7D3`。64 条固定 Rule 均为 `PASS` 或有触发条件依据的 `NOT_APPLICABLE`，无 `FAIL`/`UNVERIFIED`。
 
-本结论只覆盖 feature 候选；PR #22 尚未推送此候选，远端 CI 如实为 pending。Review 不替代接下来的独立 Regression、用户试玩或集成复验。
+本结论只覆盖 feature 候选；PR #22 的 `branch-flow-develop`、`quality`、`e2e-auth` 在新候选证据头上全部通过。Review 不替代独立 Regression、用户试玩或集成复验。
 
 ## 需求、实现与安全核对
 
@@ -102,7 +102,7 @@ superseded_by: []
 | `TEST-006` | PASS | 回归矩阵含错误映射、撤销事务、认证、三视口、Docker 和偶发 500 观察。 |
 | `TEST-007` | PASS | 复用 Vitest/Testing Library/Playwright/Docker，无新增依赖。 |
 | `TEST-008` | PASS | 明确区分 candidate Review 与后续 Regression/integration。 |
-| `TEST-009` | NOT_APPLICABLE | 新候选尚未推送，CI pending，不伪造成功。 |
+| `TEST-009` | PASS | PR #22 的 branch-flow-develop、quality、e2e-auth 全部通过；失败仍会阻止验收。 |
 | `TEST-010` | PASS | 只声称当前 Windows Chromium 与 Docker 环境结果。 |
 | `RESP-001` | PASS | 375/834/1440 同步验证。 |
 | `RESP-002` | PASS | 确认框复用响应式主体组件，同期实现。 |

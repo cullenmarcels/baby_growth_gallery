@@ -4,7 +4,7 @@ type: execution_log
 title: "家庭邀请中文错误与撤销确认执行记录"
 status: open
 created_at: 2026-09-11T15:18:21+08:00
-updated_at: 2026-09-14T10:49:33+08:00
+updated_at: 2026-09-14T10:53:44+08:00
 plan_id: PLAN-20260911-JBANR2J8
 related_ids: [PLAN-20260911-JBANR2J8, PLAN-20260911-X27F6QNT, DES-20260911-9Z3KRKCQ, SPEC-20260911-3YV4GCRZ]
 supersedes: []
@@ -61,3 +61,9 @@ superseded_by: []
 - 清除 32 个自动化临时限流键后，在最新 Docker 候选上独立执行全量 E2E：28 passed、23 designed skips、0 failed。
 - 回归结束后 API readiness 为 ok，PostgreSQL、Redis、objectStorage 均为 up；Docker 服务继续保留供用户试玩。
 - Regression 状态为 passed，但 PR #22 新提交 CI 仍为 pending，未将本地结果冒充远端结果。
+
+## PR CI
+
+- 已普通推送功能候选与 Review/Regression 证据到现有 PR #22；目标保持 `develop`，未 merge、rebase、force push 或创建 Tag。
+- PR 证据头 `d3a785720ad8f09185e5b271358fc1e69c4f4a64`：`branch-flow-develop` PASS（3s）、`quality` PASS（1m6s）、`e2e-auth` PASS（1m19s）。
+- 记录 CI 的最终证据提交会再次触发检查；只有最终 PR head 三项仍成功才交付人工验收。
