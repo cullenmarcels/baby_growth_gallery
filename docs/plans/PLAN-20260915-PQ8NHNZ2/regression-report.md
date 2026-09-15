@@ -4,7 +4,7 @@ type: regression_report
 title: "多宝宝档案基础 Regression"
 status: passed
 created_at: 2026-09-15T10:21:58+08:00
-updated_at: 2026-09-15T16:00:27+08:00
+updated_at: 2026-09-15T16:05:41+08:00
 plan_id: PLAN-20260915-PQ8NHNZ2
 phase: candidate
 reviewed_commit: 5fdb3cfd89c4569f509e15788bc398a991836901
@@ -13,7 +13,7 @@ accepted_commit: null
 accepted_scope_digest: null
 integrated_commit: null
 integrated_scope_digest: null
-ci_status: pending
+ci_status: passed
 related_ids: [PLAN-20260915-PQ8NHNZ2, SPEC-20260915-8RKJ7RGM, DES-20260915-S2PV4FM8, ACH-20260911-JBANR2J8]
 supersedes: []
 superseded_by: []
@@ -25,7 +25,7 @@ superseded_by: []
 
 候选 Regression `passed`。本轮在正式 Review 之后独立执行，不复用 Review 的测试结论。影响链为：Prisma migration/约束 → Baby Policy/Service/维护任务 → Redis Session 当前家庭与当前宝宝修正 → OpenAPI/generated client → React Query family-scoped cache → 响应式宝宝页面；同时覆盖 Plan A 认证、CSRF、Session 和 Plan B 家庭、邀请、角色、活动与应用壳。
 
-远端 PR 尚未创建，`ci_status` 保持 `pending`；本地和 Docker 结果不冒充 GitHub Actions。用户尚未验收，accepted/integrated 字段保持 null。
+PR #23 已创建，目标为 `develop`。证据 Head `04427e7883521e8bf290076486b51608945af985` 的 `branch-flow-develop`、`quality`、`e2e-auth` 全部成功；记录本结果的最终证据提交会重新触发检查，因此交付人工验收前仍以最终 PR Head 的实时结果为准。用户尚未验收，accepted/integrated 字段保持 null。
 
 ## 候选检查
 
@@ -66,4 +66,4 @@ API 语义只在 1440 project 执行一次，避免对 viewport 无关契约做�
 - Docker Desktop 修复产生的四个 `*-stale-plan-c-20260915*` runtime 目录仍保留于 LocalAppData，未删除；它们不属于仓库、镜像、容器、volume 或业务数据，等待用户以后决定是否清理。
 - Node/Jest 上游 JSON import 与 Vite 502 kB chunk 建议仍为非阻断观察项；真实短信、正式法律文本、非 Chromium 浏览器及后续照片/里程碑/成长数据均是明确非目标。
 
-Regression 结论为 `passed`，但只有 PR 最终 Head 的 `branch-flow-develop`、`quality`、`e2e-auth` 全部成功，且用户针对该精确候选明确试玩验收后，才能进入 `integration_pending`。
+Regression 结论为 `passed`。证据 Head 三项 CI 已成功；只有最终 PR Head 的三项检查仍全部成功，且用户针对该精确候选明确试玩验收后，才能进入 `integration_pending`。

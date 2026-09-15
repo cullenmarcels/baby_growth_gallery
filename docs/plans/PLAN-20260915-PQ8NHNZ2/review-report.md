@@ -4,12 +4,12 @@ type: review_report
 title: "多宝宝档案基础 Review"
 status: passed
 created_at: 2026-09-15T10:21:58+08:00
-updated_at: 2026-09-15T15:52:05+08:00
+updated_at: 2026-09-15T16:05:41+08:00
 plan_id: PLAN-20260915-PQ8NHNZ2
 repository_mode: git_remote
 reviewed_commit: 5fdb3cfd89c4569f509e15788bc398a991836901
 reviewed_scope_digest: DCDF8DD68C6FC840A4A1B00CF64CCFF63B5FA2D1001E310A2A51B832C7C6024E
-ci_status: pending
+ci_status: passed
 related_ids: [PLAN-20260915-PQ8NHNZ2, SPEC-20260915-8RKJ7RGM, DES-20260915-S2PV4FM8]
 supersedes: []
 superseded_by: []
@@ -21,7 +21,7 @@ superseded_by: []
 
 `PASS`。Review 绑定已提交候选 `5fdb3cfd89c4569f509e15788bc398a991836901`，按 `scope_digest_version: 2` 对 Plan `owned_paths` 重算为 `DCDF8DD68C6FC840A4A1B00CF64CCFF63B5FA2D1001E310A2A51B832C7C6024E`。64 条固定 Rule 均为 `PASS` 或有触发条件依据的 `NOT_APPLICABLE`，无 `FAIL`/`UNVERIFIED`。
 
-本结论只覆盖 feature 候选的代码、文档和候选前验证；远端 PR CI 尚未创建，真实状态为 `pending`。Review 不替代独立 Regression、用户试玩、PR 合并授权或集成复验。
+本结论只覆盖 feature 候选的代码、文档和候选前验证。PR #23 的证据 Head `04427e7883521e8bf290076486b51608945af985` 上，`branch-flow-develop`、`quality`、`e2e-auth` 均已通过；记录本结果的最终证据提交会重新触发检查，仍须以最终 PR Head 的实时状态为准。Review 不替代独立 Regression、用户试玩、PR 合并授权或集成复验。
 
 ## 需求、实现与安全核对
 
@@ -88,7 +88,7 @@ superseded_by: []
 | `BRANCH-004` | NOT_APPLICABLE | 不修改远端 Ruleset、审批数或 required checks。 |
 | `BRANCH-005` | PASS | 未直接写 develop 或受保护分支。 |
 | `BRANCH-006` | PASS | 分支从刷新后的精确 develop 基线创建。 |
-| `BRANCH-007` | PASS | 本地 branch-flow 5 项通过；远端检查尚未创建并保持 pending。 |
+| `BRANCH-007` | PASS | 本地 branch-flow 5 项通过；PR #23 证据 Head 的 `branch-flow-develop`、`quality`、`e2e-auth` 全部通过。 |
 | `BRANCH-008` | NOT_APPLICABLE | 非长期分支晋升。 |
 | `BRANCH-009` | NOT_APPLICABLE | 不发布、不创建产品 Tag。 |
 | `BRANCH-010` | NOT_APPLICABLE | 不新增或修改 Ruleset。 |
@@ -107,7 +107,7 @@ superseded_by: []
 | `TEST-006` | PASS | 回归矩阵包含 Plan A/B、权限、Session、维护、migration、OpenAPI、Docker 与三视口。 |
 | `TEST-007` | PASS | 复用 Jest、Vitest、Playwright、Prisma 和 Docker，无新增依赖。 |
 | `TEST-008` | PASS | 本报告只声称 candidate Review，Regression/integration 单独记录。 |
-| `TEST-009` | PASS | 本地等价 CI 命令全部通过；PR CI 仍如实 pending，失败将阻止验收。 |
+| `TEST-009` | PASS | 本地等价 CI 命令和 PR #23 证据 Head 三项 CI 全部通过；最终证据提交仍须再次成功。 |
 | `TEST-010` | PASS | 只声称当前 Windows、Chromium、PostgreSQL/Redis/MinIO 与 Docker Desktop 实测结果。 |
 | `RESP-001` | PASS | 375/834/1440 同期实现并在完整 E2E 验证。 |
 | `RESP-002` | PASS | Baby 页面与 desktop/mobile 应用壳同一提交交付。 |

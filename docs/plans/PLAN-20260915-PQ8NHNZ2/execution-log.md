@@ -4,7 +4,7 @@ type: execution_log
 title: "多宝宝档案与当前宝宝会话执行记录"
 status: open
 created_at: 2026-09-15T10:21:58+08:00
-updated_at: 2026-09-15T16:00:27+08:00
+updated_at: 2026-09-15T16:05:41+08:00
 plan_id: PLAN-20260915-PQ8NHNZ2
 related_ids: [PLAN-20260915-PQ8NHNZ2, SPEC-20260915-8RKJ7RGM, DES-20260915-S2PV4FM8]
 supersedes: []
@@ -89,7 +89,13 @@ superseded_by: []
 - 第二次部署栈单次完整运行为 30 passed、25 designed skips、2 个 429；容器 `TRUST_PROXY=0` 使全套件共享容器网关 IP并真实触发 20/hour。保持安全默认与阈值不变，只清除本轮 65 个自动化限流键后，独立补跑两项为 2/2 passed。
 - Docker 组合证据覆盖全部设计矩阵；readiness 为 200/ok，PostgreSQL、Redis、objectStorage 均 up，五个服务保持运行供用户试玩。
 - API runtime 镜像不含 pnpm，容器内 migration status 命令不可用；主机固定 pnpm/Prisma 对同一 PostgreSQL 验证 3 个 migration 均已应用、schema up to date。
-- Regression 状态为 passed，PR/CI 仍为 pending；accepted/integrated 字段保持 null。
+- Regression 完成时状态为 passed、PR/CI 尚为 pending；随后 PR 证据 Head 三项 CI 已通过，accepted/integrated 字段仍保持 null。
+
+## PR CI
+
+- 已普通推送 `feature/baby-profile-foundation` 并创建 PR #23，目标精确为 `develop`；未 merge、rebase、force push、删除分支或创建 Tag。
+- PR 证据 Head `04427e7883521e8bf290076486b51608945af985`：`branch-flow-develop` PASS（4s）、`quality` PASS（1m8s）、`e2e-auth` PASS（1m19s）。
+- 记录 CI 的最终证据提交会再次触发相同检查；只有最终 PR Head 三项仍成功才交付人工验收。当前 accepted/integrated 字段仍保持 null。
 
 ## 已遇到并保留的失败证据
 
