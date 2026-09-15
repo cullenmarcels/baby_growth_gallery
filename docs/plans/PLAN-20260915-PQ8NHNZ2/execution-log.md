@@ -4,7 +4,7 @@ type: execution_log
 title: "多宝宝档案与当前宝宝会话执行记录"
 status: open
 created_at: 2026-09-15T10:21:58+08:00
-updated_at: 2026-09-15T15:50:30+08:00
+updated_at: 2026-09-15T16:00:27+08:00
 plan_id: PLAN-20260915-PQ8NHNZ2
 related_ids: [PLAN-20260915-PQ8NHNZ2, SPEC-20260915-8RKJ7RGM, DES-20260915-S2PV4FM8]
 supersedes: []
@@ -27,6 +27,8 @@ superseded_by: []
 | 2026-09-15T10:21:58+08:00 | — | confirmed | 用户明确确认 C–H 方案。 |
 | 2026-09-15T10:21:58+08:00 | confirmed | in_progress | 远端、工作树、规则、范围和冲突门禁通过。 |
 | 2026-09-15T15:50:30+08:00 | in_progress | in_review | 实现、migration、维护任务、Docker 与完整候选前门禁通过，准备固定已提交候选。 |
+| 2026-09-15T15:52:05+08:00 | in_review | in_regression | Review 绑定候选 `5fdb3cf…` 与 v2 digest，64 条固定 Rule 无 FAIL/UNVERIFIED。 |
+| 2026-09-15T16:00:27+08:00 | in_regression | acceptance_pending | 独立聚合门禁、数据库、Docker 组合矩阵和 readiness 通过；等待 PR 最终候选 CI 与用户试玩。 |
 
 ## 适用规则
 
@@ -71,6 +73,23 @@ superseded_by: []
 - OpenAPI/client 连续两次重新生成的 SHA-256 均为 `927E5D905FBED44F1D18DACBEBCFF6A2D54271FB60F431029EFD7F5DFDC32A07`，`git diff --check` 为 exit 0。
 - 候选前执行 `git fetch --prune origin`；`origin/develop`、HEAD 与 merge-base 均为 `b3b12b0e588873853b71960c23ded0cc1a62dcc3`，ahead/behind 为 `0/0`，远端基线仍新鲜。
 - `libphonenumber-js` 在 Node/Jest 下输出 JSON import attribute 弃用预警；这是既有固定依赖的未来兼容提示，当前 27 个 API 测试全部通过，列为非阻断观察项。
+
+## Review 证据
+
+- 已提交候选：`5fdb3cfd89c4569f509e15788bc398a991836901`。
+- v2 owned-scope digest：`DCDF8DD68C6FC840A4A1B00CF64CCFF63B5FA2D1001E310A2A51B832C7C6024E`。
+- 提交后远端 preflight：git_remote、origin verified、working tree clean、无活动 Plan 重叠或阻断；脚本显示仓库默认分支为 `origin/main`，本 Plan 的显式集成目标仍按 State 固定为 `origin/develop`。
+- 数据、权限、Session、维护、API/client、中文 UI、三视口、测试和安全逐项 Review 通过；64 条固定 Rule 全为 PASS 或有触发依据的 NOT_APPLICABLE，无 FAIL/UNVERIFIED。
+- PR 尚未创建，远端 CI 如实保持 pending；进入独立 Regression，不把候选前测试重复视为 Regression。
+
+## 独立 Regression
+
+- Review 后重新执行 `pnpm validate`：exit 0；branch-flow 5、API 27、Web 23、类型、格式、lint、build 与项目校验通过。
+- 首次部署栈全量因既有 87 个自动化限流键产生 3 个 429；逐键验证并仅 UNLINK `bgg-compose:rl:*` 后剩余 0，未碰 Session、Challenge 或业务数据。
+- 第二次部署栈单次完整运行为 30 passed、25 designed skips、2 个 429；容器 `TRUST_PROXY=0` 使全套件共享容器网关 IP并真实触发 20/hour。保持安全默认与阈值不变，只清除本轮 65 个自动化限流键后，独立补跑两项为 2/2 passed。
+- Docker 组合证据覆盖全部设计矩阵；readiness 为 200/ok，PostgreSQL、Redis、objectStorage 均 up，五个服务保持运行供用户试玩。
+- API runtime 镜像不含 pnpm，容器内 migration status 命令不可用；主机固定 pnpm/Prisma 对同一 PostgreSQL 验证 3 个 migration 均已应用、schema up to date。
+- Regression 状态为 passed，PR/CI 仍为 pending；accepted/integrated 字段保持 null。
 
 ## 已遇到并保留的失败证据
 
