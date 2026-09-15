@@ -9,6 +9,10 @@ const environmentSchema = z.object({
     .enum(['true', 'false'])
     .default('true')
     .transform((value) => value === 'true'),
+  BACKGROUND_JOBS_ENABLED: z
+    .enum(['true', 'false'])
+    .default('true')
+    .transform((value) => value === 'true'),
   DATABASE_URL: z
     .string()
     .url()
@@ -46,6 +50,7 @@ export interface AppConfig {
   version: string;
   webOrigins: string[];
   swaggerEnabled: boolean;
+  backgroundJobsEnabled: boolean;
   databaseUrl: string;
   redisUrl: string;
   redisKeyPrefix: string;
@@ -132,6 +137,7 @@ export function loadAppConfig(environment: NodeJS.ProcessEnv = process.env): App
     version: values.APP_VERSION,
     webOrigins,
     swaggerEnabled: values.SWAGGER_ENABLED,
+    backgroundJobsEnabled: values.BACKGROUND_JOBS_ENABLED,
     databaseUrl: values.DATABASE_URL,
     redisUrl: values.REDIS_URL,
     redisKeyPrefix: values.REDIS_KEY_PREFIX,

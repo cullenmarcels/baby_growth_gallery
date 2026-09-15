@@ -12,6 +12,13 @@ import {
   FamilyShell,
   OnboardingPage,
 } from './FamilyApp';
+import {
+  BabyCreatePage,
+  BabyEntryRedirect,
+  BabyHomePage,
+  BabyManagePage,
+  BabyWaitingPage,
+} from './BabyApp';
 
 export const router = createBrowserRouter([
   { path: '/', element: <RootRedirect /> },
@@ -38,6 +45,11 @@ export const router = createBrowserRouter([
         element: <FamilyShell />,
         children: [
           { index: true, element: <AppHomeRedirect /> },
+          { path: 'baby-entry', element: <BabyEntryRedirect /> },
+          { path: 'home', element: <BabyHomePage /> },
+          { path: 'babies/new', element: <BabyCreatePage /> },
+          { path: 'babies/manage', element: <BabyManagePage /> },
+          { path: 'babies/waiting', element: <BabyWaitingPage /> },
           { path: 'onboarding', element: <OnboardingPage /> },
           { path: 'families/:familyId', element: <FamilyPage /> },
           { path: 'timeline', element: <ComingSoonPage title="时间轴" icon="timeline" /> },

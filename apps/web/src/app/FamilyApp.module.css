@@ -8,9 +8,9 @@
   top: 0;
   display: flex;
   align-items: center;
-  gap: 28px;
+  gap: 14px;
   min-height: 72px;
-  padding: 0 clamp(20px, 5vw, 76px);
+  padding: 0 clamp(16px, 2.2vw, 34px);
   background: var(--color-card);
   border-bottom: 1px solid var(--color-border);
 }
@@ -35,6 +35,56 @@
   width: 36px;
   height: 36px;
 }
+.mobileBabyLink,
+.babySwitch {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 10px 5px 6px;
+  color: var(--color-text-strong);
+  background: color-mix(in srgb, var(--color-primary) 7%, var(--color-card));
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.babySwitch strong,
+.familySwitch span {
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mobileBabyLink {
+  display: none;
+}
+.mobileBabyLink > span,
+.babySwitch > span,
+.babyAvatar {
+  display: grid;
+  place-items: center;
+  color: var(--color-card);
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  border-radius: 50%;
+}
+.mobileBabyLink > span,
+.babySwitch > span {
+  width: 30px;
+  height: 30px;
+}
+.babySwitch {
+  min-height: 40px;
+  padding: 4px 11px 4px 5px;
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+}
+.babySwitchMenu {
+  right: 132px;
+}
+.mobileBabyMenuContent {
+  display: none;
+}
 .desktopNav {
   display: flex;
   align-items: stretch;
@@ -46,7 +96,7 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  padding: 0 12px;
+  padding: 0 8px;
   color: var(--color-text-sub);
   font-size: 14px;
   text-decoration: none;
@@ -222,7 +272,8 @@
   color: var(--color-text-strong);
   font-weight: 700;
 }
-.formCard input {
+.formCard input,
+.formCard select {
   width: 100%;
   min-height: 48px;
   padding: 0 14px;
@@ -231,9 +282,160 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
 }
-.formCard input:focus {
+.formCard input:focus,
+.formCard select:focus {
   outline: 2px solid var(--color-focus);
   outline-offset: 1px;
+}
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+.babyFormPage {
+  width: min(100%, 660px);
+  margin: clamp(12px, 5vh, 60px) auto;
+  text-align: center;
+}
+.babyFormPage h1,
+.babyManage h1,
+.babyHero h1 {
+  margin: 0;
+  color: var(--color-text-strong);
+  font-size: clamp(28px, 4vw, 42px);
+}
+.babyHero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 20px;
+  padding: clamp(24px, 4vw, 42px);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+.babyHero .babyAvatar {
+  width: 76px;
+  height: 76px;
+  font-size: 28px;
+}
+.babyHero p:last-child,
+.manageHeading p {
+  color: var(--color-text-sub);
+}
+.foundationGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 20px;
+}
+.featureCard {
+  padding: 24px;
+  color: var(--color-primary);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+.featureCard h2 {
+  color: var(--color-text-strong);
+  font-size: 18px;
+}
+.featureCard p {
+  color: var(--color-text-sub);
+  line-height: 1.65;
+}
+.babyManage {
+  width: min(100%, 900px);
+  margin: auto;
+}
+.manageHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 22px;
+}
+.babyList {
+  display: grid;
+  gap: 14px;
+}
+.babyList article {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+.babyList article[data-status='ARCHIVED'] {
+  opacity: 0.72;
+}
+.babyIdentity {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  flex: 1;
+  padding: 0;
+  color: var(--color-text-default);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+}
+.babyIdentity:disabled {
+  cursor: default;
+}
+.babyIdentity .babyAvatar {
+  width: 48px;
+  height: 48px;
+}
+.babyIdentity > span:nth-child(2) {
+  display: grid;
+  gap: 4px;
+}
+.babyIdentity strong {
+  color: var(--color-text-strong);
+}
+.babyIdentity small {
+  color: var(--color-text-sub);
+}
+.babyIdentity em {
+  color: var(--color-primary);
+  font-size: 12px;
+  font-style: normal;
+}
+.babyActions {
+  display: flex;
+  gap: 6px;
+}
+.babyActions button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 38px;
+  padding: 0 10px;
+  color: var(--color-text-sub);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+.editPanel {
+  margin-top: 22px;
+  padding: clamp(20px, 3vw, 30px);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+.editPanel h2 {
+  color: var(--color-text-strong);
 }
 .primaryButton,
 .secondaryButton,
@@ -304,6 +506,11 @@
 .familyMark {
   width: 62px;
   height: 62px;
+}
+.familyHeroActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 .familyGrid {
   display: grid;
@@ -622,6 +829,18 @@
   .brand {
     margin-right: auto;
   }
+  .mobileBabyLink {
+    display: flex;
+  }
+  .mobileBabyLink strong {
+    display: none;
+  }
+  .babySwitch {
+    display: none;
+  }
+  .mobileBabyMenuContent {
+    display: contents;
+  }
   .mobileMenuButton,
   .mobileTabs {
     display: flex;
@@ -666,6 +885,9 @@
   .familyGrid {
     grid-template-columns: 1fr;
   }
+  .foundationGrid {
+    grid-template-columns: 1fr;
+  }
   .activityPanel {
     grid-column: auto;
   }
@@ -688,6 +910,10 @@
   }
   .familyHero {
     align-items: flex-start;
+  }
+  .familyHeroActions {
+    align-items: flex-end;
+    flex-direction: column-reverse;
   }
   .familyMark {
     width: 48px;
@@ -712,5 +938,21 @@
   .dialog > div {
     display: grid;
     grid-template-columns: 1fr 1fr;
+  }
+  .babyHero {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .babyHero > a {
+    grid-column: 1 / -1;
+  }
+  .manageHeading {
+    align-items: flex-start;
+  }
+  .babyList article {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .babyActions {
+    justify-content: flex-end;
   }
 }

@@ -1,4 +1,8 @@
 import { Module } from '@nestjs/common';
+import { BabyController } from './baby/baby.controller.js';
+import { BabyMaintenanceService } from './baby/baby-maintenance.service.js';
+import { BabyPolicyService } from './baby/baby-policy.service.js';
+import { BabyService } from './baby/baby.service.js';
 import { AuthController } from './auth/auth.controller.js';
 import { AuthService } from './auth/auth.service.js';
 import { AuthRateLimitService } from './auth/rate-limit.service.js';
@@ -16,7 +20,13 @@ import { PrismaService } from './infrastructure/prisma.service.js';
 import { RedisService } from './infrastructure/redis.service.js';
 
 @Module({
-  controllers: [HealthController, AuthController, FamilyController, FamilyInvitationController],
+  controllers: [
+    HealthController,
+    AuthController,
+    FamilyController,
+    FamilyInvitationController,
+    BabyController,
+  ],
   providers: [
     { provide: APP_CONFIG, useFactory: () => loadAppConfig() },
     PrismaService,
@@ -30,6 +40,9 @@ import { RedisService } from './infrastructure/redis.service.js';
     FamilyPolicyService,
     FamilyRateLimitService,
     FamilyService,
+    BabyPolicyService,
+    BabyService,
+    BabyMaintenanceService,
   ],
 })
 export class AppModule {}

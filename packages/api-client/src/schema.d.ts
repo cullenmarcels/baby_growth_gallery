@@ -12,6 +12,7 @@ export interface components {
       "family": components['schemas']['FamilySummaryDto'];
     };
     "AccountSummaryDto": {
+      "activeBabyId": string | null;
       "activeFamilyId": string | null;
       "displayName": string | null;
       "id": string;
@@ -54,6 +55,21 @@ export interface components {
         "field": string;
       }>;
     };
+    "BabyListResponseDto": {
+      "items": Array<components['schemas']['BabySummaryDto']>;
+    };
+    "BabySummaryDto": {
+      "archivedAt": string | null;
+      "birthDate": string;
+      "createdAt": string;
+      "familyId": string;
+      "id": string;
+      "nickname": string;
+      "purgeAfter": string | null;
+      "sex": "MALE" | "FEMALE" | null;
+      "status": "ACTIVE" | "ARCHIVED";
+      "updatedAt": string;
+    };
     "ChangeMemberRoleRequestDto": {
       "role": "ADMIN" | "MEMBER";
     };
@@ -62,6 +78,11 @@ export interface components {
       "code": string;
       "phone": string;
       "remember": boolean;
+    };
+    "CreateBabyRequestDto": {
+      "birthDate": string;
+      "nickname": string;
+      "sex"?: "MALE" | "FEMALE" | null;
     };
     "CreatedInvitationDto": {
       "invitation": components['schemas']['ActiveInvitationDto'];
@@ -167,6 +188,11 @@ export interface components {
       "occurredAt": string;
       "type": "CONTENT_DELETED";
       "visibility": "TOMBSTONED";
+    };
+    "UpdateBabyRequestDto": {
+      "birthDate"?: string;
+      "nickname"?: string;
+      "sex"?: "MALE" | "FEMALE" | null;
     };
     "VerificationChallengeRequestDto": {
       "phone": string;
@@ -687,6 +713,132 @@ export interface paths {
         "409": {
           content: {
             "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies": {
+    get: {
+      parameters: {
+        "path": {
+          "familyId": string;
+        };
+        "query"?: {
+          "includeArchived"?: boolean;
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['BabyListResponseDto'];
+          };
+        };
+      };
+    };
+    post: {
+      parameters: {
+        "path": {
+          "familyId": string;
+        };
+      };
+      requestBody: {
+        content: {
+          "application/json": components['schemas']['CreateBabyRequestDto'];
+        };
+      };
+      responses: {
+        "201": {
+          content: {
+            "application/json": components['schemas']['BabySummaryDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies/{babyId}": {
+    get: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['BabySummaryDto'];
+          };
+        };
+      };
+    };
+    patch: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+        };
+      };
+      requestBody: {
+        content: {
+          "application/json": components['schemas']['UpdateBabyRequestDto'];
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['BabySummaryDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies/{babyId}/activate": {
+    post: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['AccountSummaryDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies/{babyId}/archive": {
+    post: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['AccountSummaryDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies/{babyId}/restore": {
+    post: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['BabySummaryDto'];
           };
         };
       };

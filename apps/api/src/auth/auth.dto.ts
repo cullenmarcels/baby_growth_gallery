@@ -50,4 +50,5 @@ export class AccountSummaryDto {
   @ApiProperty({ nullable: true, type: String }) displayName!: string | null;
   @ApiProperty({ type: String, example: '+86 138****8000' }) phoneMasked!: string;
   @ApiProperty({ nullable: true, type: String, format: 'uuid' }) activeFamilyId!: string | null;
+  @ApiProperty({ nullable: true, type: String, format: 'uuid' }) activeBabyId!: string | null;
 }

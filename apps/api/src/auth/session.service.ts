@@ -35,7 +35,11 @@ export class AuthSessionService {
     request.session.idleTimeoutMs = idleTimeoutMs;
     request.session.cookie.maxAge = idleTimeoutMs;
     const activeFamilyId = await this.findFallbackFamily(account.id);
-    if (activeFamilyId) request.session.activeFamilyId = activeFamilyId;
+    if (activeFamilyId) {
+      request.session.activeFamilyId = activeFamilyId;
+      const activeBabyId = await this.findFallbackBaby(account.id, activeFamilyId);
+      if (activeBabyId) request.session.activeBabyId = activeBabyId;
+    }
     await this.save(request);
   }
 
@@ -67,6 +71,7 @@ export class AuthSessionService {
       Math.min(session.idleTimeoutMs, session.absoluteExpiresAt - now),
     );
     await this.reconcileActiveFamily(request, account.id);
+    await this.reconcileActiveBaby(request, account.id);
     await this.save(request);
     return account;
   }
@@ -76,12 +81,14 @@ export class AuthSessionService {
     displayName: string | null;
     phoneMasked: string;
     activeFamilyId: string | null;
+    activeBabyId: string | null;
   } {
     return {
       id: account.id,
       displayName: account.displayName,
       phoneMasked: this.auth.maskPhone(account.phoneE164),
       activeFamilyId: null,
+      activeBabyId: null,
     };
   }
 
@@ -93,13 +100,31 @@ export class AuthSessionService {
     displayName: string | null;
     phoneMasked: string;
     activeFamilyId: string | null;
+    activeBabyId: string | null;
   } {
-    return { ...this.summary(account), activeFamilyId: request.session.activeFamilyId ?? null };
+    return {
+      ...this.summary(account),
+      activeFamilyId: request.session.activeFamilyId ?? null,
+      activeBabyId: request.session.activeBabyId ?? null,
+    };
   }
 
-  async setActiveFamily(request: Request, familyId: string | null): Promise<void> {
+  async setActiveFamily(
+    request: Request,
+    familyId: string | null,
+    accountId?: string,
+  ): Promise<void> {
+    const changed = request.session.activeFamilyId !== familyId;
     if (familyId) request.session.activeFamilyId = familyId;
     else delete request.session.activeFamilyId;
+    if (changed || !familyId) delete request.session.activeBabyId;
+    if (accountId && familyId) await this.reconcileActiveBaby(request, accountId);
+    await this.save(request);
+  }
+
+  async setActiveBaby(request: Request, babyId: string | null): Promise<void> {
+    if (babyId) request.session.activeBabyId = babyId;
+    else delete request.session.activeBabyId;
     await this.save(request);
   }
 
@@ -114,8 +139,43 @@ export class AuthSessionService {
     }
     const fallback = await this.findFallbackFamily(accountId);
     if (fallback) request.session.activeFamilyId = fallback;
-    else delete request.session.activeFamilyId;
+    else {
+      delete request.session.activeFamilyId;
+      delete request.session.activeBabyId;
+    }
     return fallback;
+  }
+
+  async reconcileActiveBaby(request: Request, accountId: string): Promise<string | null> {
+    const familyId = request.session.activeFamilyId;
+    if (!familyId) {
+      delete request.session.activeBabyId;
+      return null;
+    }
+    const membership = await this.prisma.familyMembership.findUnique({
+      where: { familyId_accountId: { familyId, accountId } },
+      select: { status: true },
+    });
+    if (membership?.status !== 'ACTIVE') {
+      delete request.session.activeBabyId;
+      return null;
+    }
+    const currentId = request.session.activeBabyId;
+    if (currentId) {
+      const current = await this.prisma.babyProfile.findFirst({
+        where: { id: currentId, familyId, status: 'ACTIVE' },
+        select: { id: true },
+      });
+      if (current) return current.id;
+    }
+    const fallback = await this.findFallbackBaby(accountId, familyId);
+    if (fallback) request.session.activeBabyId = fallback;
+    else delete request.session.activeBabyId;
+    return fallback;
+  }
+
+  saveSession(request: Request): Promise<void> {
+    return this.save(request);
   }
 
   async logout(request: Request, response: Response): Promise<void> {
@@ -165,6 +225,19 @@ export class AuthSessionService {
       select: { familyId: true },
     });
     return membership?.familyId ?? null;
+  }
+
+  private async findFallbackBaby(accountId: string, familyId: string): Promise<string | null> {
+    const baby = await this.prisma.babyProfile.findFirst({
+      where: {
+        familyId,
+        status: 'ACTIVE',
+        family: { memberships: { some: { accountId, status: 'ACTIVE' } } },
+      },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      select: { id: true },
+    });
+    return baby?.id ?? null;
   }
 
   private unauthorized(): ApiProblemException {
