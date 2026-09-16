@@ -4,15 +4,15 @@ type: regression_report
 title: "多宝宝档案基础 Regression"
 status: passed
 created_at: 2026-09-15T10:21:58+08:00
-updated_at: 2026-09-15T16:05:41+08:00
+updated_at: 2026-09-16T10:01:53+08:00
 plan_id: PLAN-20260915-PQ8NHNZ2
-phase: candidate
+phase: candidate_and_integration
 reviewed_commit: 5fdb3cfd89c4569f509e15788bc398a991836901
 reviewed_scope_digest: DCDF8DD68C6FC840A4A1B00CF64CCFF63B5FA2D1001E310A2A51B832C7C6024E
-accepted_commit: null
-accepted_scope_digest: null
-integrated_commit: null
-integrated_scope_digest: null
+accepted_commit: e0593895b2da73b051fc6f855149c41f97de5bf4
+accepted_scope_digest: 2D1050ED642D55E8BB1A3B66866D845975A7718247008217E8F37D4A152CF929
+integrated_commit: 29b98f872ae535f6fd3c68472358dc3cb63cf09c
+integrated_scope_digest: 2D1050ED642D55E8BB1A3B66866D845975A7718247008217E8F37D4A152CF929
 ci_status: passed
 related_ids: [PLAN-20260915-PQ8NHNZ2, SPEC-20260915-8RKJ7RGM, DES-20260915-S2PV4FM8, ACH-20260911-JBANR2J8]
 supersedes: []
@@ -23,9 +23,23 @@ superseded_by: []
 
 ## 结论与影响范围
 
-候选 Regression `passed`。本轮在正式 Review 之后独立执行，不复用 Review 的测试结论。影响链为：Prisma migration/约束 → Baby Policy/Service/维护任务 → Redis Session 当前家庭与当前宝宝修正 → OpenAPI/generated client → React Query family-scoped cache → 响应式宝宝页面；同时覆盖 Plan A 认证、CSRF、Session 和 Plan B 家庭、邀请、角色、活动与应用壳。
+候选与集成 Regression 均为 `passed`。候选轮在正式 Review 之后独立执行；用户验收后又在精确集成提交重新执行门禁、迁移、OpenAPI、本地与容器 E2E、readiness 和远端 CI，不复用候选结论。影响链为：Prisma migration/约束 → Baby Policy/Service/维护任务 → Redis Session 当前家庭与当前宝宝修正 → OpenAPI/generated client → React Query family-scoped cache → 响应式宝宝页面；同时覆盖 Plan A 认证、CSRF、Session 和 Plan B 家庭、邀请、角色、活动与应用壳。
 
-PR #23 已创建，目标为 `develop`。证据 Head `04427e7883521e8bf290076486b51608945af985` 的 `branch-flow-develop`、`quality`、`e2e-auth` 全部成功；记录本结果的最终证据提交会重新触发检查，因此交付人工验收前仍以最终 PR Head 的实时结果为准。用户尚未验收，accepted/integrated 字段保持 null。
+用户验收的最终 PR Head 为 `e0593895b2da73b051fc6f855149c41f97de5bf4`，PR #23 已合并到 `develop@29b98f872ae535f6fd3c68472358dc3cb63cf09c`。Accepted 与 integrated digest 同为 `2D1050ED…2CF929`，验收有效；merge-triggered Quality run `35045625733` 在精确集成提交成功。
+
+## 集成复验
+
+| 检查 | 结果 | 证据 |
+| --- | --- | --- |
+| 版本绑定 | PASS | PR #23 为 MERGED；accepted commit 是 merge commit 的第二父提交且为其祖先；accepted/integrated v2 digest 完全相同。 |
+| 集成聚合门禁 | PASS | `develop@29b98f8…` 执行 `pnpm validate` exit 0；branch-flow 5、API 27、Web 23、lint、format、typecheck、build 与项目校验通过。 |
+| 本地完整 E2E | PASS | 57 项矩阵为 38 passed、19 designed skips、0 failed，覆盖 375/834/1440。 |
+| Docker 部署 E2E | PASS | 按 spec 隔离执行同一 57 项矩阵：32 passed、25 designed skips、0 failed；仅清除逐键确认的 `bgg-compose:rl:*` 自动化限流键。 |
+| Migration 与 OpenAPI | PASS | 同一 PostgreSQL 的 3 个 migration 均已应用；连续两次 OpenAPI/client SHA-256 均为 `927E5D90…DC32A07`。 |
+| Readiness | PASS | API 200/ok，PostgreSQL、Redis、objectStorage 均 up；API/PostgreSQL/Redis/MinIO healthy，Web 正常运行。 |
+| 远端 CI | PASS | GitHub Actions run `35045625733`，event=push，head=`29b98f8…`，Quality completed/success。 |
+
+集成首次 `pnpm validate` 因 Windows 全局 `core.autocrlf=true` 使新检出的文件呈现 CRLF 而触发 28 个 Prettier 失败；格式化后 Git 对象与 HEAD 完全一致，`git add -u` 只刷新索引且没有 staged diff。随后在无内容变化的精确集成树上复跑通过。该环境失败保留为证据，不计为产品缺陷。
 
 ## 候选检查
 
@@ -66,4 +80,4 @@ API 语义只在 1440 project 执行一次，避免对 viewport 无关契约做�
 - Docker Desktop 修复产生的四个 `*-stale-plan-c-20260915*` runtime 目录仍保留于 LocalAppData，未删除；它们不属于仓库、镜像、容器、volume 或业务数据，等待用户以后决定是否清理。
 - Node/Jest 上游 JSON import 与 Vite 502 kB chunk 建议仍为非阻断观察项；真实短信、正式法律文本、非 Chromium 浏览器及后续照片/里程碑/成长数据均是明确非目标。
 
-Regression 结论为 `passed`。证据 Head 三项 CI 已成功；只有最终 PR Head 的三项检查仍全部成功，且用户针对该精确候选明确试玩验收后，才能进入 `integration_pending`。
+Regression 结论为 `passed`。最终候选三项 PR 检查、人工验收、普通 merge、集成范围等价性和精确集成提交复验均已完成，可归档。

@@ -2,9 +2,9 @@
 id: PLAN-20260915-PQ8NHNZ2-EXEC
 type: execution_log
 title: "多宝宝档案与当前宝宝会话执行记录"
-status: open
+status: archived
 created_at: 2026-09-15T10:21:58+08:00
-updated_at: 2026-09-15T16:05:41+08:00
+updated_at: 2026-09-16T10:01:53+08:00
 plan_id: PLAN-20260915-PQ8NHNZ2
 related_ids: [PLAN-20260915-PQ8NHNZ2, SPEC-20260915-8RKJ7RGM, DES-20260915-S2PV4FM8]
 supersedes: []
@@ -29,6 +29,9 @@ superseded_by: []
 | 2026-09-15T15:50:30+08:00 | in_progress | in_review | 实现、migration、维护任务、Docker 与完整候选前门禁通过，准备固定已提交候选。 |
 | 2026-09-15T15:52:05+08:00 | in_review | in_regression | Review 绑定候选 `5fdb3cf…` 与 v2 digest，64 条固定 Rule 无 FAIL/UNVERIFIED。 |
 | 2026-09-15T16:00:27+08:00 | in_regression | acceptance_pending | 独立聚合门禁、数据库、Docker 组合矩阵和 readiness 通过；等待 PR 最终候选 CI 与用户试玩。 |
+| 2026-09-16T09:50:05+08:00 | acceptance_pending | integration_pending | 用户明确验收 `e059389…` 并授权合并 PR #23 到 develop。 |
+| 2026-09-16T09:50:05+08:00 | integration_pending | integration_review | PR #23 普通 merge 完成，固定集成提交 `29b98f8…` 并开始独立复验。 |
+| 2026-09-16T10:01:53+08:00 | integration_review | archived | Accepted/integrated digest 相同，集成门禁、迁移、E2E、readiness 与精确提交 CI 全部通过，生成 Achievement 与归档哈希。 |
 
 ## 适用规则
 
@@ -102,3 +105,15 @@ superseded_by: []
 - 首次 Docker/数据库核验：`docker compose ps` 无法连接 `dockerDesktopLinuxEngine`，`prisma migrate status` 返回 P1001，真实 migration 未在此时执行。
 - 尝试启动 Docker Desktop 后后台仍崩溃；主机日志明确报告 `sailor-ingest.sock` 无法改名且文件正被占用。经用户确认后终止重复 Docker 后台、关闭 WSL，并把损坏的运行时目录移动到可恢复备份，单实例重启后 Engine 恢复。未 factory reset，未删除 Docker 数据。
 - 一次宝宝专项本地运行误复用了端口 3000 上按 `http://localhost:8080` 配置的 Docker API，而浏览器来源是 `http://localhost:5173`，Origin/CSRF 按设计拒绝并失败；停止 Docker API/Web 后由 Playwright 启动同源本地服务，专项 4 passed、2 designed skips。该失败是调用环境混用证据，不作为产品 PASS。
+
+## 人工验收、集成与归档
+
+- 用户原文：“确认验收候选 e059389，并授权合并 PR #23 到 develop”。绑定 accepted commit `e0593895b2da73b051fc6f855149c41f97de5bf4`；v2 digest 为 `2D1050ED642D55E8BB1A3B66866D845975A7718247008217E8F37D4A152CF929`。
+- PR #23 于 `2026-09-16T09:50:05+08:00` 普通 merge；集成提交 `29b98f872ae535f6fd3c68472358dc3cb63cf09c` 包含验收提交，integrated digest 与 accepted digest 完全相同。
+- 集成首次 `pnpm validate` 因 Windows `core.autocrlf=true` 的检出换行状态报告 28 个 Prettier 失败；格式化后的文件对象与 HEAD 相同，刷新索引后无 staged/working-tree 内容差异。随后同一集成树 `pnpm validate` exit 0：branch-flow 5、API 27、Web 23、lint、format、typecheck、build 和项目校验通过。
+- `prisma migrate deploy/status`：3 个 migration 全部已应用；OpenAPI/client 连续两次 SHA-256 均为 `927E5D905FBED44F1D18DACBEBCFF6A2D54271FB60F431029EFD7F5DFDC32A07`。
+- 本地完整 `pnpm e2e`：38 passed、19 designed skips、0 failed。Docker 部署矩阵按 spec 隔离执行：32 passed、25 designed skips、0 failed；两者均覆盖完整 57 项设计矩阵。
+- Docker 容器安全默认 `TRUST_PROXY=0`，并行 spec 共享网关 IP；每个有副作用的 spec 前只枚举、前缀校验并 UNLINK 精确 `bgg-compose:rl:*` 自动化限流键。未触碰 Session、Challenge、账号、家庭、宝宝或 volume。
+- 最终 readiness 为 200/ok，PostgreSQL、Redis、objectStorage 均 up；API/PostgreSQL/Redis/MinIO healthy，Web 在 `http://localhost:8080/login` 运行。
+- 精确集成提交的 GitHub Actions Quality run `35045625733` completed/success：`https://github.com/cullenmarcels/baby_growth_gallery/actions/runs/35045625733`。
+- 创建 `ACH-20260915-PQ8NHNZ2`，更新中央索引与入口状态，并把 Plan 包和 Achievement 的规范化 SHA-256 写入归档清单。没有创建发布 Tag；四个 Docker runtime 备份目录继续保留，未执行删除。

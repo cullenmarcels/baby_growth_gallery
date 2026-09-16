@@ -2,7 +2,7 @@
 id: PLAN-20260915-PQ8NHNZ2-STATE
 type: plan_state
 plan_id: PLAN-20260915-PQ8NHNZ2
-status: acceptance_pending
+status: archived
 repository_mode: git_remote
 remote_name: origin
 integration_target: origin/develop
@@ -15,12 +15,12 @@ owned_paths: [AGENTS.md, README.md, apps/api, apps/web, packages/api-client, pla
 overlapping_plan_ids: []
 reviewed_commit: 5fdb3cfd89c4569f509e15788bc398a991836901
 reviewed_scope_digest: DCDF8DD68C6FC840A4A1B00CF64CCFF63B5FA2D1001E310A2A51B832C7C6024E
-accepted_commit: null
-accepted_scope_digest: null
-integrated_commit: null
-integrated_scope_digest: null
+accepted_commit: e0593895b2da73b051fc6f855149c41f97de5bf4
+accepted_scope_digest: 2D1050ED642D55E8BB1A3B66866D845975A7718247008217E8F37D4A152CF929
+integrated_commit: 29b98f872ae535f6fd3c68472358dc3cb63cf09c
+integrated_scope_digest: 2D1050ED642D55E8BB1A3B66866D845975A7718247008217E8F37D4A152CF929
 ---
 
 # Plan State
 
-固定候选 Review 与独立 Regression 已通过，等待 PR 最终候选 CI 和用户人工试玩验收；基线、分支、集成目标和路径所有权固定，当前无活动 Plan 重叠。实施中将根级 `playwright.config.ts` 纳入范围，用于为完整 E2E 提供独立 Redis key 前缀和代理 IP 测试语义；该扩展不改变产品运行时配置。
+固定候选 Review、独立 Regression、用户人工验收、PR #23 合并与精确集成提交复验均已通过。Accepted 与 integrated v2 scope digest 完全相同，验收有效；本 Plan 及 Achievement 已归档，后续变更必须创建新 Plan。
