@@ -442,9 +442,9 @@ export class PhotoService {
       photoId,
     );
     if (photo.status === 'DRAFT') this.policy.requirePrivateOwner(membership, photo);
-    else if (photo.status === 'TRASHED' && !this.policy.canManagePublished(membership, photo))
-      this.policy.permissionDenied();
-    else if (photo.status !== 'PUBLISHED') this.policy.notFound();
+    else if (photo.status === 'TRASHED') {
+      if (!this.policy.canManagePublished(membership, photo)) this.policy.permissionDenied();
+    } else if (photo.status !== 'PUBLISHED') this.policy.notFound();
     const variant = await this.prisma.photoVariant.findUnique({
       where: { photoId_kind: { photoId, kind } },
     });
@@ -521,10 +521,13 @@ export class PhotoService {
       photoId,
     );
     this.policy.requirePrivateOwner(membership, photo);
-    if (!['AWAITING_UPLOAD', 'QUEUED', 'DRAFT', 'FAILED'].includes(photo.status))
+    if (!['AWAITING_UPLOAD', 'QUEUED', 'PROCESSING', 'DRAFT', 'FAILED'].includes(photo.status))
       this.policy.stateConflict();
     const result = await this.prisma.photo.updateMany({
-      where: { id: photoId, status: { in: ['AWAITING_UPLOAD', 'QUEUED', 'DRAFT', 'FAILED'] } },
+      where: {
+        id: photoId,
+        status: { in: ['AWAITING_UPLOAD', 'QUEUED', 'PROCESSING', 'DRAFT', 'FAILED'] },
+      },
       data: { status: 'PURGING', purgeAfter: new Date() },
     });
     if (result.count !== 1) this.policy.stateConflict();

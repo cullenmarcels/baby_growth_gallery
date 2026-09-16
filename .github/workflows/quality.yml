@@ -133,12 +133,13 @@ jobs:
             quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z@sha256:aead63c77f9db9107f1696fb08ecb0faeda23729cde94b0f663edf4fe09728e3 \
             -c 'mc alias set local http://127.0.0.1:9000 baby_gallery_minio baby_gallery_minio_ci_password >/dev/null && mc find local/baby-growth-gallery-ci/quarantine --name "*" 2>/dev/null' || true)"
           test -z "$output"
-      - name: Upload Playwright diagnostics
+      # Raw traces/reports can capture cookies and presigned POST fields. Only the
+      # runner's status manifest is safe to retain; detailed failures stay in logs.
+      - name: Upload safe Playwright run status
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: playwright-diagnostics
-          path: |
-            playwright-report/
-            test-results/
+          name: playwright-run-status
+          path: test-results/.last-run.json
+          if-no-files-found: ignore
           retention-days: 7

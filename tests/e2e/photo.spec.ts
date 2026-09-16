@@ -258,6 +258,7 @@ test('uploads and publishes a synthetic photo in the responsive flow', async ({ 
   await page.getByLabel('家庭名称').fill('响应式照片家庭');
   await page.getByLabel('你在家庭中的称呼').fill('合成创建者');
   await page.getByRole('button', { name: '创建家庭', exact: true }).click();
+  await expect(page).toHaveURL(/\/app\/families\//);
   await page.goto('/app/babies/new');
   await page.getByLabel('宝宝昵称').fill('合成宝宝');
   await page.getByLabel('出生日期').fill('2026-01-02');

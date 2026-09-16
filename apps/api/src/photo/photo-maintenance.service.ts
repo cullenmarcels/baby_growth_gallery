@@ -12,6 +12,7 @@ import { PrismaService } from '../infrastructure/prisma.service.js';
 
 const INTERVAL_MS = 60_000;
 const ADVISORY_LOCK_KEY = 1_346_229_702;
+const FAILED_RETENTION_MS = 30 * 86_400_000;
 
 @Injectable()
 export class PhotoMaintenanceService implements OnModuleInit, OnModuleDestroy {
@@ -44,6 +45,20 @@ export class PhotoMaintenanceService implements OnModuleInit, OnModuleDestroy {
         ADVISORY_LOCK_KEY,
       );
       if (!lock?.acquired) return [];
+      await transaction.photo.updateMany({
+        where: {
+          status: 'PROCESSING',
+          processingAttempts: { gte: 3 },
+          processingLeaseUntil: { lte: now },
+        },
+        data: {
+          status: 'FAILED',
+          processingLeaseUntil: null,
+          nextProcessingAt: null,
+          failureCode: 'PHOTO_PROCESSING_FAILED',
+          purgeAfter: new Date(now.valueOf() + FAILED_RETENTION_MS),
+        },
+      });
       await transaction.photo.updateMany({
         where: {
           baby: { status: { in: ['ARCHIVED', 'PURGING'] }, purgeAfter: { lte: now } },

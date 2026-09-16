@@ -3,8 +3,10 @@ import { readFile } from 'node:fs/promises';
 import sharp from 'sharp';
 import type { FamilyMembership, Photo } from '../src/generated/prisma/client.js';
 import { ApiProblemException } from '../src/common/api-problem.exception.js';
+import { PhotoMaintenanceService } from '../src/photo/photo-maintenance.service.js';
 import { PhotoPolicyService } from '../src/photo/photo-policy.service.js';
 import { PhotoProcessingService } from '../src/photo/photo-processing.service.js';
+import { PhotoService } from '../src/photo/photo.service.js';
 import {
   batchUpdatePhotosSchema,
   createPhotoBatchSchema,
@@ -256,5 +258,123 @@ describe('photo upload domain boundaries', () => {
         }),
       }),
     );
+  });
+
+  it('converts an expired third processing lease to a retained failure for cleanup', async () => {
+    const transaction = {
+      $queryRawUnsafe: jest.fn().mockResolvedValue([{ acquired: true }]),
+      photo: {
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+        findMany: jest.fn().mockResolvedValue([]),
+      },
+    };
+    const prisma = {
+      $transaction: jest.fn(async (run: (client: typeof transaction) => Promise<unknown>) =>
+        run(transaction),
+      ),
+      photo: { findMany: jest.fn().mockResolvedValue([]) },
+    };
+    const now = new Date('2026-09-16T15:00:00.000Z');
+    const service = new PhotoMaintenanceService(
+      { backgroundJobsEnabled: false } as never,
+      prisma as never,
+      { delete: jest.fn() } as never,
+      {} as never,
+    );
+
+    await expect(service.purgeExpired(50, now)).resolves.toBe(0);
+    expect(transaction.photo.updateMany).toHaveBeenCalledWith({
+      where: {
+        status: 'PROCESSING',
+        processingAttempts: { gte: 3 },
+        processingLeaseUntil: { lte: now },
+      },
+      data: expect.objectContaining({
+        status: 'FAILED',
+        failureCode: 'PHOTO_PROCESSING_FAILED',
+        processingLeaseUntil: null,
+        nextProcessingAt: null,
+        purgeAfter: new Date('2026-10-16T15:00:00.000Z'),
+      }),
+    });
+  });
+
+  it('lets the creator discard a processing photo through the object-first purge flow', async () => {
+    const processingPhoto = photo('PROCESSING');
+    const policy = {
+      requirePhoto: jest.fn().mockResolvedValue({
+        membership: membership('MEMBER'),
+        photo: processingPhoto,
+      }),
+      requirePrivateOwner: jest.fn(),
+      stateConflict: jest.fn(() => {
+        throw new Error('unexpected state conflict');
+      }),
+    };
+    const prisma = {
+      photo: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
+    };
+    const service = new PhotoService(
+      prisma as never,
+      policy as never,
+      {} as never,
+      {} as never,
+      {} as never,
+    );
+
+    await expect(service.discard('account', familyId, babyId, photoId)).resolves.toBeUndefined();
+    expect(prisma.photo.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          id: photoId,
+          status: { in: expect.arrayContaining(['PROCESSING']) },
+        }),
+        data: expect.objectContaining({ status: 'PURGING' }),
+      }),
+    );
+  });
+
+  it('provides a private thumbnail for an authorized trash manager without exposing it to a member', async () => {
+    const trashed = photo('TRASHED');
+    trashed.createdByMembershipId = '00000000-0000-4000-8000-000000000099';
+    const current = membership('OWNER');
+    const policy = {
+      requirePhoto: jest.fn().mockResolvedValue({ membership: current, photo: trashed }),
+      canManagePublished: jest.fn((actor: FamilyMembership) => actor.role === 'OWNER'),
+      permissionDenied: jest.fn(() => {
+        throw new ApiProblemException(403, '你没有权限执行此照片操作。', 'PHOTO_PERMISSION_DENIED');
+      }),
+      requirePrivateOwner: jest.fn(),
+      notFound: jest.fn(() => {
+        throw new Error('unexpected not found');
+      }),
+    };
+    const prisma = {
+      photoVariant: {
+        findUnique: jest.fn().mockResolvedValue({ objectKey: `photos/${photoId}/thumbnail.webp` }),
+      },
+    };
+    const storage = {
+      signPrivateGet: jest
+        .fn()
+        .mockResolvedValue({ url: 'https://private.example/test', expiresAt: 'soon' }),
+    };
+    const service = new PhotoService(
+      prisma as never,
+      policy as never,
+      {} as never,
+      storage as never,
+      {} as never,
+    );
+    await expect(
+      service.preview('account', familyId, babyId, photoId, 'THUMBNAIL'),
+    ).resolves.toEqual({ url: 'https://private.example/test', expiresAt: 'soon' });
+    expect(storage.signPrivateGet).toHaveBeenCalledWith(`photos/${photoId}/thumbnail.webp`);
+    policy.requirePhoto.mockResolvedValue({ membership: membership('MEMBER'), photo: trashed });
+    await expect(
+      service.preview('account', familyId, babyId, photoId, 'THUMBNAIL'),
+    ).rejects.toThrow(ApiProblemException);
+    expect(policy.permissionDenied).toHaveBeenCalledTimes(1);
+    expect(storage.signPrivateGet).toHaveBeenCalledTimes(1);
   });
 });
