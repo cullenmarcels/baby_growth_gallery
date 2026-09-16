@@ -4,7 +4,7 @@ type: execution_log
 title: '照片上传基础执行记录'
 status: in_progress
 created_at: 2026-09-16T13:30:00+08:00
-updated_at: 2026-09-16T15:42:44+08:00
+updated_at: 2026-09-16T16:09:00+08:00
 plan_id: PLAN-20260916-83SYH180
 related_ids: [PLAN-20260916-83SYH180, SPEC-20260916-5Z69DCQE, DES-20260916-4XCFYD80]
 supersedes: []
@@ -26,6 +26,8 @@ superseded_by: []
 | ------------------------- | --------- | ----------- | ---------------------------------------- |
 | 2026-09-16T13:30:00+08:00 | —         | confirmed   | 用户明确提交并要求实施 Plan D。          |
 | 2026-09-16T13:30:00+08:00 | confirmed | in_progress | 远端、工作树、规则、基线与冲突门禁通过。 |
+| 2026-09-16T15:47:00+08:00 | in_progress | in_review | 固定 `f47ed97` 候选与 v2 scope digest，开始候选审查。 |
+| 2026-09-16T16:05:00+08:00 | in_review | in_progress | 发现上传恢复、HEIC 缩略图和站内离开确认缺口，返回开发。 |
 
 ## 已执行
 
@@ -83,3 +85,25 @@ superseded_by: []
 - 日志出口复核发现维护任务曾输出底层异常 stack；改为只记录稳定的维护失败文案，不展开存储请求或内部错误细节。该修正需随下一候选重新验证。
 - [AWS 官方 FAQ](https://docs.aws.amazon.com/prescriptive-guidance/latest/presigned-url-best-practices/faq.html) 确认预签名请求在到期前可重复使用；本实现约束为同一随机对象 Key、精确 Content-Type/大小与短期有效期，但不是真正的单次执行。已请求用户确认 Plan D 中“一个凭证只允许上传一个对象”的验收语义；确认前该边界保持待决，不标记 Review 通过。
 - 原始 Playwright trace/截图可能含 Cookie、签名字段和合成手机号，现 CI 仅上传不含网络载荷的运行状态摘要；该安全偏差也已请求用户确认，确认前不推进正式验收。
+
+## 精确候选容器复验（Review 证据）
+
+- `f47ed97b4e9f6c5d492c563c867f7748df29f56e` 的 API Alpine 镜像重新构建 exit 0，容器 healthy。构建有 registry 响应慢与 `pnpm deploy` 的非致命 bin-link 警告；镜像成功启动，不能把警告误写为构建失败。
+- 将仓库自有合成 HEIC/HEIF fixture 以只读 bind mount 提供给同一运行镜像后，`verify-photo-codecs.mjs` exit 0，输出 `PHOTO_CODECS=VALID (JPEG, PNG, WebP, HEIC, HEIF)`。直接在运行容器执行该脚本曾因生产镜像不含测试 fixture 返回 ENOENT；按测试挂载方式重跑通过，没有把 fixture 打进生产镜像。
+- Docker API 使用全新测试 Redis 前缀与 `TRUST_PROXY=1`，真实 Postgres/Redis/MinIO/Web 上 `pnpm e2e` exit 0：36 passed、27 designed skips、0 failed；覆盖 375/834/1440，其中后端重型契约仅在 1440 执行，三视口上传 UI 均通过。
+- 测试后重建 API 为默认本地配置；6 个长期服务运行，API ready 返回 `ok`，PostgreSQL、Redis、objectStorage 均 `up`。MinIO 的 `quarantine/` 递归列表为空；未删除数据库或对象卷。
+- `git ls-remote origin refs/heads/develop` 返回 Plan D 固定基线 `fb6fa7a94528255aca77ab04b0009f1cd3064b29`，远端目标未漂移。通用 preflight `-Remote` 因本功能分支未配置 upstream，按默认 `origin/main` 给出 `upstream_not_configured`；此结果不替代上述对 Plan 集成目标的精确核对，也不将通用预检写成 PASS。
+- 以上验证只证明已运行的范围；CI 原始产物与预签名 POST 单次语义仍待用户裁定，Review 保持 pending。
+
+## 第三轮 Review 返回开发：上传恢复与离开确认
+
+- 对照 UI Design 的“刷新或稍后返回恢复状态”发现：原流程只把 Batch 存于 React 内存；刷新后管理中心虽可列出草稿，但无法回到原批次编辑/发布。HEIC 完成后也一直显示占位图，未切换服务端安全缩略图。
+- 上传中的 `beforeunload` 只覆盖刷新/关页，站内 Link 导航未确认。该缺口会静默中断浏览器 XHR。
+- 在已确认范围内修复：创建批次后把随机 Batch ID 放入路由查询参数；恢复时按家庭、宝宝、批次的 Query key 重新读取私有 Batch；管理中心的未发布项目链接回批次；安全缩略图只通过授权的短期预览接口获取，不持久化 URL。浏览器刷新后原始 File 不可恢复的待上传项明确提示重新建批，不伪称可以无文件重传。
+- 站内离开使用 React Router blocker 和可访问确认框；取消时保持传输，确认时 abort 活动 XHR 后导航。原有 `beforeunload` 保留浏览器级保护。
+- 新增 Web 组件测试覆盖草稿恢复、HEIC 缩略图、恢复错误中文、处理中管理与确认丢弃、站内导航拦截；定向 Web 8/8 通过。Playwright 375/834/1440 验证上传后刷新、管理中心返回、继续编辑发布，且 1440 使用真实合成 HEIC、其余两个视口使用合成 PNG，定向 3/3 通过。
+- 首次定向 Playwright 为 2 passed/1 failed：375 的旧测试 locator 同时命中状态筛选项和状态徽章，属测试定位歧义；收窄至照片卡片后 3/3 通过。此前 `pnpm validate` 在恢复补丁后 exit 0：API 42、Web 30、分支 5；导航 blocker 的新增测试需在形成新候选前重新跑全量门禁。
+- 修复恢复流程后的 Docker 全量 E2E 为 36 passed、27 designed skips、0 failed；随后新增的站内导航拦截尚待新镜像复验。前一固定提交 `f47ed97` 已不再是最新实现，不得作为新候选验收。
+- 站内导航拦截加入后，首次 `pnpm validate` 因无 `await` 的 async handler 在 lint 阶段 exit 1；改为返回已完成 Promise。第二次因新增 E2E 测试格式不符在 format:check 阶段 exit 1；按仓库 Prettier 格式化。第三次 `pnpm validate` exit 0：API 42、Web 31、分支流向 5，lint、format、typecheck、build、项目知识库全部通过。
+- 重建 Web 生产镜像 exit 0；完整 Windows 宿主 Docker 栈在新的独立 Redis 前缀下 `pnpm e2e` exit 0：36 passed、27 designed skips、0 failed。随后 API 恢复常规本地配置，readiness 仍为 `ok` 且 PostgreSQL/Redis/objectStorage 均 `up`；`quarantine/` 递归列表为空。
+- `origin/develop` 远端精确引用仍为 `fb6fa7a94528255aca77ab04b0009f1cd3064b29`；工作区只有 Plan D owned paths 的修改，无归档变更。以上尚不是新的已提交候选，Review 继续 pending。

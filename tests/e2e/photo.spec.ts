@@ -246,7 +246,9 @@ test('uploads to private storage, isolates drafts, publishes an activity, and re
   await member.context.dispose();
 });
 
-test('uploads and publishes a synthetic photo in the responsive flow', async ({ page }) => {
+test('uploads and publishes a synthetic photo in the responsive flow', async ({
+  page,
+}, testInfo) => {
   await page.goto('/register');
   await page.getByLabel('手机号').fill(syntheticPhone());
   await page.getByRole('button', { name: '获取验证码' }).click();
@@ -266,13 +268,27 @@ test('uploads and publishes a synthetic photo in the responsive flow', async ({ 
   await expect(page.getByRole('heading', { name: '合成宝宝' })).toBeVisible();
   await page.goto('/app/photos/upload');
   await expect(page.getByRole('heading', { name: '把珍贵瞬间放进家庭记忆' })).toBeVisible();
-  await page.locator('input[type="file"][multiple]').setInputFiles({
-    name: 'synthetic.png',
-    mimeType: 'image/png',
-    buffer: syntheticPng,
-  });
+  const heic = testInfo.project.name === 'chromium-1440';
+  await page.locator('input[type="file"][multiple]').setInputFiles(
+    heic
+      ? {
+          name: 'synthetic-grid.heic',
+          mimeType: 'image/heic',
+          buffer: await readFile(
+            path.resolve(process.cwd(), 'apps/api/test/fixtures/synthetic-grid.heic'),
+          ),
+        }
+      : { name: 'synthetic.png', mimeType: 'image/png', buffer: syntheticPng },
+  );
   await page.getByRole('button', { name: '开始上传' }).click();
   await expect(page.getByText('私有草稿已就绪')).toBeVisible({ timeout: 30_000 });
+  await expect(page).toHaveURL(/\/app\/photos\/upload\?batchId=/);
+  await page.reload();
+  await expect(page.getByText('私有草稿已就绪')).toBeVisible();
+  await expect(page.getByRole('img', { name: '所选照片 1' })).toBeVisible();
+  await page.getByRole('link', { name: '我的上传' }).click();
+  await page.getByRole('link', { name: '查看上传批次' }).click();
+  await expect(page.getByText('私有草稿已就绪')).toBeVisible();
   await page.getByLabel('发布').check();
   await page.getByLabel('地点', { exact: true }).fill('批量合成地点');
   await page.getByRole('button', { name: '套用到所选' }).click();
@@ -289,7 +305,7 @@ test('uploads and publishes a synthetic photo in the responsive flow', async ({ 
     ),
   ).toBe(true);
   await page.getByRole('link', { name: '我的上传' }).click();
-  await expect(page.getByText('已发布', { exact: true })).toBeVisible();
+  await expect(page.getByRole('article').getByText('已发布', { exact: true })).toBeVisible();
   if ((page.viewportSize()?.width ?? 1440) < 1024) {
     await expect(page.getByRole('navigation', { name: '移动端主导航' })).toBeVisible();
   } else {

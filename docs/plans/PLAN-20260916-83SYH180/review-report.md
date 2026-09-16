@@ -4,11 +4,11 @@ type: review_report
 title: "照片上传基础 Review"
 status: pending
 created_at: 2026-09-16T13:30:00+08:00
-updated_at: 2026-09-16T15:47:00+08:00
+updated_at: 2026-09-16T16:05:00+08:00
 plan_id: PLAN-20260916-83SYH180
 repository_mode: git_remote
-reviewed_commit: f47ed97b4e9f6c5d492c563c867f7748df29f56e
-reviewed_scope_digest: 77748D9D48E3007F396A246993BCE7F43B13F594B73DDC87A1254194B8DEC1DF
+reviewed_commit: null
+reviewed_scope_digest: null
 ci_status: pending
 related_ids: [PLAN-20260916-83SYH180, SPEC-20260916-5Z69DCQE, DES-20260916-4XCFYD80]
 supersedes: []
@@ -17,7 +17,7 @@ superseded_by: []
 
 # Review Report
 
-固定候选为 `f47ed97b4e9f6c5d492c563c867f7748df29f56e`，v2 owned-scope digest 为 `77748D9D48E3007F396A246993BCE7F43B13F594B73DDC87A1254194B8DEC1DF`。当前结论仍为 `pending`，不得作为 Review 通过或进入 Regression 的证据。
+上一轮候选 `f47ed97b4e9f6c5d492c563c867f7748df29f56e` 的 v2 owned-scope digest 为 `77748D9D48E3007F396A246993BCE7F43B13F594B73DDC87A1254194B8DEC1DF`；Review 发现新的 UI 契约缺口并已返回 Development。该提交保留为历史审查事实，不再是待验收候选。当前结论为 `pending`，修复提交与摘要尚待重新固定，不得进入 Regression。
 
 ## 已核对事实
 
@@ -26,6 +26,7 @@ superseded_by: []
 - 最新 Alpine API 镜像真实处理 JPEG、PNG、WebP、HEIC、HEIF；Windows 宿主 Docker 完整栈的 375/834/1440 Playwright 为 36 passed、27 designed skips、0 failed；PostgreSQL/Redis/对象存储 readiness 均 up；隔离区枚举为 0。
 - 空库和 Plan C 数据库的前向 migration、OpenAPI 双次确定生成、Bucket 私有访问及精确 Origin/方法 CORS 已完成验证；仅使用合成文件与合成账号。
 - 前期 Review 发现的第三次 lease 崩溃滞留、处理中丢弃、回收站授权预览、重签到期跨越 1 小时窗口、维护日志底层 stack 与 E2E 等待竞态均已修复并复查。
+- 本轮 Review 又发现上传批次刷新后不可返回编辑、HEIC 安全缩略图未替换和站内导航缺少上传中确认。实现与组件测试已补齐，等待在新固定提交上重跑完整门禁和 Review。
 
 ## 尚待用户确认的验收口径
 

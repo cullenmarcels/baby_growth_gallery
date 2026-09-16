@@ -19,7 +19,7 @@ import {
   X,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useBlocker, useSearchParams } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { api } from './api';
 import { ConfirmDialog } from './FamilyApp';
@@ -34,7 +34,7 @@ const accepted =
 type LocalStatus = 'ready' | 'uploading' | 'interrupted' | 'uploaded';
 interface LocalFile {
   key: string;
-  file: File;
+  file: File | null;
   preview: string | null;
   progress: number;
   status: LocalStatus;
@@ -81,6 +81,10 @@ function uploadToS3(
   register: (xhr: XMLHttpRequest) => void,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
+    if (!item.file) {
+      reject(new Error('missing-local-file'));
+      return;
+    }
     const xhr = new XMLHttpRequest();
     register(xhr);
     xhr.open('POST', instruction.url);
@@ -102,6 +106,7 @@ function uploadToS3(
 
 export function PhotoUploadPage(): React.JSX.Element {
   const auth = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const familyId = auth.account?.activeFamilyId ?? '';
   const babyId = auth.account?.activeBabyId ?? '';
   const queryClient = useQueryClient();
@@ -119,11 +124,13 @@ export function PhotoUploadPage(): React.JSX.Element {
   const fileInput = useRef<HTMLInputElement>(null);
   const cameraInput = useRef<HTMLInputElement>(null);
   const hasBrowserUploads = items.some((item) => item.status === 'uploading');
+  const leaveBlocker = useBlocker(hasBrowserUploads);
+  const batchId = searchParams.get('batchId') ?? batch?.id ?? '';
 
   const batchQuery = useQuery({
-    queryKey: photoKeys.batch(familyId, babyId, batch?.id ?? ''),
-    queryFn: () => api.getPhotoUploadBatch(familyId, babyId, batch!.id),
-    enabled: Boolean(batch?.id),
+    queryKey: photoKeys.batch(familyId, babyId, batchId),
+    queryFn: () => api.getPhotoUploadBatch(familyId, babyId, batchId),
+    enabled: Boolean(familyId && babyId && batchId),
     refetchInterval(query) {
       const photos = query.state.data?.photos;
       return photos?.some((photo) => ['QUEUED', 'PROCESSING'].includes(photo.status))
@@ -132,6 +139,20 @@ export function PhotoUploadPage(): React.JSX.Element {
     },
   });
   const currentBatch = batchQuery.data ?? batch;
+  const visibleItems = currentBatch
+    ? currentBatch.photos.map(
+        (photo): LocalFile =>
+          items.find((item) => item.photoId === photo.id) ?? {
+            key: `resumed-${photo.id}`,
+            file: null,
+            preview: null,
+            progress: 100,
+            status: 'uploaded',
+            error: undefined,
+            photoId: photo.id,
+          },
+      )
+    : items;
 
   useEffect(() => {
     const guard = (event: BeforeUnloadEvent) => {
@@ -182,7 +203,8 @@ export function PhotoUploadPage(): React.JSX.Element {
   }
 
   async function startUpload(): Promise<void> {
-    const error = validateFiles(items.map((item) => item.file));
+    const files = items.flatMap((item) => (item.file ? [item.file] : []));
+    const error = validateFiles(files);
     if (error) {
       setNotice(error);
       return;
@@ -191,13 +213,14 @@ export function PhotoUploadPage(): React.JSX.Element {
     setNotice(undefined);
     try {
       const created = await api.createPhotoUploadBatch(familyId, babyId, {
-        files: items.map((item) => ({
-          contentType: declaredType(item.file),
-          sizeBytes: item.file.size,
+        files: files.map((file) => ({
+          contentType: declaredType(file),
+          sizeBytes: file.size,
           capturedOn: localToday(),
         })),
       });
       setBatch(created);
+      setSearchParams({ batchId: created.id }, { replace: true });
       const instructions = new Map(
         (created.uploadInstructions ?? []).map((item) => [item.photoId, item]),
       );
@@ -379,7 +402,28 @@ export function PhotoUploadPage(): React.JSX.Element {
             {notice}
           </div>
         ) : null}
-        {!batch ? (
+        {batchId && !currentBatch && batchQuery.isPending ? (
+          <div className={styles.notice} role="status" aria-live="polite">
+            正在恢复上传批次…
+          </div>
+        ) : null}
+        {batchId && batchQuery.isError ? (
+          <div className={styles.notice} role="alert">
+            无法恢复这个上传批次。请检查当前家庭和宝宝，或重新开始上传。
+            <button
+              type="button"
+              onClick={() => {
+                setBatch(undefined);
+                setItems([]);
+                setSelected(new Set());
+                setSearchParams({}, { replace: true });
+              }}
+            >
+              重新开始
+            </button>
+          </div>
+        ) : null}
+        {!batchId ? (
           <div
             className={`${styles.dropZone} ${dragging ? styles.dragging : ''}`}
             onDragEnter={(event) => {
@@ -425,18 +469,18 @@ export function PhotoUploadPage(): React.JSX.Element {
             />
           </div>
         ) : null}
-        {items.length > 0 ? (
+        {visibleItems.length > 0 ? (
           <section className={styles.fileSection} aria-live="polite">
             <div className={styles.sectionHeading}>
               <div>
-                <h2>{batch ? '处理与编辑' : `已选择 ${items.length} 张`}</h2>
+                <h2>{batchId ? '处理与编辑' : `已选择 ${items.length} 张`}</h2>
                 <p>
-                  {batch
+                  {batchId
                     ? '完成处理的照片会自动保存为你的私有草稿。'
                     : '确认后将直接上传到私有隔离区。'}
                 </p>
               </div>
-              {!batch ? (
+              {!batchId ? (
                 <button type="button" disabled={busy} onClick={() => void startUpload()}>
                   <Upload size={17} />
                   开始上传
@@ -444,7 +488,7 @@ export function PhotoUploadPage(): React.JSX.Element {
               ) : null}
             </div>
             <div className={styles.photoGrid}>
-              {items.map((item, index) => {
+              {visibleItems.map((item, index) => {
                 const server = currentBatch?.photos.find((photo) => photo.id === item.photoId);
                 return (
                   <UploadCard
@@ -466,6 +510,8 @@ export function PhotoUploadPage(): React.JSX.Element {
                     onSave={(fields) => {
                       if (server) void savePhoto(server.id, fields);
                     }}
+                    familyId={familyId}
+                    babyId={babyId}
                     index={index}
                   />
                 );
@@ -529,6 +575,18 @@ export function PhotoUploadPage(): React.JSX.Element {
           </section>
         ) : null}
       </section>
+      {leaveBlocker.state === 'blocked' ? (
+        <ConfirmDialog
+          title="离开上传页面？"
+          message="仍有照片正在上传。离开后浏览器传输会中断，已完成的照片仍会继续在服务端处理。"
+          onCancel={() => leaveBlocker.reset()}
+          onConfirm={() => {
+            xhrs.current.forEach((xhr) => xhr.abort());
+            leaveBlocker.proceed();
+            return Promise.resolve();
+          }}
+        />
+      ) : null}
     </main>
   );
 }
@@ -541,6 +599,8 @@ function UploadCard({
   onCancel,
   onRetry,
   onSave,
+  familyId,
+  babyId,
   index,
 }: {
   item: LocalFile;
@@ -555,6 +615,8 @@ function UploadCard({
     capturedOn?: string;
     location?: string;
   }) => void;
+  familyId: string;
+  babyId: string;
   index: number;
 }): React.JSX.Element {
   const [title, setTitle] = useState(photo?.title ?? '');
@@ -563,6 +625,13 @@ function UploadCard({
   const [capturedOn, setCapturedOn] = useState(photo?.capturedOn ?? localToday());
   const status = photo?.status;
   const draft = status === 'DRAFT';
+  const safePreview = useQuery({
+    queryKey: photoKeys.preview(familyId, babyId, photo?.id ?? '', 'THUMBNAIL'),
+    queryFn: () => api.getPhotoPreview(familyId, babyId, photo!.id, 'THUMBNAIL'),
+    enabled: Boolean(photo && ['DRAFT', 'PUBLISHED'].includes(photo.status)),
+    staleTime: 4 * 60_000,
+  });
+  const previewUrl = safePreview.data?.url ?? item.preview;
   const stateText =
     item.status === 'uploading'
       ? `上传中 ${item.progress}%`
@@ -582,12 +651,12 @@ function UploadCard({
   return (
     <article className={styles.uploadCard}>
       <div className={styles.previewBox}>
-        {item.preview ? (
-          <img src={item.preview} alt={`所选照片 ${index + 1}`} />
+        {previewUrl ? (
+          <img src={previewUrl} alt={`所选照片 ${index + 1}`} />
         ) : (
           <>
             <LoaderCircle className={status === 'PROCESSING' ? styles.spin : ''} />
-            <span>HEIC 安全处理中</span>
+            <span>{draft ? '安全缩略图暂不可用' : '安全缩略图处理中'}</span>
           </>
         )}
       </div>
@@ -619,6 +688,11 @@ function UploadCard({
             <RefreshCw size={15} />
             重新上传
           </button>
+        ) : null}
+        {!item.file && status === 'AWAITING_UPLOAD' ? (
+          <p className={styles.errorText}>
+            刷新后浏览器不会保留原文件。请重新选择照片建立新批次，或在“我的上传”中丢弃此项目。
+          </p>
         ) : null}
         {status === 'FAILED' ? (
           <p className={styles.errorText}>{failureMessage(photo?.failureCode ?? null)}</p>
@@ -917,6 +991,11 @@ function ManageCard({
           <small>{new Date(photo.purgeAfter).toLocaleDateString('zh-CN')} 永久清理</small>
         ) : null}
         <div className={styles.cardActions}>
+          {['AWAITING_UPLOAD', 'QUEUED', 'PROCESSING', 'DRAFT', 'FAILED'].includes(photo.status) ? (
+            <Link to={`/app/photos/upload?batchId=${encodeURIComponent(photo.batchId)}`}>
+              查看上传批次
+            </Link>
+          ) : null}
           {photo.status === 'PUBLISHED' ? (
             <button type="button" onClick={onTrash}>
               <Trash2 size={15} />
@@ -929,7 +1008,7 @@ function ManageCard({
               恢复
             </button>
           ) : null}
-          {['DRAFT', 'FAILED', 'AWAITING_UPLOAD', 'QUEUED'].includes(photo.status) ? (
+          {['DRAFT', 'FAILED', 'AWAITING_UPLOAD', 'QUEUED', 'PROCESSING'].includes(photo.status) ? (
             <button type="button" onClick={onDiscard}>
               <Trash2 size={15} />
               丢弃
