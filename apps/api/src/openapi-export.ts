@@ -19,6 +19,7 @@ function sortObject(value: unknown): unknown {
 }
 
 async function exportOpenApi(): Promise<void> {
+  process.env.BACKGROUND_JOBS_ENABLED = 'false';
   const app = await NestFactory.create(AppModule, { logger: ['error'], abortOnError: false });
   const document = configureApp(app);
   await app.init();

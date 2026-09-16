@@ -107,7 +107,7 @@ export class FamilyController {
     const account = await this.sessions.current(request);
     const input = parseBody(createFamilySchema, body);
     const family = await this.families.createFamily(account.id, input);
-    await this.sessions.setActiveFamily(request, family.id);
+    await this.sessions.setActiveFamily(request, family.id, account.id);
     return family;
   }
 
@@ -129,7 +129,7 @@ export class FamilyController {
     const familyId = parseBody(familyIdSchema, rawFamilyId);
     const account = await this.sessions.current(request);
     await this.families.getFamily(account.id, familyId);
-    await this.sessions.setActiveFamily(request, familyId);
+    await this.sessions.setActiveFamily(request, familyId, account.id);
     return this.sessions.summaryForRequest(request, account);
   }
 
@@ -203,7 +203,7 @@ export class FamilyController {
     const account = await this.sessions.current(request);
     await this.families.leaveFamily(account.id, familyId);
     const fallback = await this.sessions.reconcileActiveFamily(request, account.id);
-    await this.sessions.setActiveFamily(request, fallback);
+    await this.sessions.setActiveFamily(request, fallback, account.id);
     return this.sessions.summaryForRequest(request, account);
   }
 
@@ -293,7 +293,7 @@ export class FamilyInvitationController {
     await this.rateLimits.consumeInvitationAttempt(account.id, request.ip ?? 'unknown');
     const input = parseBody(acceptInvitationSchema, body);
     const family = await this.families.acceptInvitation(account.id, input.token, input.displayName);
-    await this.sessions.setActiveFamily(request, family.id);
+    await this.sessions.setActiveFamily(request, family.id, account.id);
     return { family, account: this.sessions.summaryForRequest(request, account) };
   }
 }

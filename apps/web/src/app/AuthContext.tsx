@@ -32,6 +32,7 @@ export function AuthProvider({ children }: PropsWithChildren): React.JSX.Element
           if (!account) {
             queryClient.removeQueries({ queryKey: ['families'] });
             queryClient.removeQueries({ queryKey: ['family'] });
+            queryClient.removeQueries({ queryKey: ['babies'] });
           }
           queryClient.setQueryData(sessionKey, account);
         },

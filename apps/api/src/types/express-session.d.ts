@@ -11,6 +11,7 @@ declare module 'express-session' {
     idleTimeoutMs?: number;
     returnPath?: string;
     activeFamilyId?: string;
+    activeBabyId?: string;
   }
 }
 

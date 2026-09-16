@@ -11,6 +11,7 @@ const auth = vi.hoisted(() => ({
     displayName: null,
     phoneMasked: '+86 136****0000',
     activeFamilyId: '00000000-0000-4000-8000-000000000010' as string | null,
+    activeBabyId: null as string | null,
   },
   isLoading: false,
   setAccount: vi.fn(),
@@ -56,6 +57,7 @@ function renderRoute(element: React.ReactNode, initialPath = '/app/onboarding'):
 afterEach(() => {
   auth.setAccount.mockReset();
   auth.account.activeFamilyId = '00000000-0000-4000-8000-000000000010';
+  auth.account.activeBabyId = null;
 });
 
 describe('family application states', () => {
@@ -98,6 +100,7 @@ describe('family application states', () => {
           <Routes>
             <Route path="/app" element={<AppHomeRedirect />} />
             <Route path="/app/onboarding" element={<h1>首次家庭引导</h1>} />
+            <Route path="/app/baby-entry" element={<h1>宝宝入口</h1>} />
           </Routes>
         </MemoryRouter>
       </QueryClientProvider>,

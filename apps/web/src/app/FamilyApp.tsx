@@ -1,4 +1,5 @@
 import type {
+  BabySummary,
   FamilyActivityPage,
   FamilyMember,
   FamilySummary,
@@ -31,6 +32,7 @@ import { Link, NavLink, Navigate, Outlet, useNavigate, useParams } from 'react-r
 import { z } from 'zod';
 import { useAuth } from './AuthContext';
 import { api } from './api';
+import { babyKeys } from './baby-query';
 import styles from './FamilyApp.module.css';
 import { userFacingError } from './user-facing-error';
 
@@ -67,7 +69,7 @@ export function AppHomeRedirect(): React.JSX.Element {
   if (families.isError) return <PageState message="家庭列表加载失败，请刷新页面重试。" />;
   const active = families.data.items.find((family) => family.id === auth.account?.activeFamilyId);
   const target = active ?? families.data.items[0];
-  return <Navigate replace to={target ? `/app/families/${target.id}` : '/app/onboarding'} />;
+  return <Navigate replace to={target ? '/app/baby-entry' : '/app/onboarding'} />;
 }
 
 const navItems = [
@@ -80,18 +82,40 @@ const navItems = [
 export function FamilyShell(): React.JSX.Element {
   const auth = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [babyMenuOpen, setBabyMenuOpen] = useState(false);
   const [notice, setNotice] = useState<string>();
   const families = useQuery({ queryKey: familyKeys.all, queryFn: () => api.listFamilies() });
+  const activeFamilyId = auth.account?.activeFamilyId ?? '';
+  const babies = useQuery({
+    queryKey: babyKeys.family(activeFamilyId),
+    queryFn: () => api.listBabies(activeFamilyId),
+    enabled: Boolean(activeFamilyId),
+  });
   const activate = useMutation({
     mutationFn: (familyId: string) => api.activateFamily(familyId),
-    onSuccess(account, familyId) {
+    onSuccess(account) {
       auth.setAccount(account);
       setMenuOpen(false);
-      void navigate(`/app/families/${familyId}`);
+      setBabyMenuOpen(false);
+      void queryClient.invalidateQueries({ queryKey: babyKeys.all });
+      void navigate('/app');
     },
     onError(error) {
       setNotice(userFacingError(error, '切换家庭失败，请重试。'));
+    },
+  });
+  const activateBaby = useMutation({
+    mutationFn: (baby: BabySummary) => api.activateBaby(activeFamilyId, baby.id),
+    onSuccess(account) {
+      auth.setAccount(account);
+      setMenuOpen(false);
+      setBabyMenuOpen(false);
+      void navigate('/app/home');
+    },
+    onError(error) {
+      setNotice(userFacingError(error, '切换宝宝失败，请重试。'));
     },
   });
 
@@ -109,6 +133,7 @@ export function FamilyShell(): React.JSX.Element {
   const activeFamily = families.data?.items.find(
     (family) => family.id === auth.account?.activeFamilyId,
   );
+  const activeBaby = babies.data?.items.find((baby) => baby.id === auth.account?.activeBabyId);
 
   return (
     <div className={styles.shell}>
@@ -119,7 +144,21 @@ export function FamilyShell(): React.JSX.Element {
           </span>
           <strong>小福宝成长记</strong>
         </Link>
+        {activeBaby ? (
+          <Link
+            className={styles.mobileBabyLink}
+            to="/app/home"
+            aria-label={`打开${activeBaby.nickname}的首页`}
+          >
+            <span>{activeBaby.nickname.slice(0, 1)}</span>
+            <strong>{activeBaby.nickname}</strong>
+          </Link>
+        ) : null}
         <nav className={styles.desktopNav} aria-label="主导航">
+          <NavLink to="/app/home">
+            <Baby size={17} />
+            首页
+          </NavLink>
           {navItems.map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to}>
               <Icon size={17} />
@@ -134,11 +173,29 @@ export function FamilyShell(): React.JSX.Element {
           ) : null}
         </nav>
         <div className={styles.headerActions}>
+          {activeBaby ? (
+            <button
+              className={styles.babySwitch}
+              type="button"
+              aria-expanded={babyMenuOpen}
+              onClick={() => {
+                setBabyMenuOpen((open) => !open);
+                setMenuOpen(false);
+              }}
+            >
+              <span>{activeBaby.nickname.slice(0, 1)}</span>
+              <strong>{activeBaby.nickname}</strong>
+              <ChevronDown size={15} />
+            </button>
+          ) : null}
           <button
             className={styles.familySwitch}
             type="button"
             aria-expanded={menuOpen}
-            onClick={() => setMenuOpen((open) => !open)}
+            onClick={() => {
+              setMenuOpen((open) => !open);
+              setBabyMenuOpen(false);
+            }}
           >
             <Home size={16} />
             <span>{activeFamily?.name ?? '选择家庭'}</span>
@@ -156,7 +213,10 @@ export function FamilyShell(): React.JSX.Element {
             className={styles.mobileMenuButton}
             type="button"
             aria-label="打开家庭切换器"
-            onClick={() => setMenuOpen((open) => !open)}
+            onClick={() => {
+              setMenuOpen((open) => !open);
+              setBabyMenuOpen(false);
+            }}
           >
             <Menu size={20} />
           </button>
@@ -174,6 +234,26 @@ export function FamilyShell(): React.JSX.Element {
                   {family.id === auth.account?.activeFamilyId ? <Check size={16} /> : null}
                 </button>
               ))}
+              {activeFamily ? (
+                <div className={styles.mobileBabyMenuContent}>
+                  <p>当前家庭的宝宝</p>
+                  {babies.data?.items.map((baby) => (
+                    <button
+                      key={baby.id}
+                      type="button"
+                      disabled={activateBaby.isPending}
+                      onClick={() => activateBaby.mutate(baby)}
+                    >
+                      <span>{baby.nickname}</span>
+                      {baby.id === auth.account?.activeBabyId ? <Check size={16} /> : null}
+                    </button>
+                  ))}
+                  <Link to="/app/babies/manage" onClick={() => setMenuOpen(false)}>
+                    <Baby size={16} />
+                    查看宝宝档案
+                  </Link>
+                </div>
+              ) : null}
               <Link to="/app/onboarding" onClick={() => setMenuOpen(false)}>
                 <Plus size={16} />
                 创建或加入家庭
@@ -182,6 +262,26 @@ export function FamilyShell(): React.JSX.Element {
                 <LogOut size={16} />
                 退出登录
               </button>
+            </div>
+          ) : null}
+          {babyMenuOpen ? (
+            <div className={`${styles.switchMenu} ${styles.babySwitchMenu}`}>
+              <p>当前家庭的宝宝</p>
+              {babies.data?.items.map((baby) => (
+                <button
+                  key={baby.id}
+                  type="button"
+                  disabled={activateBaby.isPending}
+                  onClick={() => activateBaby.mutate(baby)}
+                >
+                  <span>{baby.nickname}</span>
+                  {baby.id === auth.account?.activeBabyId ? <Check size={16} /> : null}
+                </button>
+              ))}
+              <Link to="/app/babies/manage" onClick={() => setBabyMenuOpen(false)}>
+                <Baby size={16} />
+                查看宝宝档案
+              </Link>
             </div>
           ) : null}
         </div>
@@ -270,7 +370,7 @@ function CreateFamilyForm(): React.JSX.Element {
     setServerError(undefined);
     try {
       const family = await api.createFamily(parsed.data);
-      auth.setAccount({ ...auth.account!, activeFamilyId: family.id });
+      auth.setAccount({ ...auth.account!, activeFamilyId: family.id, activeBabyId: null });
       await queryClient.invalidateQueries({ queryKey: familyKeys.all });
       await navigate(`/app/families/${family.id}`, { replace: true });
     } catch (error) {
@@ -416,9 +516,15 @@ export function FamilyPage(): React.JSX.Element {
             {membership.displayName} · {roleLabel(membership.role)}
           </p>
         </div>
-        <span className={styles.familyMark}>
-          <Users size={28} />
-        </span>
+        <div className={styles.familyHeroActions}>
+          <Link className={styles.secondaryButton} to="/app/babies/manage">
+            <Baby size={17} />
+            宝宝档案
+          </Link>
+          <span className={styles.familyMark}>
+            <Users size={28} />
+          </span>
+        </div>
       </section>
       {notice ? (
         <div className={styles.inlineNotice} role="status">
@@ -825,7 +931,7 @@ export function ComingSoonPage({
   );
 }
 
-function ConfirmDialog({
+export function ConfirmDialog({
   title,
   message,
   onCancel,

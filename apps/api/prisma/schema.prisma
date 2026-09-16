@@ -29,6 +29,17 @@ enum FamilyActivityVisibility {
   TOMBSTONED
 }
 
+enum BabySex {
+  MALE
+  FEMALE
+}
+
+enum BabyProfileStatus {
+  ACTIVE
+  ARCHIVED
+  PURGING
+}
+
 model Account {
   id                String             @id @default(uuid()) @db.Uuid
   phoneE164         String             @unique @map("phone_e164") @db.VarChar(16)
@@ -58,6 +69,7 @@ model Family {
   memberships        FamilyMembership[]
   invitations        FamilyInvitation[]
   activities         FamilyActivity[]
+  babies             BabyProfile[]
 
   @@index([createdByAccountId])
   @@map("families")
@@ -77,6 +89,7 @@ model FamilyMembership {
   account            Account                @relation(fields: [accountId], references: [id], onDelete: Restrict)
   createdInvitations FamilyInvitation[]     @relation("InvitationCreator")
   activities         FamilyActivity[]       @relation("ActivityActor")
+  createdBabies      BabyProfile[]           @relation("BabyCreator")
 
   @@unique([familyId, accountId])
   @@index([accountId, status, joinedAt])
@@ -122,6 +135,27 @@ model FamilyActivity {
   @@index([familyId, occurredAt(sort: Desc), id(sort: Desc)])
   @@index([actorMembershipId])
   @@map("family_activities")
+}
+
+model BabyProfile {
+  id                    String            @id @default(uuid()) @db.Uuid
+  familyId              String            @map("family_id") @db.Uuid
+  createdByMembershipId String            @map("created_by_membership_id") @db.Uuid
+  nickname              String            @db.VarChar(30)
+  birthDate             DateTime          @map("birth_date") @db.Date
+  sex                   BabySex?
+  status                BabyProfileStatus @default(ACTIVE)
+  archivedAt            DateTime?         @map("archived_at") @db.Timestamptz(3)
+  purgeAfter            DateTime?         @map("purge_after") @db.Timestamptz(3)
+  createdAt             DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+  family                Family            @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  createdBy             FamilyMembership  @relation("BabyCreator", fields: [createdByMembershipId], references: [id], onDelete: Restrict)
+
+  @@index([familyId, status, createdAt(sort: Desc), id(sort: Desc)])
+  @@index([status, purgeAfter])
+  @@index([createdByMembershipId])
+  @@map("baby_profiles")
 }
 
 model LegalAcceptance {

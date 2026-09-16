@@ -37,6 +37,11 @@
       },
       "AccountSummaryDto": {
         "properties": {
+          "activeBabyId": {
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
           "activeFamilyId": {
             "format": "uuid",
             "nullable": true,
@@ -59,7 +64,8 @@
           "id",
           "displayName",
           "phoneMasked",
-          "activeFamilyId"
+          "activeFamilyId",
+          "activeBabyId"
         ],
         "type": "object"
       },
@@ -241,6 +247,87 @@
         ],
         "type": "object"
       },
+      "BabyListResponseDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BabySummaryDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "BabySummaryDto": {
+        "properties": {
+          "archivedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "birthDate": {
+            "format": "date",
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "familyId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "nickname": {
+            "maxLength": 30,
+            "minLength": 1,
+            "type": "string"
+          },
+          "purgeAfter": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "sex": {
+            "enum": [
+              "MALE",
+              "FEMALE"
+            ],
+            "nullable": true,
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "ACTIVE",
+              "ARCHIVED"
+            ],
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "familyId",
+          "nickname",
+          "birthDate",
+          "sex",
+          "status",
+          "archivedAt",
+          "purgeAfter",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
       "ChangeMemberRoleRequestDto": {
         "properties": {
           "role": {
@@ -280,6 +367,32 @@
           "challengeId",
           "code",
           "remember"
+        ],
+        "type": "object"
+      },
+      "CreateBabyRequestDto": {
+        "properties": {
+          "birthDate": {
+            "format": "date",
+            "type": "string"
+          },
+          "nickname": {
+            "maxLength": 30,
+            "minLength": 1,
+            "type": "string"
+          },
+          "sex": {
+            "enum": [
+              "MALE",
+              "FEMALE"
+            ],
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "nickname",
+          "birthDate"
         ],
         "type": "object"
       },
@@ -798,6 +911,28 @@
           "occurredAt",
           "message"
         ],
+        "type": "object"
+      },
+      "UpdateBabyRequestDto": {
+        "properties": {
+          "birthDate": {
+            "format": "date",
+            "type": "string"
+          },
+          "nickname": {
+            "maxLength": 30,
+            "minLength": 1,
+            "type": "string"
+          },
+          "sex": {
+            "enum": [
+              "MALE",
+              "FEMALE"
+            ],
+            "nullable": true,
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "VerificationChallengeRequestDto": {
@@ -1902,6 +2037,327 @@
         "summary": "List stable cursor-paginated family activity",
         "tags": [
           "families"
+        ]
+      }
+    },
+    "/api/v1/families/{familyId}/babies": {
+      "get": {
+        "operationId": "BabyController_list",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "includeArchived",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BabyListResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "babies"
+        ]
+      },
+      "post": {
+        "operationId": "BabyController_create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBabyRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BabySummaryDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "babies"
+        ]
+      }
+    },
+    "/api/v1/families/{familyId}/babies/{babyId}": {
+      "get": {
+        "operationId": "BabyController_detail",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BabySummaryDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "babies"
+        ]
+      },
+      "patch": {
+        "operationId": "BabyController_update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBabyRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BabySummaryDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "babies"
+        ]
+      }
+    },
+    "/api/v1/families/{familyId}/babies/{babyId}/activate": {
+      "post": {
+        "operationId": "BabyController_activate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountSummaryDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "babies"
+        ]
+      }
+    },
+    "/api/v1/families/{familyId}/babies/{babyId}/archive": {
+      "post": {
+        "operationId": "BabyController_archive",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountSummaryDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "babies"
+        ]
+      }
+    },
+    "/api/v1/families/{familyId}/babies/{babyId}/restore": {
+      "post": {
+        "operationId": "BabyController_restore",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BabySummaryDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "babies"
         ]
       }
     },

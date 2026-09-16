@@ -25,7 +25,9 @@ export default defineConfig({
               process.env.DATABASE_URL ??
               'postgresql://baby_gallery:baby_gallery_dev_password@127.0.0.1:5432/baby_growth_gallery',
             REDIS_URL: process.env.REDIS_URL ?? 'redis://127.0.0.1:6379',
-            REDIS_KEY_PREFIX: process.env.REDIS_KEY_PREFIX ?? 'bgg-e2e',
+            REDIS_KEY_PREFIX:
+              process.env.REDIS_KEY_PREFIX ?? `bgg-e2e-${process.pid}-${Date.now()}`,
+            TRUST_PROXY: '1',
             VERIFICATION_DELIVERY_MODE: 'fixed',
             TEST_VERIFICATION_CODE: '246810',
             AUTH_SESSION_SECRET: 'e2e-session-secret-that-is-not-for-production',

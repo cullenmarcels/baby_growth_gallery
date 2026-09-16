@@ -4,7 +4,7 @@
 
 - 最后协议更新：`2026-09-08T11:34:45+08:00`
 - 索引状态：`consistent`
-- 当前阶段：工程基础、五层分支治理、账号认证与 Redis 会话、家庭身份与邀请基础均已归档；下一业务阶段尚未规划。
+- 当前阶段：工程基础、五层分支治理、账号认证与 Redis 会话、家庭身份与邀请基础均已归档；Plan C 多宝宝档案与当前宝宝 Session 正在 `feature/baby-profile-foundation` 实施。
 - 仓库协作状态：不缓存；每次运行 [`repository-preflight.ps1`](../hooks/repository-preflight.ps1)。分支治理验收集成提交为 `origin/main@19590f9db9bc55c85e9beb3608bdaec684a6a8a3`；归档工作分支为 `feature/branch-governance-archive`。
 - 归档基线：[`ARCHIVE.sha256`](./ARCHIVE.sha256)
 - 生成命令：`hooks/update-indexes.ps1 -Write`；核对命令：`hooks/update-indexes.ps1 -Check`
@@ -22,6 +22,8 @@
 | `SPEC-20260910-VP1CDG7N` | `spec` | 手机号认证与 Redis 会话规格（密码长度修订） | `active` | `[SPEC-20260910-TAMMQYAH]` | `[]` | [source](./specs/SPEC-20260910-VP1CDG7N-auth-session-password-revision/spec.md) |
 | `DES-20260911-9Z3KRKCQ` | `design` | 家庭身份、成员权限与动态界面补充设计 | `active` | `[]` | `[]` | [source](./designs/DES-20260911-9Z3KRKCQ-family-identity-ui/design.md) |
 | `SPEC-20260911-3YV4GCRZ` | `spec` | 家庭身份、成员权限、单次邀请与家庭动态规格 | `active` | `[]` | `[]` | [source](./specs/SPEC-20260911-3YV4GCRZ-family-identity/spec.md) |
+| `DES-20260915-S2PV4FM8` | `design` | 宝宝成长业务闭环界面补充设计 | `active` | `[]` | `[]` | [source](./designs/DES-20260915-S2PV4FM8-baby-growth-mvp-ui/design.md) |
+| `SPEC-20260915-8RKJ7RGM` | `spec` | 首个宝宝成长记录业务里程碑规格 | `active` | `[]` | `[]` | [source](./specs/SPEC-20260915-8RKJ7RGM-baby-growth-mvp/spec.md) |
 <!-- GENERATED:END DESIGNS_SPECS -->
 
 ## Plan 台账
@@ -29,6 +31,7 @@
 | Plan ID | 标题 | 状态 | 仓库模式 | 基线提交 | 候选提交 | 集成提交 | Review | Regression | 验收有效性 | Achievement |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 <!-- GENERATED:BEGIN PLANS -->
+| [PLAN-20260915-PQ8NHNZ2](./plans/PLAN-20260915-PQ8NHNZ2/plan.md) | 建立多宝宝档案与当前宝宝会话基础 | `acceptance_pending` | `git_remote` | `b3b12b0e588873853b71960c23ded0cc1a62dcc3` | `5fdb3cfd89c4569f509e15788bc398a991836901` | `-` | [passed](./plans/PLAN-20260915-PQ8NHNZ2/review-report.md) | [passed](./plans/PLAN-20260915-PQ8NHNZ2/regression-report.md) | pending | - |
 | [PLAN-20260911-JBANR2J8](./plans/PLAN-20260911-JBANR2J8/plan.md) | 修订家庭邀请中文错误与撤销确认 | `archived` | `git_remote` | `805a979d3927c828127c441b3fd5c07e48aa8768` | `66344d706a7b572d7c7af2b796af0bdd819d67c2` | `b3f2b4682f2b7a831069eab147334b5183c7892b` | [passed](./plans/PLAN-20260911-JBANR2J8/review-report.md) | [passed](./plans/PLAN-20260911-JBANR2J8/regression-report.md) | confirmed 2026-09-14T13:31:00+08:00 | [ACH-20260911-JBANR2J8](./achievements/ACH-20260911-JBANR2J8-family-identity-foundation.md) |
 | [PLAN-20260911-X27F6QNT](./plans/PLAN-20260911-X27F6QNT/plan.md) | 建立家庭身份、成员权限、单次邀请与家庭动态基础 | `superseded` | `git_remote` | `701f26aef605ccac7c1bded89fcb0e3c5e53a54c` | `3b8b92fdcf3ed6eaa575c35c3ab2466152d0b673` | `-` | [passed](./plans/PLAN-20260911-X27F6QNT/review-report.md) | [passed](./plans/PLAN-20260911-X27F6QNT/regression-report.md) | pending | - |
 | [PLAN-20260910-JBD9BWHZ](./plans/PLAN-20260910-JBD9BWHZ/plan.md) | 修订认证密码最小长度并重新形成候选 | `archived` | `git_remote` | `1b22fa7b97155dd616442e1a34f4453b2cacfc39` | `b8a36f4795c0378fe6652fc249ade83dc1c47104` | `7354720b400f098e539b65a6211756aaffa6b21e` | [passed](./plans/PLAN-20260910-JBD9BWHZ/review-report.md) | [passed](./plans/PLAN-20260910-JBD9BWHZ/regression-report.md) | confirmed 2026-09-11T09:31:53+08:00 | [ACH-20260910-JBD9BWHZ](./achievements/ACH-20260910-JBD9BWHZ-auth-session-foundation.md) |

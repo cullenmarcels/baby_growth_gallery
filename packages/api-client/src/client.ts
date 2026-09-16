@@ -11,6 +11,7 @@ export type FamilySummary = components['schemas']['FamilySummaryDto'];
 export type FamilyMember = components['schemas']['FamilyMemberDto'];
 export type ActiveInvitation = components['schemas']['ActiveInvitationDto'];
 export type FamilyActivityPage = components['schemas']['FamilyActivityPageDto'];
+export type BabySummary = components['schemas']['BabySummaryDto'];
 
 export class ApiClientError extends Error {
   constructor(
@@ -264,6 +265,69 @@ export function createApiClient({ baseUrl, fetchImpl }: ApiClientOptions) {
         params: { path: { familyId }, query },
       });
       return requireData<FamilyActivityPage>(result.data, result.error, result.response);
+    },
+    async listBabies(
+      familyId: string,
+      includeArchived = false,
+    ): Promise<components['schemas']['BabyListResponseDto']> {
+      const result = await client.GET('/api/v1/families/{familyId}/babies', {
+        params: { path: { familyId }, query: { includeArchived } },
+      });
+      return requireData<components['schemas']['BabyListResponseDto']>(
+        result.data,
+        result.error,
+        result.response,
+      );
+    },
+    async createBaby(
+      familyId: string,
+      body: components['schemas']['CreateBabyRequestDto'],
+    ): Promise<BabySummary> {
+      const result = await client.POST('/api/v1/families/{familyId}/babies', {
+        params: { path: { familyId } },
+        body,
+        headers: await mutationHeaders(),
+      });
+      return requireData<BabySummary>(result.data, result.error, result.response);
+    },
+    async getBaby(familyId: string, babyId: string): Promise<BabySummary> {
+      const result = await client.GET('/api/v1/families/{familyId}/babies/{babyId}', {
+        params: { path: { familyId, babyId } },
+      });
+      return requireData<BabySummary>(result.data, result.error, result.response);
+    },
+    async updateBaby(
+      familyId: string,
+      babyId: string,
+      body: components['schemas']['UpdateBabyRequestDto'],
+    ): Promise<BabySummary> {
+      const result = await client.PATCH('/api/v1/families/{familyId}/babies/{babyId}', {
+        params: { path: { familyId, babyId } },
+        body,
+        headers: await mutationHeaders(),
+      });
+      return requireData<BabySummary>(result.data, result.error, result.response);
+    },
+    async activateBaby(familyId: string, babyId: string): Promise<AccountSummary> {
+      const result = await client.POST('/api/v1/families/{familyId}/babies/{babyId}/activate', {
+        params: { path: { familyId, babyId } },
+        headers: await mutationHeaders(),
+      });
+      return requireData<AccountSummary>(result.data, result.error, result.response);
+    },
+    async archiveBaby(familyId: string, babyId: string): Promise<AccountSummary> {
+      const result = await client.POST('/api/v1/families/{familyId}/babies/{babyId}/archive', {
+        params: { path: { familyId, babyId } },
+        headers: await mutationHeaders(),
+      });
+      return requireData<AccountSummary>(result.data, result.error, result.response);
+    },
+    async restoreBaby(familyId: string, babyId: string): Promise<BabySummary> {
+      const result = await client.POST('/api/v1/families/{familyId}/babies/{babyId}/restore', {
+        params: { path: { familyId, babyId } },
+        headers: await mutationHeaders(),
+      });
+      return requireData<BabySummary>(result.data, result.error, result.response);
     },
   };
 }

@@ -20,7 +20,12 @@ async function csrf(context: APIRequestContext): Promise<string> {
 }
 
 async function registerAccount(): Promise<{ context: APIRequestContext; csrf: string }> {
-  const context = await playwrightRequest.newContext({ baseURL: apiBaseUrl });
+  const context = await playwrightRequest.newContext({
+    baseURL: apiBaseUrl,
+    extraHTTPHeaders: {
+      'X-Forwarded-For': `198.18.${randomInt(0, 256)}.${randomInt(1, 255)}`,
+    },
+  });
   const phone = syntheticPhone();
   const firstCsrf = await csrf(context);
   const challenge = await context.post('/api/v1/auth/verification-challenges', {

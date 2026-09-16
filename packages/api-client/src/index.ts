@@ -5,6 +5,7 @@ export type {
   ApiClientOptions,
   ApiProblem,
   ActiveInvitation,
+  BabySummary,
   FamilyActivityPage,
   FamilyMember,
   FamilySummary,
