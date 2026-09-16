@@ -1,8 +1,10 @@
 import { jest } from '@jest/globals';
 import { readFile } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
 import sharp from 'sharp';
 import type { FamilyMembership, Photo } from '../src/generated/prisma/client.js';
 import { ApiProblemException } from '../src/common/api-problem.exception.js';
+import { ObjectStorageService } from '../src/infrastructure/object-storage.service.js';
 import { PhotoMaintenanceService } from '../src/photo/photo-maintenance.service.js';
 import { PhotoPolicyService } from '../src/photo/photo-policy.service.js';
 import { PhotoProcessingService } from '../src/photo/photo-processing.service.js';
@@ -376,5 +378,209 @@ describe('photo upload domain boundaries', () => {
     ).rejects.toThrow(ApiProblemException);
     expect(policy.permissionDenied).toHaveBeenCalledTimes(1);
     expect(storage.signPrivateGet).toHaveBeenCalledTimes(1);
+  });
+
+  it('signs a ten-minute browser POST bound to its private key, MIME and size range', async () => {
+    const storage = new ObjectStorageService({
+      s3: {
+        endpoint: 'http://127.0.0.1:9000',
+        publicEndpoint: 'http://127.0.0.1:9002',
+        region: 'us-east-1',
+        bucket: 'synthetic-test-bucket',
+        accessKeyId: 'synthetic-access-key',
+        secretAccessKey: 'synthetic-secret-key',
+        forcePathStyle: true,
+      },
+    } as never);
+    const key = `quarantine/${randomUUID()}`;
+    const signed = await storage.createUpload(key, 'image/png');
+    expect(signed.url).toBe('http://127.0.0.1:9002/synthetic-test-bucket');
+    expect(signed.fields.key).toBe(key);
+    expect(signed.fields['Content-Type']).toBe('image/png');
+    const policy = JSON.parse(Buffer.from(signed.fields.Policy!, 'base64').toString('utf8')) as {
+      expiration: string;
+      conditions: unknown[];
+    };
+    expect(policy.conditions).toContainEqual(['eq', '$key', key]);
+    expect(policy.conditions).toContainEqual(['eq', '$Content-Type', 'image/png']);
+    expect(policy.conditions).toContainEqual(['content-length-range', 1, 20 * 1024 * 1024]);
+    expect(new Date(policy.expiration).valueOf() - Date.now()).toBeGreaterThan(590_000);
+    expect(new Date(policy.expiration).valueOf() - Date.now()).toBeLessThanOrEqual(600_000);
+    const short = await storage.createUpload(key, 'image/png', 45);
+    const shortPolicy = JSON.parse(
+      Buffer.from(short.fields.Policy!, 'base64').toString('utf8'),
+    ) as {
+      expiration: string;
+    };
+    expect(new Date(shortPolicy.expiration).valueOf() - Date.now()).toBeGreaterThan(40_000);
+    expect(new Date(shortPolicy.expiration).valueOf() - Date.now()).toBeLessThanOrEqual(45_000);
+    storage.onModuleDestroy();
+  });
+
+  it('clamps a reissued credential to the remaining upload window', async () => {
+    const awaiting = photo('AWAITING_UPLOAD');
+    awaiting.uploadWindowExpiresAt = new Date(Date.now() + 45_000);
+    const policy = {
+      requirePhoto: jest.fn().mockResolvedValue({ membership: membership(), photo: awaiting }),
+      requirePrivateOwner: jest.fn(),
+      notFound: jest.fn(),
+      stateConflict: jest.fn(),
+    };
+    const storage = {
+      createUpload: jest.fn().mockResolvedValue({
+        url: 'https://private.example/post',
+        fields: {},
+        expiresAt: new Date(Date.now() + 40_000).toISOString(),
+      }),
+    };
+    const service = new PhotoService(
+      {} as never,
+      policy as never,
+      {} as never,
+      storage as never,
+      {} as never,
+    );
+    await expect(
+      service.reissue('account', familyId, babyId, batchId, photoId),
+    ).resolves.toMatchObject({
+      photoId,
+    });
+    expect(storage.createUpload).toHaveBeenCalledWith(
+      awaiting.quarantineObjectKey,
+      awaiting.declaredContentType,
+      expect.any(Number),
+    );
+    const seconds = storage.createUpload.mock.calls[0]![2] as number;
+    expect(seconds).toBeGreaterThan(0);
+    expect(seconds).toBeLessThanOrEqual(45);
+  });
+
+  it('publishes every selected draft with one activity each in the same transaction', async () => {
+    const first = photo('DRAFT');
+    const second = { ...photo('DRAFT'), id: '00000000-0000-4000-8000-000000000008' };
+    const transaction = {
+      photo: {
+        findMany: jest
+          .fn()
+          .mockResolvedValueOnce([first, second])
+          .mockResolvedValueOnce([
+            { ...first, status: 'PUBLISHED' },
+            { ...second, status: 'PUBLISHED' },
+          ]),
+        updateMany: jest.fn().mockResolvedValue({ count: 2 }),
+      },
+    };
+    const prisma = {
+      $transaction: jest.fn(async (run: (client: typeof transaction) => Promise<unknown>) =>
+        run(transaction),
+      ),
+    };
+    const policy = { requireActiveBaby: jest.fn().mockResolvedValue({ membership: membership() }) };
+    const activities = { record: jest.fn().mockResolvedValue(undefined) };
+    const service = new PhotoService(
+      prisma as never,
+      policy as never,
+      {} as never,
+      {} as never,
+      activities as never,
+    );
+    const result = await service.publish('account', familyId, babyId, batchId, {
+      photoIds: [first.id, second.id],
+    });
+    expect(result.items.map((item) => item.status)).toEqual(['PUBLISHED', 'PUBLISHED']);
+    expect(transaction.photo.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: { in: [first.id, second.id] }, status: 'DRAFT' },
+        data: expect.objectContaining({ status: 'PUBLISHED' }),
+      }),
+    );
+    expect(activities.record).toHaveBeenCalledTimes(2);
+    for (const id of [first.id, second.id]) {
+      expect(activities.record).toHaveBeenCalledWith(transaction, {
+        familyId,
+        actorMembershipId: membershipId,
+        type: 'PHOTO_UPLOADED',
+        subjectType: 'PHOTO',
+        subjectId: id,
+        summary: { babyId },
+        occurredAt: expect.any(Date),
+      });
+    }
+  });
+
+  it('rejects an invalid selected draft before any publish or activity write', async () => {
+    const transaction = {
+      photo: {
+        findMany: jest
+          .fn()
+          .mockResolvedValue([photo('DRAFT'), { ...photo('QUEUED'), id: randomUUID() }]),
+        updateMany: jest.fn(),
+      },
+    };
+    const prisma = {
+      $transaction: jest.fn(async (run: (client: typeof transaction) => Promise<unknown>) =>
+        run(transaction),
+      ),
+    };
+    const policy = { requireActiveBaby: jest.fn().mockResolvedValue({ membership: membership() }) };
+    const activities = { record: jest.fn() };
+    const service = new PhotoService(
+      prisma as never,
+      policy as never,
+      {} as never,
+      {} as never,
+      activities as never,
+    );
+    await expect(
+      service.publish('account', familyId, babyId, batchId, {
+        photoIds: [photoId, randomUUID()],
+      }),
+    ).rejects.toThrow(ApiProblemException);
+    expect(transaction.photo.updateMany).not.toHaveBeenCalled();
+    expect(activities.record).not.toHaveBeenCalled();
+  });
+
+  it('keeps a PURGING database row and activity until every object deletion succeeds', async () => {
+    const deleting = {
+      ...photo('PURGING'),
+      variants: [{ objectKey: `photos/${photoId}/thumbnail.webp` }],
+    };
+    const transaction = {
+      $queryRawUnsafe: jest.fn().mockResolvedValue([{ acquired: true }]),
+      photo: {
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+        findMany: jest.fn().mockResolvedValue([{ id: photoId }]),
+        delete: jest.fn(),
+      },
+      photoUploadBatch: { deleteMany: jest.fn() },
+    };
+    const prisma = {
+      $transaction: jest.fn(async (run: (client: typeof transaction) => Promise<unknown>) =>
+        run(transaction),
+      ),
+      photo: {
+        findFirst: jest.fn().mockResolvedValue(deleting),
+        findMany: jest.fn().mockResolvedValue([]),
+      },
+    };
+    const storage = {
+      delete: jest.fn((key: string) =>
+        key.startsWith('photos/')
+          ? Promise.reject(new Error('synthetic storage outage'))
+          : Promise.resolve(),
+      ),
+    };
+    const activities = { tombstoneSubject: jest.fn() };
+    const service = new PhotoMaintenanceService(
+      { backgroundJobsEnabled: false } as never,
+      prisma as never,
+      storage as never,
+      activities as never,
+    );
+    await expect(service.purgeExpired()).resolves.toBe(0);
+    expect(storage.delete).toHaveBeenCalledWith(deleting.quarantineObjectKey);
+    expect(storage.delete).toHaveBeenCalledWith(deleting.variants[0]!.objectKey);
+    expect(transaction.photo.delete).not.toHaveBeenCalled();
+    expect(activities.tombstoneSubject).not.toHaveBeenCalled();
   });
 });

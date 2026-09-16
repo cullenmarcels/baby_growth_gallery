@@ -175,11 +175,22 @@ export class PhotoService {
       throw new ApiProblemException(409, '照片上传窗口已过期。', 'PHOTO_UPLOAD_EXPIRED');
     }
     try {
+      const remainingSeconds = Math.floor(
+        (photo.uploadWindowExpiresAt.valueOf() - Date.now()) / 1000,
+      );
+      if (remainingSeconds < 1) {
+        throw new ApiProblemException(409, '照片上传窗口已过期。', 'PHOTO_UPLOAD_EXPIRED');
+      }
       return {
         photoId,
-        ...(await this.storage.createUpload(photo.quarantineObjectKey, photo.declaredContentType)),
+        ...(await this.storage.createUpload(
+          photo.quarantineObjectKey,
+          photo.declaredContentType,
+          remainingSeconds,
+        )),
       };
-    } catch {
+    } catch (error) {
+      if (error instanceof ApiProblemException) throw error;
       throw new ApiProblemException(503, '照片存储暂时不可用。', 'PHOTO_STORAGE_UNAVAILABLE');
     }
   }

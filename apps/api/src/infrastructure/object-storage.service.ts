@@ -43,12 +43,13 @@ export class ObjectStorageService implements OnModuleDestroy {
   async createUpload(
     key: string,
     contentType: string,
+    maxExpiresSeconds = 600,
   ): Promise<{
     url: string;
     fields: Record<string, string>;
     expiresAt: string;
   }> {
-    const expiresSeconds = 600;
+    const expiresSeconds = Math.max(1, Math.min(600, Math.floor(maxExpiresSeconds)));
     const post = await createPresignedPost(this.public, {
       Bucket: this.config.s3.bucket,
       Key: key,

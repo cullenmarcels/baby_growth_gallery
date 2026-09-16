@@ -4,7 +4,7 @@ type: execution_log
 title: '照片上传基础执行记录'
 status: in_progress
 created_at: 2026-09-16T13:30:00+08:00
-updated_at: 2026-09-16T15:32:00+08:00
+updated_at: 2026-09-16T15:42:44+08:00
 plan_id: PLAN-20260916-83SYH180
 related_ids: [PLAN-20260916-83SYH180, SPEC-20260916-5Z69DCQE, DES-20260916-4XCFYD80]
 supersedes: []
@@ -72,3 +72,11 @@ superseded_by: []
 - 834 照片上传 UI 定向复跑 1/1 通过。
 - 最终 Docker 全量 `pnpm e2e` 在两个显式测试地址与全新 Redis 前缀下 exit 0：36 passed、27 designed skips、0 failed，覆盖 375/834/1440。
 - 真实 Docker API 使用修复版镜像；测试后重建为默认 `TRUST_PROXY=0`、`REDIS_KEY_PREFIX=bgg-compose`，6 个服务运行，readiness 为 `ok` 且 PostgreSQL/Redis/objectStorage 均 `up`。测试过程没有删除业务数据库或对象卷。
+
+## 第二轮 Review 返回开发
+
+- 补充签名 POST 条件、原子发布/失败不写动态、对象删除失败保留数据库的自动测试；新增后 API 41 项通过。
+- 发现重签距 1 小时窗口结束不足 10 分钟时，固定 10 分钟凭证可能在占位记录清理后仍有效，造成迟到对象。签名有效期改为 `min(600 秒, 上传窗口剩余整秒)`，最后不足一秒明确返回 `PHOTO_UPLOAD_EXPIRED`；新增 45 秒签名边界测试。`2a7131e` 仍不是最终 reviewed candidate。
+- 曾尝试给 Docker API 的 `pnpm deploy --legacy` 增加 `--offline` 以避免 registry 抖动，但真实 Alpine 重建返回 `ERR_PNPM_NO_OFFLINE_META`（固定 HEIC 依赖的元数据不在镜像 metadata mirror）；已撤销该尝试，保留已实测成功的在线部署层，不能将失败写成通过。
+- 最终在线 Alpine 镜像重建 exit 0，镜像内 `PHOTO_CODECS=VALID (JPEG, PNG, WebP, HEIC, HEIF)`；最新 API 镜像在独立 Redis 前缀下再次执行 Docker 全量 `pnpm e2e`，36 passed、27 designed skips、0 failed。随后恢复默认 API 容器配置，全部依赖 readiness 为 up；`quarantine/` 对象枚举结果为 0。
+- 新增签名 POST 10 分钟/短窗口约束、原子发布和对应 Activity、混合无效草稿不写入、对象删除故障保留数据库、授权回收站预览以及 3 次 lease 后安全失败回归。修复后 `pnpm validate` exit 0，API 42、Web 27、分支流向 5，构建与文档校验全部通过。
