@@ -80,3 +80,6 @@ superseded_by: []
 - 曾尝试给 Docker API 的 `pnpm deploy --legacy` 增加 `--offline` 以避免 registry 抖动，但真实 Alpine 重建返回 `ERR_PNPM_NO_OFFLINE_META`（固定 HEIC 依赖的元数据不在镜像 metadata mirror）；已撤销该尝试，保留已实测成功的在线部署层，不能将失败写成通过。
 - 最终在线 Alpine 镜像重建 exit 0，镜像内 `PHOTO_CODECS=VALID (JPEG, PNG, WebP, HEIC, HEIF)`；最新 API 镜像在独立 Redis 前缀下再次执行 Docker 全量 `pnpm e2e`，36 passed、27 designed skips、0 failed。随后恢复默认 API 容器配置，全部依赖 readiness 为 up；`quarantine/` 对象枚举结果为 0。
 - 新增签名 POST 10 分钟/短窗口约束、原子发布和对应 Activity、混合无效草稿不写入、对象删除故障保留数据库、授权回收站预览以及 3 次 lease 后安全失败回归。修复后 `pnpm validate` exit 0，API 42、Web 27、分支流向 5，构建与文档校验全部通过。
+- 日志出口复核发现维护任务曾输出底层异常 stack；改为只记录稳定的维护失败文案，不展开存储请求或内部错误细节。该修正需随下一候选重新验证。
+- [AWS 官方 FAQ](https://docs.aws.amazon.com/prescriptive-guidance/latest/presigned-url-best-practices/faq.html) 确认预签名请求在到期前可重复使用；本实现约束为同一随机对象 Key、精确 Content-Type/大小与短期有效期，但不是真正的单次执行。已请求用户确认 Plan D 中“一个凭证只允许上传一个对象”的验收语义；确认前该边界保持待决，不标记 Review 通过。
+- 原始 Playwright trace/截图可能含 Cookie、签名字段和合成手机号，现 CI 仅上传不含网络载荷的运行状态摘要；该安全偏差也已请求用户确认，确认前不推进正式验收。

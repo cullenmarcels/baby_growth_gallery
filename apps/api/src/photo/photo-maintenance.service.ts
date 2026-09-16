@@ -145,11 +145,8 @@ export class PhotoMaintenanceService implements OnModuleInit, OnModuleDestroy {
     try {
       const count = await this.purgeExpired();
       if (count > 0) this.logger.log(`Purged ${count} photo records and private objects`);
-    } catch (error) {
-      this.logger.error(
-        'Photo maintenance failed',
-        error instanceof Error ? error.stack : undefined,
-      );
+    } catch {
+      this.logger.error('Photo maintenance failed');
     }
   }
 }
