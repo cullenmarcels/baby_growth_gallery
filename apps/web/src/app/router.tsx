@@ -19,6 +19,7 @@ import {
   BabyManagePage,
   BabyWaitingPage,
 } from './BabyApp';
+import { PhotoManagePage, PhotoUploadPage } from './PhotoApp';
 
 export const router = createBrowserRouter([
   { path: '/', element: <RootRedirect /> },
@@ -40,6 +41,7 @@ export const router = createBrowserRouter([
   {
     element: <ProtectedRoute />,
     children: [
+      { path: '/app/photos/upload', element: <PhotoUploadPage /> },
       {
         path: '/app',
         element: <FamilyShell />,
@@ -50,6 +52,7 @@ export const router = createBrowserRouter([
           { path: 'babies/new', element: <BabyCreatePage /> },
           { path: 'babies/manage', element: <BabyManagePage /> },
           { path: 'babies/waiting', element: <BabyWaitingPage /> },
+          { path: 'photos/manage', element: <PhotoManagePage /> },
           { path: 'onboarding', element: <OnboardingPage /> },
           { path: 'families/:familyId', element: <FamilyPage /> },
           { path: 'timeline', element: <ComingSoonPage title="时间轴" icon="timeline" /> },

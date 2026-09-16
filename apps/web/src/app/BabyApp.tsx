@@ -1,6 +1,6 @@
 import type { BabySummary, FamilySummary } from '@baby-growth-gallery/api-client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArchiveRestore, Baby, CalendarDays, Pencil, Plus, Trash2 } from 'lucide-react';
+import { ArchiveRestore, Baby, CalendarDays, Camera, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
@@ -156,7 +156,12 @@ export function BabyHomePage(): React.JSX.Element {
         </Link>
       </section>
       <section className={styles.foundationGrid} aria-label="成长功能进度">
-        <FeatureCard title="珍贵照片" text="照片上传将在下一阶段开放。" />
+        <FeatureCard
+          title="珍贵照片"
+          text="上传照片，安全处理后再发布给家人。"
+          to="/app/photos/upload"
+          icon="photo"
+        />
         <FeatureCard title="成长里程碑" text="里程碑记录将在后续阶段开放。" />
         <FeatureCard title="成长数据" text="身高、体重和头围记录将在后续阶段开放。" />
       </section>
@@ -461,14 +466,25 @@ function BabyForm({
   );
 }
 
-function FeatureCard({ title, text }: { title: string; text: string }): React.JSX.Element {
-  return (
+function FeatureCard({
+  title,
+  text,
+  to,
+  icon = 'calendar',
+}: {
+  title: string;
+  text: string;
+  to?: string;
+  icon?: 'calendar' | 'photo';
+}): React.JSX.Element {
+  const content = (
     <article className={styles.featureCard}>
-      <CalendarDays size={22} />
+      {icon === 'photo' ? <Camera size={22} /> : <CalendarDays size={22} />}
       <h2>{title}</h2>
       <p>{text}</p>
     </article>
   );
+  return to ? <Link to={to}>{content}</Link> : content;
 }
 
 function BabyPageState({

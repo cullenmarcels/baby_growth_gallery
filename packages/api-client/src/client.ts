@@ -11,7 +11,18 @@ export type FamilySummary = components['schemas']['FamilySummaryDto'];
 export type FamilyMember = components['schemas']['FamilyMemberDto'];
 export type ActiveInvitation = components['schemas']['ActiveInvitationDto'];
 export type FamilyActivityPage = components['schemas']['FamilyActivityPageDto'];
+export type PhotoUploadedActivitySummaryV1 =
+  components['schemas']['PhotoUploadedActivitySummaryV1Dto'];
 export type BabySummary = components['schemas']['BabySummaryDto'];
+export type PhotoSummary = components['schemas']['PhotoSummaryDto'];
+export type PhotoUploadBatch = components['schemas']['PhotoUploadBatchDto'];
+export type PhotoUploadInstruction = Omit<
+  components['schemas']['PhotoUploadInstructionDto'],
+  'fields'
+> & {
+  fields: Record<string, string>;
+};
+export type PhotoManagementPage = components['schemas']['PhotoManagementPageDto'];
 
 export class ApiClientError extends Error {
   constructor(
@@ -328,6 +339,194 @@ export function createApiClient({ baseUrl, fetchImpl }: ApiClientOptions) {
         headers: await mutationHeaders(),
       });
       return requireData<BabySummary>(result.data, result.error, result.response);
+    },
+    async createPhotoUploadBatch(
+      familyId: string,
+      babyId: string,
+      body: components['schemas']['CreatePhotoBatchRequestDto'],
+    ): Promise<PhotoUploadBatch & { uploadInstructions?: PhotoUploadInstruction[] }> {
+      const result = await client.POST(
+        '/api/v1/families/{familyId}/babies/{babyId}/photo-upload-batches',
+        {
+          params: { path: { familyId, babyId } },
+          body,
+          headers: await mutationHeaders(),
+        },
+      );
+      return requireData<PhotoUploadBatch>(result.data, result.error, result.response);
+    },
+    async getPhotoUploadBatch(
+      familyId: string,
+      babyId: string,
+      batchId: string,
+    ): Promise<PhotoUploadBatch> {
+      const result = await client.GET(
+        '/api/v1/families/{familyId}/babies/{babyId}/photo-upload-batches/{batchId}',
+        {
+          params: { path: { familyId, babyId, batchId } },
+        },
+      );
+      return requireData<PhotoUploadBatch>(result.data, result.error, result.response);
+    },
+    async reissuePhotoUpload(
+      familyId: string,
+      babyId: string,
+      batchId: string,
+      photoId: string,
+    ): Promise<PhotoUploadInstruction> {
+      const result = await client.POST(
+        '/api/v1/families/{familyId}/babies/{babyId}/photo-upload-batches/{batchId}/photos/{photoId}/reissue',
+        {
+          params: { path: { familyId, babyId, batchId, photoId } },
+          headers: await mutationHeaders(),
+        },
+      );
+      return requireData<components['schemas']['PhotoUploadInstructionDto']>(
+        result.data,
+        result.error,
+        result.response,
+      );
+    },
+    async completePhotoUpload(
+      familyId: string,
+      babyId: string,
+      batchId: string,
+      photoId: string,
+    ): Promise<void> {
+      const result = await client.POST(
+        '/api/v1/families/{familyId}/babies/{babyId}/photo-upload-batches/{batchId}/photos/{photoId}/complete',
+        {
+          params: { path: { familyId, babyId, batchId, photoId } },
+          headers: await mutationHeaders(),
+        },
+      );
+      if (!result.response.ok) requireData(result.data, result.error, result.response);
+    },
+    async updatePhoto(
+      familyId: string,
+      babyId: string,
+      photoId: string,
+      body: components['schemas']['UpdatePhotoRequestDto'],
+    ): Promise<PhotoSummary> {
+      const result = await client.PATCH(
+        '/api/v1/families/{familyId}/babies/{babyId}/photos/{photoId}',
+        {
+          params: { path: { familyId, babyId, photoId } },
+          body,
+          headers: await mutationHeaders(),
+        },
+      );
+      return requireData<PhotoSummary>(result.data, result.error, result.response);
+    },
+    async updatePhotoBatch(
+      familyId: string,
+      babyId: string,
+      batchId: string,
+      body: components['schemas']['BatchUpdatePhotosRequestDto'],
+    ): Promise<components['schemas']['PhotoListResponseDto']> {
+      const result = await client.PATCH(
+        '/api/v1/families/{familyId}/babies/{babyId}/photo-upload-batches/{batchId}/photos',
+        {
+          params: { path: { familyId, babyId, batchId } },
+          body,
+          headers: await mutationHeaders(),
+        },
+      );
+      return requireData<components['schemas']['PhotoListResponseDto']>(
+        result.data,
+        result.error,
+        result.response,
+      );
+    },
+    async publishPhotos(
+      familyId: string,
+      babyId: string,
+      batchId: string,
+      body: components['schemas']['PublishPhotosRequestDto'],
+    ): Promise<components['schemas']['PhotoListResponseDto']> {
+      const result = await client.POST(
+        '/api/v1/families/{familyId}/babies/{babyId}/photo-upload-batches/{batchId}/publish',
+        {
+          params: { path: { familyId, babyId, batchId } },
+          body,
+          headers: await mutationHeaders(),
+        },
+      );
+      return requireData<components['schemas']['PhotoListResponseDto']>(
+        result.data,
+        result.error,
+        result.response,
+      );
+    },
+    async managePhotos(
+      familyId: string,
+      babyId: string,
+      query: {
+        scope?: 'mine' | 'family';
+        status?:
+          | 'AWAITING_UPLOAD'
+          | 'QUEUED'
+          | 'PROCESSING'
+          | 'DRAFT'
+          | 'PUBLISHED'
+          | 'TRASHED'
+          | 'FAILED';
+        limit?: number;
+        cursor?: string;
+      } = {},
+    ): Promise<PhotoManagementPage> {
+      const result = await client.GET('/api/v1/families/{familyId}/babies/{babyId}/photos/manage', {
+        params: { path: { familyId, babyId }, query },
+      });
+      return requireData<PhotoManagementPage>(result.data, result.error, result.response);
+    },
+    async getPhotoPreview(
+      familyId: string,
+      babyId: string,
+      photoId: string,
+      variant: 'THUMBNAIL' | 'DISPLAY' | 'ARCHIVE' = 'DISPLAY',
+    ): Promise<components['schemas']['PhotoPreviewDto']> {
+      const result = await client.GET(
+        '/api/v1/families/{familyId}/babies/{babyId}/photos/{photoId}/preview',
+        {
+          params: { path: { familyId, babyId, photoId }, query: { variant } },
+        },
+      );
+      return requireData<components['schemas']['PhotoPreviewDto']>(
+        result.data,
+        result.error,
+        result.response,
+      );
+    },
+    async trashPhoto(familyId: string, babyId: string, photoId: string): Promise<PhotoSummary> {
+      const result = await client.POST(
+        '/api/v1/families/{familyId}/babies/{babyId}/photos/{photoId}/trash',
+        {
+          params: { path: { familyId, babyId, photoId } },
+          headers: await mutationHeaders(),
+        },
+      );
+      return requireData<PhotoSummary>(result.data, result.error, result.response);
+    },
+    async restorePhoto(familyId: string, babyId: string, photoId: string): Promise<PhotoSummary> {
+      const result = await client.POST(
+        '/api/v1/families/{familyId}/babies/{babyId}/photos/{photoId}/restore',
+        {
+          params: { path: { familyId, babyId, photoId } },
+          headers: await mutationHeaders(),
+        },
+      );
+      return requireData<PhotoSummary>(result.data, result.error, result.response);
+    },
+    async discardPhoto(familyId: string, babyId: string, photoId: string): Promise<void> {
+      const result = await client.DELETE(
+        '/api/v1/families/{familyId}/babies/{babyId}/photos/{photoId}',
+        {
+          params: { path: { familyId, babyId, photoId } },
+          headers: await mutationHeaders(),
+        },
+      );
+      if (!result.response.ok) requireData(result.data, result.error, result.response);
     },
   };
 }

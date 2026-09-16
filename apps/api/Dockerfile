@@ -4,8 +4,9 @@ ARG NPM_REGISTRY=https://registry.npmjs.org
 WORKDIR /workspace
 RUN corepack enable && corepack prepare pnpm@11.21.0 --activate && pnpm config set registry "$NPM_REGISTRY"
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml tsconfig.base.json ./
-COPY apps/api apps/api
+COPY apps/api/package.json apps/api/package.json
 RUN --mount=type=cache,id=pnpm-store-api,target=/root/.local/share/pnpm/store pnpm install --frozen-lockfile
+COPY apps/api apps/api
 RUN pnpm --filter @baby-growth-gallery/api build
 RUN --mount=type=cache,id=pnpm-store-api,target=/root/.local/share/pnpm/store pnpm --filter @baby-growth-gallery/api deploy --legacy --prod --ignore-scripts /out
 

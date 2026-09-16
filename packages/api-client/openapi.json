@@ -102,6 +102,9 @@
               },
               {
                 "$ref": "#/components/schemas/MemberLeftSummaryDto"
+              },
+              {
+                "$ref": "#/components/schemas/PhotoUploadedActivitySummaryV1Dto"
               }
             ]
           },
@@ -328,6 +331,37 @@
         ],
         "type": "object"
       },
+      "BatchUpdatePhotosRequestDto": {
+        "properties": {
+          "capturedOn": {
+            "format": "date",
+            "type": "string"
+          },
+          "description": {
+            "maxLength": 1000,
+            "nullable": true,
+            "type": "string"
+          },
+          "location": {
+            "maxLength": 80,
+            "nullable": true,
+            "type": "string"
+          },
+          "photoIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "photoIds"
+        ],
+        "type": "object"
+      },
       "ChangeMemberRoleRequestDto": {
         "properties": {
           "role": {
@@ -428,6 +462,22 @@
         "required": [
           "name",
           "displayName"
+        ],
+        "type": "object"
+      },
+      "CreatePhotoBatchRequestDto": {
+        "properties": {
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/PhotoFileDescriptorDto"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "files"
         ],
         "type": "object"
       },
@@ -839,6 +889,280 @@
         ],
         "type": "object"
       },
+      "PhotoFileDescriptorDto": {
+        "properties": {
+          "capturedOn": {
+            "format": "date",
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "maximum": 20971520,
+            "minimum": 1,
+            "type": "number"
+          }
+        },
+        "required": [
+          "contentType",
+          "sizeBytes",
+          "capturedOn"
+        ],
+        "type": "object"
+      },
+      "PhotoListResponseDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PhotoSummaryDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "PhotoManagementPageDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PhotoSummaryDto"
+            },
+            "type": "array"
+          },
+          "nextCursor": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "type": "object"
+      },
+      "PhotoPreviewDto": {
+        "properties": {
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "expiresAt"
+        ],
+        "type": "object"
+      },
+      "PhotoSummaryDto": {
+        "properties": {
+          "babyId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "batchId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "capturedOn": {
+            "format": "date",
+            "type": "string"
+          },
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "draftExpiresAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "failureCode": {
+            "nullable": true,
+            "type": "string"
+          },
+          "height": {
+            "nullable": true,
+            "type": "number"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "location": {
+            "nullable": true,
+            "type": "string"
+          },
+          "publishedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "purgeAfter": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "sourceFormat": {
+            "enum": [
+              "JPEG",
+              "PNG",
+              "WEBP",
+              "HEIC",
+              "HEIF"
+            ],
+            "nullable": true,
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "AWAITING_UPLOAD",
+              "QUEUED",
+              "PROCESSING",
+              "DRAFT",
+              "PUBLISHED",
+              "TRASHED",
+              "FAILED"
+            ],
+            "type": "string"
+          },
+          "title": {
+            "nullable": true,
+            "type": "string"
+          },
+          "trashedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "width": {
+            "nullable": true,
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "batchId",
+          "babyId",
+          "status",
+          "title",
+          "description",
+          "capturedOn",
+          "location",
+          "sourceFormat",
+          "width",
+          "height",
+          "draftExpiresAt",
+          "publishedAt",
+          "trashedAt",
+          "purgeAfter",
+          "failureCode",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "PhotoUploadBatchDto": {
+        "properties": {
+          "babyId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "photos": {
+            "items": {
+              "$ref": "#/components/schemas/PhotoSummaryDto"
+            },
+            "type": "array"
+          },
+          "uploadInstructions": {
+            "items": {
+              "$ref": "#/components/schemas/PhotoUploadInstructionDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "babyId",
+          "createdAt",
+          "photos"
+        ],
+        "type": "object"
+      },
+      "PhotoUploadedActivitySummaryV1Dto": {
+        "properties": {
+          "babyId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "babyId"
+        ],
+        "type": "object"
+      },
+      "PhotoUploadInstructionDto": {
+        "properties": {
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "fields": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "photoId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "photoId",
+          "url",
+          "fields",
+          "expiresAt"
+        ],
+        "type": "object"
+      },
+      "PublishPhotosRequestDto": {
+        "properties": {
+          "photoIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "photoIds"
+        ],
+        "type": "object"
+      },
       "RegisterRequestDto": {
         "properties": {
           "challengeId": {
@@ -929,6 +1253,30 @@
               "MALE",
               "FEMALE"
             ],
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UpdatePhotoRequestDto": {
+        "properties": {
+          "capturedOn": {
+            "format": "date",
+            "type": "string"
+          },
+          "description": {
+            "maxLength": 1000,
+            "nullable": true,
+            "type": "string"
+          },
+          "location": {
+            "maxLength": 80,
+            "nullable": true,
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 80,
             "nullable": true,
             "type": "string"
           }
@@ -2313,6 +2661,721 @@
         ],
         "tags": [
           "babies"
+        ]
+      }
+    },
+    "/api/v1/families/{familyId}/babies/{babyId}/photo-upload-batches": {
+      "post": {
+        "operationId": "PhotoController_createBatch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePhotoBatchRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoUploadBatchDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "photos"
+        ]
+      }
+    },
+    "/api/v1/families/{familyId}/babies/{babyId}/photo-upload-batches/{batchId}": {
+      "get": {
+        "operationId": "PhotoController_getBatch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "batchId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoUploadBatchDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "photos"
+        ]
+      }
+    },
+    "/api/v1/families/{familyId}/babies/{babyId}/photo-upload-batches/{batchId}/photos": {
+      "patch": {
+        "operationId": "PhotoController_batchUpdate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "batchId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchUpdatePhotosRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoListResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "photos"
+        ]
+      }
+    },
+    "/api/v1/families/{familyId}/babies/{babyId}/photo-upload-batches/{batchId}/photos/{photoId}/complete": {
+      "post": {
+        "operationId": "PhotoController_complete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "batchId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "photoId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "photos"
+        ]
+      }
+    },
+    "/api/v1/families/{familyId}/babies/{babyId}/photo-upload-batches/{batchId}/photos/{photoId}/reissue": {
+      "post": {
+        "operationId": "PhotoController_reissue",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "batchId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "photoId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoUploadInstructionDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "photos"
+        ]
+      }
+    },
+    "/api/v1/families/{familyId}/babies/{babyId}/photo-upload-batches/{batchId}/publish": {
+      "post": {
+        "operationId": "PhotoController_publish",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "batchId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishPhotosRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoListResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "photos"
+        ]
+      }
+    },
+    "/api/v1/families/{familyId}/babies/{babyId}/photos/{photoId}": {
+      "delete": {
+        "operationId": "PhotoController_discard",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "photoId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "photos"
+        ]
+      },
+      "patch": {
+        "operationId": "PhotoController_update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "photoId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePhotoRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoSummaryDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "photos"
+        ]
+      }
+    },
+    "/api/v1/families/{familyId}/babies/{babyId}/photos/{photoId}/preview": {
+      "get": {
+        "operationId": "PhotoController_preview",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "variant",
+            "required": false,
+            "schema": {
+              "enum": [
+                "THUMBNAIL",
+                "DISPLAY",
+                "ARCHIVE"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "photoId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoPreviewDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "photos"
+        ]
+      }
+    },
+    "/api/v1/families/{familyId}/babies/{babyId}/photos/{photoId}/restore": {
+      "post": {
+        "operationId": "PhotoController_restore",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "photoId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoSummaryDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "photos"
+        ]
+      }
+    },
+    "/api/v1/families/{familyId}/babies/{babyId}/photos/{photoId}/trash": {
+      "post": {
+        "operationId": "PhotoController_trash",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "photoId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoSummaryDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "photos"
+        ]
+      }
+    },
+    "/api/v1/families/{familyId}/babies/{babyId}/photos/manage": {
+      "get": {
+        "operationId": "PhotoController_manage",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {}
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {}
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {}
+          },
+          {
+            "in": "query",
+            "name": "scope",
+            "required": false,
+            "schema": {
+              "enum": [
+                "mine",
+                "family"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoManagementPageDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "photos"
         ]
       }
     },

@@ -38,13 +38,32 @@ services:
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-baby_gallery_minio}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-baby_gallery_minio_dev_password}
+      MINIO_API_CORS_ALLOW_ORIGIN: ${WEB_ORIGIN:-http://localhost:8080}
     ports:
-      - '${MINIO_API_PORT:-9000}:9000'
       - '${MINIO_CONSOLE_PORT:-9001}:9001'
     volumes:
       - minio-data:/data
     healthcheck:
       test: ['CMD', 'mc', 'ready', 'local']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  storage-proxy:
+    image: ${NGINX_IMAGE:-nginx:1.29.4-alpine}
+    environment:
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:8080}
+      S3_UPSTREAM: minio:9000
+    ports:
+      - '${MINIO_API_PORT:-9000}:9000'
+    volumes:
+      - ./deploy/minio/public-gateway.conf.template:/etc/nginx/templates/default.conf.template:ro
+    depends_on:
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '--spider', 'http://127.0.0.1:9000/minio/health/live']
       interval: 5s
       timeout: 3s
       retries: 20
@@ -59,13 +78,11 @@ services:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-baby_gallery_minio}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-baby_gallery_minio_dev_password}
       S3_BUCKET: ${S3_BUCKET:-baby-growth-gallery-dev}
+    volumes:
+      - ./deploy/minio/configure.sh:/config/configure.sh:ro
     entrypoint:
       - /bin/sh
-      - -ec
-      - |
-        mc alias set local http://minio:9000 "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}"
-        mc mb --ignore-existing "local/$${S3_BUCKET}"
-        mc anonymous set none "local/$${S3_BUCKET}"
+      - /config/configure.sh
 
   api:
     profiles: ['app']
@@ -83,19 +100,21 @@ services:
       SWAGGER_ENABLED: 'true'
       DATABASE_URL: postgresql://${POSTGRES_USER:-baby_gallery}:${POSTGRES_PASSWORD:-baby_gallery_dev_password}@postgres:5432/${POSTGRES_DB:-baby_growth_gallery}
       REDIS_URL: redis://redis:6379
-      REDIS_KEY_PREFIX: bgg-compose
+      REDIS_KEY_PREFIX: ${REDIS_KEY_PREFIX:-bgg-compose}
       AUTH_SESSION_SECRET: compose-only-session-secret-never-use-in-production
       AUTH_HMAC_SECRET: compose-only-hmac-secret-never-use-in-production-now
       AUTH_COOKIE_SECURE: 'false'
-      TRUST_PROXY: 0
+      TRUST_PROXY: ${TRUST_PROXY:-0}
       VERIFICATION_DELIVERY_MODE: fixed
       TEST_VERIFICATION_CODE: '246810'
       S3_ENDPOINT: http://minio:9000
+      S3_PUBLIC_ENDPOINT: ${S3_PUBLIC_ENDPOINT:-http://localhost:9000}
       S3_REGION: us-east-1
       S3_BUCKET: ${S3_BUCKET:-baby-growth-gallery-dev}
       S3_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-baby_gallery_minio}
       S3_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-baby_gallery_minio_dev_password}
       S3_FORCE_PATH_STYLE: 'true'
+      PHOTO_PROCESSING_CONCURRENCY: 1
     ports:
       - '${API_PORT:-3000}:3000'
     depends_on:
@@ -105,6 +124,8 @@ services:
         condition: service_healthy
       minio-init:
         condition: service_completed_successfully
+      storage-proxy:
+        condition: service_healthy
     healthcheck:
       test:
         [

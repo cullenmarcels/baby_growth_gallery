@@ -11,7 +11,21 @@ allowBuilds:
   esbuild: true
   msw: true
   prisma: true
+  sharp: true
   unrs-resolver: true
+
+supportedArchitectures:
+  os:
+    - current
+    - win32
+    - linux
+  cpu:
+    - current
+    - x64
+  libc:
+    - current
+    - glibc
+    - musl
 
 minimumReleaseAgeExclude:
   - '@types/node@26.5.0'

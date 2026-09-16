@@ -18,6 +18,13 @@ import { FamilyService } from './family/family.service.js';
 import { InfrastructureService } from './infrastructure/infrastructure.service.js';
 import { PrismaService } from './infrastructure/prisma.service.js';
 import { RedisService } from './infrastructure/redis.service.js';
+import { ObjectStorageService } from './infrastructure/object-storage.service.js';
+import { PhotoController } from './photo/photo.controller.js';
+import { PhotoMaintenanceService } from './photo/photo-maintenance.service.js';
+import { PhotoPolicyService } from './photo/photo-policy.service.js';
+import { PhotoProcessingService } from './photo/photo-processing.service.js';
+import { PhotoRateLimitService } from './photo/photo-rate-limit.service.js';
+import { PhotoService } from './photo/photo.service.js';
 
 @Module({
   controllers: [
@@ -26,12 +33,14 @@ import { RedisService } from './infrastructure/redis.service.js';
     FamilyController,
     FamilyInvitationController,
     BabyController,
+    PhotoController,
   ],
   providers: [
     { provide: APP_CONFIG, useFactory: () => loadAppConfig() },
     PrismaService,
     RedisService,
     InfrastructureService,
+    ObjectStorageService,
     AuthService,
     AuthRateLimitService,
     AuthSessionService,
@@ -43,6 +52,11 @@ import { RedisService } from './infrastructure/redis.service.js';
     BabyPolicyService,
     BabyService,
     BabyMaintenanceService,
+    PhotoPolicyService,
+    PhotoRateLimitService,
+    PhotoService,
+    PhotoProcessingService,
+    PhotoMaintenanceService,
   ],
 })
 export class AppModule {}

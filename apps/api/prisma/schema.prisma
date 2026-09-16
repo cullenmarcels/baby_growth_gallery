@@ -40,6 +40,31 @@ enum BabyProfileStatus {
   PURGING
 }
 
+enum PhotoStatus {
+  AWAITING_UPLOAD
+  QUEUED
+  PROCESSING
+  DRAFT
+  PUBLISHED
+  TRASHED
+  FAILED
+  PURGING
+}
+
+enum PhotoSourceFormat {
+  JPEG
+  PNG
+  WEBP
+  HEIC
+  HEIF
+}
+
+enum PhotoVariantKind {
+  THUMBNAIL
+  DISPLAY
+  ARCHIVE
+}
+
 model Account {
   id                String             @id @default(uuid()) @db.Uuid
   phoneE164         String             @unique @map("phone_e164") @db.VarChar(16)
@@ -70,26 +95,30 @@ model Family {
   invitations        FamilyInvitation[]
   activities         FamilyActivity[]
   babies             BabyProfile[]
+  photoUploadBatches PhotoUploadBatch[]
+  photos             Photo[]
 
   @@index([createdByAccountId])
   @@map("families")
 }
 
 model FamilyMembership {
-  id                 String                 @id @default(uuid()) @db.Uuid
-  familyId           String                 @map("family_id") @db.Uuid
-  accountId          String                 @map("account_id") @db.Uuid
-  role               FamilyRole
-  status             FamilyMembershipStatus @default(ACTIVE)
-  displayName        String                 @map("display_name") @db.VarChar(30)
-  joinedAt           DateTime               @default(now()) @map("joined_at") @db.Timestamptz(3)
-  leftAt             DateTime?              @map("left_at") @db.Timestamptz(3)
-  updatedAt          DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
-  family             Family                 @relation(fields: [familyId], references: [id], onDelete: Cascade)
-  account            Account                @relation(fields: [accountId], references: [id], onDelete: Restrict)
-  createdInvitations FamilyInvitation[]     @relation("InvitationCreator")
-  activities         FamilyActivity[]       @relation("ActivityActor")
-  createdBabies      BabyProfile[]           @relation("BabyCreator")
+  id                  String                 @id @default(uuid()) @db.Uuid
+  familyId            String                 @map("family_id") @db.Uuid
+  accountId           String                 @map("account_id") @db.Uuid
+  role                FamilyRole
+  status              FamilyMembershipStatus @default(ACTIVE)
+  displayName         String                 @map("display_name") @db.VarChar(30)
+  joinedAt            DateTime               @default(now()) @map("joined_at") @db.Timestamptz(3)
+  leftAt              DateTime?              @map("left_at") @db.Timestamptz(3)
+  updatedAt           DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
+  family              Family                 @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  account             Account                @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  createdInvitations  FamilyInvitation[]     @relation("InvitationCreator")
+  activities          FamilyActivity[]       @relation("ActivityActor")
+  createdBabies       BabyProfile[]          @relation("BabyCreator")
+  createdPhotoBatches PhotoUploadBatch[]     @relation("PhotoBatchCreator")
+  createdPhotos       Photo[]                @relation("PhotoCreator")
 
   @@unique([familyId, accountId])
   @@index([accountId, status, joinedAt])
@@ -138,24 +167,105 @@ model FamilyActivity {
 }
 
 model BabyProfile {
-  id                    String            @id @default(uuid()) @db.Uuid
-  familyId              String            @map("family_id") @db.Uuid
-  createdByMembershipId String            @map("created_by_membership_id") @db.Uuid
-  nickname              String            @db.VarChar(30)
-  birthDate             DateTime          @map("birth_date") @db.Date
+  id                    String             @id @default(uuid()) @db.Uuid
+  familyId              String             @map("family_id") @db.Uuid
+  createdByMembershipId String             @map("created_by_membership_id") @db.Uuid
+  nickname              String             @db.VarChar(30)
+  birthDate             DateTime           @map("birth_date") @db.Date
   sex                   BabySex?
-  status                BabyProfileStatus @default(ACTIVE)
-  archivedAt            DateTime?         @map("archived_at") @db.Timestamptz(3)
-  purgeAfter            DateTime?         @map("purge_after") @db.Timestamptz(3)
-  createdAt             DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt             DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
-  family                Family            @relation(fields: [familyId], references: [id], onDelete: Cascade)
-  createdBy             FamilyMembership  @relation("BabyCreator", fields: [createdByMembershipId], references: [id], onDelete: Restrict)
+  status                BabyProfileStatus  @default(ACTIVE)
+  archivedAt            DateTime?          @map("archived_at") @db.Timestamptz(3)
+  purgeAfter            DateTime?          @map("purge_after") @db.Timestamptz(3)
+  createdAt             DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
+  family                Family             @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  createdBy             FamilyMembership   @relation("BabyCreator", fields: [createdByMembershipId], references: [id], onDelete: Restrict)
+  photoUploadBatches    PhotoUploadBatch[]
+  photos                Photo[]
 
   @@index([familyId, status, createdAt(sort: Desc), id(sort: Desc)])
   @@index([status, purgeAfter])
   @@index([createdByMembershipId])
   @@map("baby_profiles")
+}
+
+model PhotoUploadBatch {
+  id                    String           @id @default(uuid()) @db.Uuid
+  familyId              String           @map("family_id") @db.Uuid
+  babyId                String           @map("baby_id") @db.Uuid
+  createdByMembershipId String           @map("created_by_membership_id") @db.Uuid
+  createdAt             DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  family                Family           @relation(fields: [familyId], references: [id], onDelete: Restrict)
+  baby                  BabyProfile      @relation(fields: [babyId], references: [id], onDelete: Restrict)
+  createdBy             FamilyMembership @relation("PhotoBatchCreator", fields: [createdByMembershipId], references: [id], onDelete: Restrict)
+  photos                Photo[]
+
+  @@index([familyId, babyId, createdAt(sort: Desc)])
+  @@index([createdByMembershipId, createdAt(sort: Desc)])
+  @@map("photo_upload_batches")
+}
+
+model Photo {
+  id                    String             @id @default(uuid()) @db.Uuid
+  uploadBatchId         String             @map("upload_batch_id") @db.Uuid
+  familyId              String             @map("family_id") @db.Uuid
+  babyId                String             @map("baby_id") @db.Uuid
+  createdByMembershipId String             @map("created_by_membership_id") @db.Uuid
+  status                PhotoStatus        @default(AWAITING_UPLOAD)
+  declaredContentType   String             @map("declared_content_type") @db.VarChar(100)
+  declaredSizeBytes     Int                @map("declared_size_bytes")
+  sourceFormat          PhotoSourceFormat? @map("source_format")
+  sourceSizeBytes       Int?               @map("source_size_bytes")
+  sourceSha256          String?            @map("source_sha256") @db.VarChar(64)
+  sourceWidth           Int?               @map("source_width")
+  sourceHeight          Int?               @map("source_height")
+  title                 String?            @db.VarChar(80)
+  description           String?            @db.VarChar(1000)
+  capturedOn            DateTime           @map("captured_on") @db.Date
+  location              String?            @db.VarChar(80)
+  displayOrder          Int                @map("display_order")
+  quarantineObjectKey   String?            @unique @map("quarantine_object_key") @db.VarChar(120)
+  uploadWindowExpiresAt DateTime           @map("upload_window_expires_at") @db.Timestamptz(3)
+  processingAttempts    Int                @default(0) @map("processing_attempts")
+  processingLeaseUntil  DateTime?          @map("processing_lease_until") @db.Timestamptz(3)
+  nextProcessingAt      DateTime?          @map("next_processing_at") @db.Timestamptz(3)
+  failureCode           String?            @map("failure_code") @db.VarChar(64)
+  draftExpiresAt        DateTime?          @map("draft_expires_at") @db.Timestamptz(3)
+  publishedAt           DateTime?          @map("published_at") @db.Timestamptz(3)
+  trashedAt             DateTime?          @map("trashed_at") @db.Timestamptz(3)
+  purgeAfter            DateTime?          @map("purge_after") @db.Timestamptz(3)
+  createdAt             DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
+  uploadBatch           PhotoUploadBatch   @relation(fields: [uploadBatchId], references: [id], onDelete: Restrict)
+  family                Family             @relation(fields: [familyId], references: [id], onDelete: Restrict)
+  baby                  BabyProfile        @relation(fields: [babyId], references: [id], onDelete: Restrict)
+  createdBy             FamilyMembership   @relation("PhotoCreator", fields: [createdByMembershipId], references: [id], onDelete: Restrict)
+  variants              PhotoVariant[]
+
+  @@index([uploadBatchId, displayOrder])
+  @@index([familyId, babyId, updatedAt(sort: Desc), id(sort: Desc)])
+  @@index([createdByMembershipId, status, updatedAt(sort: Desc), id(sort: Desc)])
+  @@index([status, nextProcessingAt, processingLeaseUntil])
+  @@index([status, purgeAfter])
+  @@map("photos")
+}
+
+model PhotoVariant {
+  id        String           @id @default(uuid()) @db.Uuid
+  photoId   String           @map("photo_id") @db.Uuid
+  kind      PhotoVariantKind
+  objectKey String           @unique @map("object_key") @db.VarChar(160)
+  mediaType String           @default("image/webp") @map("media_type") @db.VarChar(40)
+  width     Int
+  height    Int
+  sizeBytes Int              @map("size_bytes")
+  sha256    String           @db.VarChar(64)
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  photo     Photo            @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@unique([photoId, kind])
+  @@index([photoId])
+  @@map("photo_variants")
 }
 
 model LegalAcceptance {

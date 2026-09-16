@@ -120,6 +120,10 @@ export class MemberLeftSummaryDto {
   @ApiProperty({ type: String, enum: ['LEFT', 'REMOVED'] }) reason!: 'LEFT' | 'REMOVED';
 }
 
+export class PhotoUploadedActivitySummaryV1Dto {
+  @ApiProperty({ type: String, format: 'uuid' }) babyId!: string;
+}
+
 export class ActiveFamilyActivityItemDto {
   @ApiProperty({ type: String, format: 'uuid' }) id!: string;
   @ApiProperty({ type: String, enum: ['ACTIVE'] }) visibility!: 'ACTIVE';
@@ -136,6 +140,7 @@ export class ActiveFamilyActivityItemDto {
       { $ref: '#/components/schemas/MemberJoinedSummaryDto' },
       { $ref: '#/components/schemas/MemberRoleChangedSummaryDto' },
       { $ref: '#/components/schemas/MemberLeftSummaryDto' },
+      { $ref: '#/components/schemas/PhotoUploadedActivitySummaryV1Dto' },
     ],
   })
   summary!: Record<string, unknown>;

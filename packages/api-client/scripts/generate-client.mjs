@@ -21,6 +21,9 @@ function typeForSchema(schema, indent = '      ') {
     return `${schema.enum.map((value) => JSON.stringify(value)).join(' | ')}${nullable}`;
   if (schema.type === 'array') return `Array<${typeForSchema(schema.items, indent)}>${nullable}`;
   if (schema.type === 'object' || schema.properties) {
+    if (schema.additionalProperties) {
+      return `Record<string, ${typeForSchema(schema.additionalProperties, indent)}>${nullable}`;
+    }
     const required = new Set(schema.required ?? []);
     const properties = Object.entries(schema.properties ?? {})
       .sort(([left], [right]) => left.localeCompare(right))

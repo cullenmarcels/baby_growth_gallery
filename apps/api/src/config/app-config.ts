@@ -34,6 +34,7 @@ const environmentSchema = z.object({
     .regex(/^\d{6}$/)
     .optional(),
   S3_ENDPOINT: z.string().url().default('http://localhost:9000'),
+  S3_PUBLIC_ENDPOINT: z.string().url().default('http://localhost:9000'),
   S3_REGION: z.string().min(1).default('us-east-1'),
   S3_BUCKET: z.string().min(3).default('baby-growth-gallery-dev'),
   S3_ACCESS_KEY_ID: z.string().min(1).default('baby_gallery_minio'),
@@ -42,6 +43,7 @@ const environmentSchema = z.object({
     .enum(['true', 'false'])
     .default('true')
     .transform((value) => value === 'true'),
+  PHOTO_PROCESSING_CONCURRENCY: z.coerce.number().int().min(1).max(2).default(1),
 });
 
 export interface AppConfig {
@@ -65,11 +67,15 @@ export interface AppConfig {
   };
   s3: {
     endpoint: string;
+    publicEndpoint: string;
     region: string;
     bucket: string;
     accessKeyId: string;
     secretAccessKey: string;
     forcePathStyle: boolean;
+  };
+  photos: {
+    processingConcurrency: 1 | 2;
   };
 }
 
@@ -131,6 +137,15 @@ export function loadAppConfig(environment: NodeJS.ProcessEnv = process.env): App
     }
   }
 
+  if (
+    values.NODE_ENV === 'production' &&
+    new URL(values.S3_PUBLIC_ENDPOINT).protocol !== 'https:'
+  ) {
+    throw new Error(
+      'Invalid application configuration: production S3_PUBLIC_ENDPOINT must use HTTPS',
+    );
+  }
+
   return {
     nodeEnv: values.NODE_ENV,
     port: values.PORT,
@@ -154,11 +169,15 @@ export function loadAppConfig(environment: NodeJS.ProcessEnv = process.env): App
     },
     s3: {
       endpoint: values.S3_ENDPOINT,
+      publicEndpoint: values.S3_PUBLIC_ENDPOINT,
       region: values.S3_REGION,
       bucket: values.S3_BUCKET,
       accessKeyId: values.S3_ACCESS_KEY_ID,
       secretAccessKey: values.S3_SECRET_ACCESS_KEY,
       forcePathStyle: values.S3_FORCE_PATH_STYLE,
+    },
+    photos: {
+      processingConcurrency: values.PHOTO_PROCESSING_CONCURRENCY as 1 | 2,
     },
   };
 }

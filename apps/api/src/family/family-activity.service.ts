@@ -11,7 +11,7 @@ import type {
 import type { ActivityQuery } from './family.schemas.js';
 
 export type CurrentActivityType =
-  'FAMILY_CREATED' | 'MEMBER_JOINED' | 'MEMBER_ROLE_CHANGED' | 'MEMBER_LEFT';
+  'FAMILY_CREATED' | 'MEMBER_JOINED' | 'MEMBER_ROLE_CHANGED' | 'MEMBER_LEFT' | 'PHOTO_UPLOADED';
 
 interface RecordActivityInput {
   familyId: string;
@@ -112,6 +112,23 @@ export class FamilyActivityService {
     });
   }
 
+  async tombstoneSubject(
+    transaction: Prisma.TransactionClient,
+    familyId: string,
+    subjectType: string,
+    subjectId: string,
+  ): Promise<void> {
+    await transaction.familyActivity.updateMany({
+      where: { familyId, subjectType, subjectId, visibility: 'ACTIVE' },
+      data: {
+        visibility: 'TOMBSTONED',
+        subjectId: null,
+        summaryPayload: {},
+        tombstonedAt: new Date(),
+      },
+    });
+  }
+
   private encodeCursor(occurredAt: Date, id: string): string {
     return Buffer.from(
       JSON.stringify({ v: 1, occurredAt: occurredAt.toISOString(), id }),
@@ -127,7 +144,7 @@ export class FamilyActivityService {
       );
       return { occurredAt: new Date(parsed.occurredAt), id: parsed.id };
     } catch {
-      throw new ApiProblemException(400, 'The activity cursor is invalid.', 'CURSOR_INVALID');
+      throw new ApiProblemException(400, '家庭动态分页游标无效。', 'CURSOR_INVALID');
     }
   }
 }
