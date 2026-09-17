@@ -9,7 +9,7 @@ plan_id: PLAN-20260917-ABAHN8QT
 phase: candidate
 reviewed_commit: 4d4360e0e1deca3ab9cdd1c88c21ee5cc3cee62d
 reviewed_scope_digest: BEC7641DB2358A29349AA8046449EAFA0647B96C08847A48B33AB2AE6D5F3A2E
-ci_status: configured_scope_passed
+ci_status: passed
 related_ids: [PLAN-20260917-ABAHN8QT, SPEC-20260917-NHHC01TR, DES-20260917-8EVTR3RJ]
 supersedes: []
 superseded_by: []
@@ -36,4 +36,4 @@ superseded_by: []
 
 - 平台：Windows 宿主、Docker Desktop Linux containers、Chromium。
 - 测试数据：仅合成账号、合成家庭和合成媒体；未上传真实 Cookie、手机号、验证码或照片。
-- 本轮仅完成候选 Regression；PR 创建后仍需验证远端 `branch-flow-develop`、`quality`、`e2e-auth`，合并 develop 后还需集成复验。
+- PR #24 的 `branch-flow-develop`、`quality`、`e2e-auth` 均通过，分别对应 Branch Flow run `35204369442` 与 Quality run `35204369171`；检查执行的 PR Head 为 `1847ea047c09e3088a66c1a56b5f55e4c474cefd`。本轮仍是候选 Regression，合并 `develop` 后必须对集成提交独立复验。

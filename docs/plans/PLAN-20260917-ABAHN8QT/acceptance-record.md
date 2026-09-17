@@ -32,3 +32,5 @@ superseded_by: []
 ## 集成边界
 
 用户已授权进入 PR 流程，未授权合并 PR #24。远端检查通过后仍需单独获得合并授权；合并至 `develop` 后，对精确集成提交重算作用范围摘要并独立复验。若摘要改变，原验收失效。
+
+PR #24 在 Head `1847ea047c09e3088a66c1a56b5f55e4c474cefd` 上的 `branch-flow-develop`、`quality`、`e2e-auth` 均已通过（Branch Flow run `35204369442`；Quality run `35204369171`）。

@@ -9,7 +9,7 @@ plan_id: PLAN-20260917-ABAHN8QT
 repository_mode: git_remote
 reviewed_commit: 4d4360e0e1deca3ab9cdd1c88c21ee5cc3cee62d
 reviewed_scope_digest: BEC7641DB2358A29349AA8046449EAFA0647B96C08847A48B33AB2AE6D5F3A2E
-ci_status: configured_scope_passed
+ci_status: passed
 related_ids: [PLAN-20260917-ABAHN8QT, SPEC-20260917-NHHC01TR, DES-20260917-8EVTR3RJ]
 supersedes: []
 superseded_by: []
@@ -119,6 +119,6 @@ superseded_by: []
 
 ## 剩余边界
 
-- `ci_status: configured_scope_passed` 表示本地质量和 Docker E2E 已通过，远端 PR 的 `quality`、`e2e-auth` 和 `branch-flow-develop` 仍须在创建 PR 后验证。
+- PR #24 的远端 `quality`、`e2e-auth` 和 `branch-flow-develop` 均在 PR Head `1847ea047c09e3088a66c1a56b5f55e4c474cefd` 上通过；Quality run `35204369171` 和 Branch Flow run `35204369442`。本地 Review 的实现候选绑定仍为 `4d4360e0e1deca3ab9cdd1c88c21ee5cc3cee62d`。
 - Presigned POST 不宣称 S3 原生严格一次性；当前保证的是随机对象 Key、固定条件和服务端幂等完成。
 - 真实短信、正式法律文本、家庭删除、照片图集和后续宝宝业务仍为已声明非目标。

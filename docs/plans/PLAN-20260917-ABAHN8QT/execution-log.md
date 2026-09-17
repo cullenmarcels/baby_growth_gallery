@@ -28,3 +28,4 @@ superseded_by: []
 - Plan 当前进入 `acceptance_pending`；尚未创建 PR、尚未合并 develop，也尚未获得用户人工验收或合并授权。
 - 用户原文确认“人工验收通过候选 4d4360e，并授权进入 PR 流程”。本轮 `git fetch --prune origin` exit 0；GitHub API 与本地均核对 `origin/develop@fb6fa7a94528255aca77ab04b0009f1cd3064b29`，工作树 clean，候选实现与 PR Head 间只有 Plan/索引证据文档差异。首次远端预检网络超时给出 `remote_unverified`，重试和 feature 分支建立 upstream 后预检为 `verified`。
 - 按授权普通推送 `feature/photo-upload-foundation` 并创建指向 `develop` 的 PR #24：`https://github.com/cullenmarcels/baby_growth_gallery/pull/24`。PR Head `1847ea047c09e3088a66c1a56b5f55e4c474cefd`，v2 owned-scope digest `B90FC3FAEC9DCC6CB8A6254A2301B34B1767F3A0EAB767770487DFB1A4C5C80A`。验收原文、实现候选、PR Head 和 digest 已记录在 Acceptance Record；合并授权尚未取得。
+- PR #24 远端检查最终为 `branch-flow-develop=PASS`（run `35204369442`）、`quality=PASS` 和 `e2e-auth=PASS`（run `35204369171`），均针对 PR Head `1847ea047c09e3088a66c1a56b5f55e4c474cefd`。PR 状态 OPEN、目标 develop、mergeable；未执行 merge。验收与 CI 补充证据保留在本地提交，未推送改变已验收的 PR Head。
