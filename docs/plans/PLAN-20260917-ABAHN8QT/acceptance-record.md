@@ -5,15 +5,15 @@ title: "照片回收权限修订人工验收记录"
 status: confirmed
 acceptance_status: confirmed
 created_at: 2026-09-17T10:43:49+08:00
-updated_at: 2026-09-17T17:18:27+08:00
+updated_at: 2026-09-17T17:33:27+08:00
 plan_id: PLAN-20260917-ABAHN8QT
 confirmed_by: user
 confirmed_at: 2026-09-17T17:18:27+08:00
 confirmation_record: "人工验收通过候选 4d4360e，并授权进入 PR 流程"
 accepted_commit: 1847ea047c09e3088a66c1a56b5f55e4c474cefd
 accepted_scope_digest: B90FC3FAEC9DCC6CB8A6254A2301B34B1767F3A0EAB767770487DFB1A4C5C80A
-integration_commit: null
-integration_scope_digest: null
+integration_commit: fb059f073c6c64ffc4e787281a75227e52a1a84a
+integration_scope_digest: B90FC3FAEC9DCC6CB8A6254A2301B34B1767F3A0EAB767770487DFB1A4C5C80A
 pr_url: https://github.com/cullenmarcels/baby_growth_gallery/pull/24
 related_ids: [PLAN-20260917-ABAHN8QT]
 supersedes: []
@@ -31,6 +31,8 @@ superseded_by: []
 
 ## 集成边界
 
-用户已授权进入 PR 流程，未授权合并 PR #24。远端检查通过后仍需单独获得合并授权；合并至 `develop` 后，对精确集成提交重算作用范围摘要并独立复验。若摘要改变，原验收失效。
+用户先授权进入 PR 流程，随后另行明确回复“授权合并 PR #24 到 develop”。PR #24 已以普通 merge commit 集成到 `origin/develop@fb059f073c6c64ffc4e787281a75227e52a1a84a`；该提交的第二父提交为验收绑定的 PR Head。Integrated v2 `owned_paths` 摘要为 `B90FC3FAEC9DCC6CB8A6254A2301B34B1767F3A0EAB767770487DFB1A4C5C80A`，与 accepted 摘要相同，原人工验收继续有效。
 
 PR #24 在 Head `1847ea047c09e3088a66c1a56b5f55e4c474cefd` 上的 `branch-flow-develop`、`quality`、`e2e-auth` 均已通过（Branch Flow run `35204369442`；Quality run `35204369171`）。
+
+`develop` 集成提交的 Quality run `35205302697` 也已成功；独立集成复验见 Regression Report。
