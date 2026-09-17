@@ -4,7 +4,7 @@
 
 - 最后协议更新：`2026-09-08T11:34:45+08:00`
 - 索引状态：`consistent`
-- 当前阶段：工程基础、五层分支治理、账号认证与 Redis 会话、家庭身份与邀请基础均已归档；Plan C 多宝宝档案与当前宝宝 Session 正在 `feature/baby-profile-foundation` 实施。
+- 当前阶段：工程基础、分支治理与 Plan A–C 均已归档；Plan D 照片隔离上传、安全处理、私有草稿与回收站正在 `feature/photo-upload-foundation` 实施。
 - 仓库协作状态：不缓存；每次运行 [`repository-preflight.ps1`](../hooks/repository-preflight.ps1)。分支治理验收集成提交为 `origin/main@19590f9db9bc55c85e9beb3608bdaec684a6a8a3`；归档工作分支为 `feature/branch-governance-archive`。
 - 归档基线：[`ARCHIVE.sha256`](./ARCHIVE.sha256)
 - 生成命令：`hooks/update-indexes.ps1 -Write`；核对命令：`hooks/update-indexes.ps1 -Check`
@@ -24,6 +24,10 @@
 | `SPEC-20260911-3YV4GCRZ` | `spec` | 家庭身份、成员权限、单次邀请与家庭动态规格 | `active` | `[]` | `[]` | [source](./specs/SPEC-20260911-3YV4GCRZ-family-identity/spec.md) |
 | `DES-20260915-S2PV4FM8` | `design` | 宝宝成长业务闭环界面补充设计 | `active` | `[]` | `[]` | [source](./designs/DES-20260915-S2PV4FM8-baby-growth-mvp-ui/design.md) |
 | `SPEC-20260915-8RKJ7RGM` | `spec` | 首个宝宝成长记录业务里程碑规格 | `active` | `[]` | `[]` | [source](./specs/SPEC-20260915-8RKJ7RGM-baby-growth-mvp/spec.md) |
+| `DES-20260916-4XCFYD80` | `design` | 照片上传流程与管理中心界面补充设计 | `superseded` | `[]` | `[DES-20260917-8EVTR3RJ]` | [source](./designs/DES-20260916-4XCFYD80-photo-upload-ui/design.md) |
+| `SPEC-20260916-5Z69DCQE` | `spec` | 照片隔离上传、安全处理、私有草稿与回收站规格 | `superseded` | `[]` | `[SPEC-20260917-NHHC01TR]` | [source](./specs/SPEC-20260916-5Z69DCQE-photo-upload-foundation/spec.md) |
+| `DES-20260917-8EVTR3RJ` | `design` | 照片回收管理员优先的管理中心交互修订 | `active` | `[DES-20260916-4XCFYD80]` | `[]` | [source](./designs/DES-20260917-8EVTR3RJ-photo-recycle-authority-ui/design.md) |
+| `SPEC-20260917-NHHC01TR` | `spec` | 照片回收的管理员优先权限修订 | `active` | `[SPEC-20260916-5Z69DCQE]` | `[]` | [source](./specs/SPEC-20260917-NHHC01TR-photo-recycle-authority/spec.md) |
 <!-- GENERATED:END DESIGNS_SPECS -->
 
 ## Plan 台账
@@ -31,6 +35,8 @@
 | Plan ID | 标题 | 状态 | 仓库模式 | 基线提交 | 候选提交 | 集成提交 | Review | Regression | 验收有效性 | Achievement |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 <!-- GENERATED:BEGIN PLANS -->
+| [PLAN-20260917-ABAHN8QT](./plans/PLAN-20260917-ABAHN8QT/plan.md) | 修订照片回收权限并继续照片上传阶段 | `acceptance_pending` | `git_remote` | `fb6fa7a94528255aca77ab04b0009f1cd3064b29` | `4d4360e0e1deca3ab9cdd1c88c21ee5cc3cee62d` | `-` | [passed](./plans/PLAN-20260917-ABAHN8QT/review-report.md) | [passed](./plans/PLAN-20260917-ABAHN8QT/regression-report.md) | pending | - |
+| [PLAN-20260916-83SYH180](./plans/PLAN-20260916-83SYH180/plan.md) | 建立照片隔离上传、安全处理、私有草稿与回收站基础 | `superseded` | `git_remote` | `fb6fa7a94528255aca77ab04b0009f1cd3064b29` | `20bcfe9275022c6e71c8659bad74fc1ed5c2b55f` | `-` | [pending](./plans/PLAN-20260916-83SYH180/review-report.md) | [pending](./plans/PLAN-20260916-83SYH180/regression-report.md) | pending | - |
 | [PLAN-20260915-PQ8NHNZ2](./plans/PLAN-20260915-PQ8NHNZ2/plan.md) | 建立多宝宝档案与当前宝宝会话基础 | `archived` | `git_remote` | `b3b12b0e588873853b71960c23ded0cc1a62dcc3` | `5fdb3cfd89c4569f509e15788bc398a991836901` | `29b98f872ae535f6fd3c68472358dc3cb63cf09c` | [passed](./plans/PLAN-20260915-PQ8NHNZ2/review-report.md) | [passed](./plans/PLAN-20260915-PQ8NHNZ2/regression-report.md) | confirmed 2026-09-16T09:50:05+08:00 | [ACH-20260915-PQ8NHNZ2](./achievements/ACH-20260915-PQ8NHNZ2-baby-profile-foundation.md) |
 | [PLAN-20260911-JBANR2J8](./plans/PLAN-20260911-JBANR2J8/plan.md) | 修订家庭邀请中文错误与撤销确认 | `archived` | `git_remote` | `805a979d3927c828127c441b3fd5c07e48aa8768` | `66344d706a7b572d7c7af2b796af0bdd819d67c2` | `b3f2b4682f2b7a831069eab147334b5183c7892b` | [passed](./plans/PLAN-20260911-JBANR2J8/review-report.md) | [passed](./plans/PLAN-20260911-JBANR2J8/regression-report.md) | confirmed 2026-09-14T13:31:00+08:00 | [ACH-20260911-JBANR2J8](./achievements/ACH-20260911-JBANR2J8-family-identity-foundation.md) |
 | [PLAN-20260911-X27F6QNT](./plans/PLAN-20260911-X27F6QNT/plan.md) | 建立家庭身份、成员权限、单次邀请与家庭动态基础 | `superseded` | `git_remote` | `701f26aef605ccac7c1bded89fcb0e3c5e53a54c` | `3b8b92fdcf3ed6eaa575c35c3ab2466152d0b673` | `-` | [passed](./plans/PLAN-20260911-X27F6QNT/review-report.md) | [passed](./plans/PLAN-20260911-X27F6QNT/regression-report.md) | pending | - |

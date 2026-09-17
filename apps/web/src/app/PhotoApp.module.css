@@ -1,0 +1,528 @@
+.uploadPage {
+  min-height: 100vh;
+  color: var(--color-text-default);
+  background: var(--color-bg);
+}
+.flowHeader {
+  position: sticky;
+  z-index: 10;
+  top: 0;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 16px;
+  align-items: center;
+  min-height: 72px;
+  padding: 10px clamp(16px, 5vw, 72px);
+  background: color-mix(in srgb, var(--color-card) 94%, transparent);
+  border-bottom: 1px solid var(--color-border);
+  backdrop-filter: blur(16px);
+}
+.flowHeader > a {
+  display: inline-grid;
+  min-width: 42px;
+  min-height: 42px;
+  place-items: center;
+  color: var(--color-text-strong);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+}
+.flowHeader > div {
+  display: grid;
+  gap: 2px;
+}
+.flowHeader span {
+  color: var(--color-text-sub);
+  font-size: 13px;
+}
+.flowBody {
+  width: min(1180px, calc(100% - 32px));
+  margin: auto;
+  padding: 48px 0 80px;
+}
+.uploadIntro {
+  max-width: 720px;
+  margin-bottom: 28px;
+}
+.uploadIntro h1,
+.manageHero h1 {
+  margin: 6px 0 10px;
+  color: var(--color-text-strong);
+  font-size: clamp(30px, 5vw, 52px);
+}
+.uploadIntro p,
+.manageHero p {
+  color: var(--color-text-sub);
+  line-height: 1.7;
+}
+.eyebrow {
+  margin: 0;
+  color: var(--color-primary) !important;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.notice {
+  margin: 18px 0;
+  padding: 14px 18px;
+  color: var(--color-text-strong);
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-md);
+}
+.dropZone {
+  display: grid;
+  min-height: 330px;
+  place-items: center;
+  align-content: center;
+  gap: 10px;
+  padding: 32px;
+  text-align: center;
+  background: var(--color-card);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+.dropZone.dragging {
+  border-color: var(--color-primary);
+  transform: translateY(-2px);
+}
+.dropZone > svg {
+  color: var(--color-primary);
+}
+.dropZone h2 {
+  margin: 4px 0;
+  color: var(--color-text-strong);
+}
+.dropZone p {
+  max-width: 560px;
+  margin: 0;
+  color: var(--color-text-sub);
+}
+.chooseActions,
+.sectionHeading,
+.publishBar,
+.cardActions,
+.tabs {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.chooseActions {
+  margin-top: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.chooseActions button,
+.sectionHeading button,
+.publishBar button,
+.manageHero a,
+.metaForm button {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 18px;
+  color: var(--color-card);
+  font: inherit;
+  font-weight: 750;
+  background: var(--color-primary);
+  border: 0;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  text-decoration: none;
+}
+.hiddenInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+.fileSection {
+  margin-top: 28px;
+}
+.sectionHeading {
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.sectionHeading h2 {
+  margin: 0 0 4px;
+  color: var(--color-text-strong);
+}
+.sectionHeading p {
+  margin: 0;
+  color: var(--color-text-sub);
+}
+.photoGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.uploadCard {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.8fr) minmax(250px, 1.2fr);
+  overflow: hidden;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+.previewBox {
+  display: grid;
+  min-height: 250px;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  color: var(--color-text-sub);
+  background: var(--color-primary-soft);
+}
+.previewBox img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.cardBody {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  padding: 20px;
+}
+.statusLine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--color-text-strong);
+}
+.statusLine label {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+.uploadCard progress {
+  width: 100%;
+  accent-color: var(--color-primary);
+}
+.textButton {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 5px;
+  padding: 0;
+  color: var(--color-primary);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.metaForm {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.metaForm label {
+  display: grid;
+  gap: 6px;
+  color: var(--color-text-sub);
+  font-size: 13px;
+}
+.metaForm label:nth-of-type(4),
+.metaForm small,
+.metaForm button {
+  grid-column: 1 / -1;
+}
+.metaForm input,
+.metaForm textarea,
+.filter select {
+  min-width: 0;
+  padding: 10px 12px;
+  color: var(--color-text-default);
+  font: inherit;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+.metaForm textarea {
+  min-height: 76px;
+  resize: vertical;
+}
+.metaForm small {
+  color: var(--color-text-sub);
+  line-height: 1.5;
+}
+.publishBar {
+  position: sticky;
+  bottom: 18px;
+  justify-content: space-between;
+  margin-top: 22px;
+  padding: 16px 20px;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+.publishBar button:disabled,
+.sectionHeading button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.batchForm {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.8fr) repeat(3, minmax(150px, 1fr)) auto;
+  gap: 12px;
+  align-items: end;
+  margin-top: 22px;
+  padding: 18px;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+.batchForm > div {
+  display: grid;
+  gap: 4px;
+  align-self: center;
+}
+.batchForm > div span {
+  color: var(--color-text-sub);
+  font-size: 13px;
+}
+.batchForm label {
+  display: grid;
+  gap: 6px;
+  color: var(--color-text-sub);
+  font-size: 13px;
+  font-weight: 700;
+}
+.batchForm input,
+.batchForm textarea {
+  min-width: 0;
+  min-height: 42px;
+  padding: 9px 11px;
+  color: var(--color-text);
+  font: inherit;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+.batchForm textarea {
+  height: 42px;
+  resize: vertical;
+}
+.batchForm button,
+.loadMore {
+  min-height: 44px;
+  padding: 0 18px;
+  color: var(--color-card);
+  font: inherit;
+  font-weight: 750;
+  background: var(--color-primary);
+  border: 0;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+.batchForm button:disabled,
+.loadMore:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.errorText {
+  color: var(--color-error);
+}
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.managePage {
+  display: grid;
+  gap: 22px;
+}
+.manageHero {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+  padding: clamp(24px, 4vw, 44px);
+  background: linear-gradient(135deg, var(--color-card), var(--color-primary-soft));
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+.manageHero h1 {
+  font-size: clamp(28px, 4vw, 44px);
+}
+.tabs button {
+  min-height: 42px;
+  padding: 0 18px;
+  color: var(--color-text-default);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+.tabs button[aria-selected='true'] {
+  color: var(--color-card);
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+.filter {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-text-sub);
+}
+.manageGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+.manageCard {
+  overflow: hidden;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+.manageImage {
+  display: grid;
+  aspect-ratio: 4 / 3;
+  place-items: center;
+  color: var(--color-text-sub);
+  background: var(--color-primary-soft);
+}
+.manageImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.manageCard > div:last-child {
+  display: grid;
+  gap: 7px;
+  padding: 16px;
+}
+.manageCard h2,
+.manageCard p {
+  margin: 0;
+}
+.manageCard p,
+.manageCard small {
+  color: var(--color-text-sub);
+}
+.statusBadge {
+  width: fit-content;
+  padding: 4px 8px;
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 750;
+  background: var(--color-primary-soft);
+  border-radius: var(--radius-pill);
+}
+.cardActions {
+  margin-top: 8px;
+}
+.cardActions button {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 5px;
+  padding: 0 12px;
+  color: var(--color-text-default);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+.manageState {
+  display: grid;
+  min-height: 260px;
+  place-items: center;
+  align-content: center;
+  gap: 10px;
+  color: var(--color-text-sub);
+  background: var(--color-card);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+}
+.loadMore {
+  display: block;
+  margin: 2px auto 0;
+}
+@media (max-width: 1023px) {
+  .photoGrid,
+  .manageGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .uploadCard {
+    grid-template-columns: 1fr;
+  }
+  .previewBox {
+    min-height: 210px;
+  }
+  .batchForm {
+    grid-template-columns: 1fr 1fr;
+  }
+  .batchForm > div {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 640px) {
+  .flowHeader {
+    min-height: 62px;
+    padding: 8px 12px;
+  }
+  .flowHeader span {
+    display: none;
+  }
+  .flowHeader > a:last-child {
+    padding: 0 10px;
+    font-size: 13px;
+  }
+  .flowBody {
+    width: min(100% - 24px, 1180px);
+    padding: 28px 0 52px;
+  }
+  .dropZone {
+    min-height: 270px;
+    padding: 22px 14px;
+  }
+  .photoGrid,
+  .manageGrid {
+    grid-template-columns: 1fr;
+  }
+  .sectionHeading,
+  .publishBar,
+  .manageHero {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .publishBar {
+    bottom: 12px;
+  }
+  .metaForm,
+  .batchForm {
+    grid-template-columns: 1fr;
+  }
+  .metaForm label,
+  .metaForm label:nth-of-type(4),
+  .metaForm small,
+  .metaForm button,
+  .batchForm > div {
+    grid-column: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dropZone {
+    transition: none;
+  }
+  .spin {
+    animation: none;
+  }
+}

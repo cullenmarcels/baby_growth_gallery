@@ -1,17 +1,17 @@
 ---
 ruleset_id: RULESET-SECURITY-PRIVACY
 title: "安全与隐私规则"
-version: 1
+version: 2
 status: active
 health: healthy
 scope: security-privacy
-stages: [exploration, development, review, regression]
+stages: [exploration, planning, development, review, regression]
 effective_at: 2026-09-07T16:49:15+08:00
-updated_at: 2026-09-07T17:18:08+08:00
-source_refs: [AGENTS.md]
-related_plan_ids: [PLAN-20260907-001]
+updated_at: 2026-09-17T10:43:49+08:00
+source_refs: [AGENTS.md, docs/plans/PLAN-20260917-ABAHN8QT/plan.md]
+related_plan_ids: [PLAN-20260907-001, PLAN-20260917-ABAHN8QT]
 related_achievement_ids: [ACH-20260907-001]
-supersedes_version: null
+supersedes_version: 1
 ---
 
 # 安全与隐私规则
@@ -67,3 +67,16 @@ supersedes_version: null
 - Verification: 输出无敏感值复述，报告仍足以定位和处理风险。
 - Exceptions: 用户通过安全渠道明确要求核对特定值时仍应最小化显示。
 - Source: 用户确认本计划中的操作化安全规则。
+
+## SAFE-005 — 管理员限制不得由普通成员自行逆转
+
+- Level: `MUST`
+- Status: `active`
+- Stages: `planning`, `development`, `review`, `regression`
+- Applies to: 家庭资源中由 OWNER/ADMIN 发起、会限制普通成员操作的已定义业务行为。
+- Trigger: 规划或实现管理员回收、归档、移除、撤销等限制性操作及其恢复路径。
+- Requirement: Spec/Plan 必须逐项列出受影响操作和普通成员的页面反馈；普通成员不得仅凭资源作者身份或旧页面状态逆转管理员限制。服务端按当前 Membership 与操作来源执行最终授权，前端同步显示中文原因或下一步；不因此授予管理员读取私有草稿等未定义权限。
+- Verification modes: `review`, `regression`
+- Verification: 对每个适用操作检查管理员执行、成员直调 API 被拒、成员页面反馈、权限变化和并发旧页面；未实施的业务在 Spec/Plan 中列为不适用。
+- Exceptions: 某业务 Spec 明确设计了独立申诉或恢复流程时，以用户确认的该流程为准，不把此 Rule 当成全局账号封禁。
+- Source: 用户于 2026-09-17 确认“管理员操作权限高于成员权限”为长期规则，并要求说明适用操作与成员交互反馈。

@@ -9,6 +9,11 @@ export type {
   FamilyActivityPage,
   FamilyMember,
   FamilySummary,
+  PhotoManagementPage,
+  PhotoSummary,
+  PhotoUploadedActivitySummaryV1,
+  PhotoUploadBatch,
+  PhotoUploadInstruction,
   ReadinessResponse,
   VerificationChallenge,
 } from './client.js';

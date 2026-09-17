@@ -24,7 +24,7 @@ export interface components {
       "occurredAt": string;
       "schemaVersion": number;
       "subject"?: components['schemas']['ActivitySubjectDto'];
-      "summary": (components['schemas']['FamilyCreatedSummaryDto'] | components['schemas']['MemberJoinedSummaryDto'] | components['schemas']['MemberRoleChangedSummaryDto'] | components['schemas']['MemberLeftSummaryDto']);
+      "summary": (components['schemas']['FamilyCreatedSummaryDto'] | components['schemas']['MemberJoinedSummaryDto'] | components['schemas']['MemberRoleChangedSummaryDto'] | components['schemas']['MemberLeftSummaryDto'] | components['schemas']['PhotoUploadedActivitySummaryV1Dto']);
       "type": "FAMILY_CREATED" | "MEMBER_JOINED" | "MEMBER_ROLE_CHANGED" | "MEMBER_LEFT" | "PHOTO_UPLOADED" | "COMMENT_ADDED" | "REACTION_ADDED" | "MILESTONE_RECORDED" | "GROWTH_RECORDED";
       "visibility": "ACTIVE";
     };
@@ -70,6 +70,12 @@ export interface components {
       "status": "ACTIVE" | "ARCHIVED";
       "updatedAt": string;
     };
+    "BatchUpdatePhotosRequestDto": {
+      "capturedOn"?: string;
+      "description"?: string | null;
+      "location"?: string | null;
+      "photoIds": Array<string>;
+    };
     "ChangeMemberRoleRequestDto": {
       "role": "ADMIN" | "MEMBER";
     };
@@ -91,6 +97,9 @@ export interface components {
     "CreateFamilyRequestDto": {
       "displayName": string;
       "name": string;
+    };
+    "CreatePhotoBatchRequestDto": {
+      "files": Array<components['schemas']['PhotoFileDescriptorDto']>;
     };
     "CsrfTokenResponseDto": {
       "csrfToken": string;
@@ -174,6 +183,61 @@ export interface components {
       "newPassword": string;
       "phone": string;
     };
+    "PhotoFileDescriptorDto": {
+      "capturedOn": string;
+      "contentType": string;
+      "sizeBytes": number;
+    };
+    "PhotoListResponseDto": {
+      "items": Array<components['schemas']['PhotoSummaryDto']>;
+    };
+    "PhotoManagementPageDto": {
+      "items": Array<components['schemas']['PhotoSummaryDto']>;
+      "nextCursor": string | null;
+    };
+    "PhotoPreviewDto": {
+      "expiresAt": string;
+      "url": string;
+    };
+    "PhotoSummaryDto": {
+      "babyId": string;
+      "batchId": string;
+      "canRestore": boolean;
+      "capturedOn": string;
+      "description": string | null;
+      "draftExpiresAt": string | null;
+      "failureCode": string | null;
+      "height": number | null;
+      "id": string;
+      "location": string | null;
+      "publishedAt": string | null;
+      "purgeAfter": string | null;
+      "sourceFormat": "JPEG" | "PNG" | "WEBP" | "HEIC" | "HEIF" | null;
+      "status": "AWAITING_UPLOAD" | "QUEUED" | "PROCESSING" | "DRAFT" | "PUBLISHED" | "TRASHED" | "FAILED";
+      "title": string | null;
+      "trashedAt": string | null;
+      "updatedAt": string;
+      "width": number | null;
+    };
+    "PhotoUploadBatchDto": {
+      "babyId": string;
+      "createdAt": string;
+      "id": string;
+      "photos": Array<components['schemas']['PhotoSummaryDto']>;
+      "uploadInstructions"?: Array<components['schemas']['PhotoUploadInstructionDto']>;
+    };
+    "PhotoUploadedActivitySummaryV1Dto": {
+      "babyId": string;
+    };
+    "PhotoUploadInstructionDto": {
+      "expiresAt": string;
+      "fields": Record<string, string>;
+      "photoId": string;
+      "url": string;
+    };
+    "PublishPhotosRequestDto": {
+      "photoIds": Array<string>;
+    };
     "RegisterRequestDto": {
       "challengeId": string;
       "code": string;
@@ -193,6 +257,12 @@ export interface components {
       "birthDate"?: string;
       "nickname"?: string;
       "sex"?: "MALE" | "FEMALE" | null;
+    };
+    "UpdatePhotoRequestDto": {
+      "capturedOn"?: string;
+      "description"?: string | null;
+      "location"?: string | null;
+      "title"?: string | null;
     };
     "VerificationChallengeRequestDto": {
       "phone": string;
@@ -822,6 +892,245 @@ export interface paths {
         "200": {
           content: {
             "application/json": components['schemas']['AccountSummaryDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies/{babyId}/photo-upload-batches": {
+    post: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+        };
+      };
+      requestBody: {
+        content: {
+          "application/json": components['schemas']['CreatePhotoBatchRequestDto'];
+        };
+      };
+      responses: {
+        "201": {
+          content: {
+            "application/json": components['schemas']['PhotoUploadBatchDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies/{babyId}/photo-upload-batches/{batchId}": {
+    get: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "batchId": string;
+          "familyId": string;
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['PhotoUploadBatchDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies/{babyId}/photo-upload-batches/{batchId}/photos": {
+    patch: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "batchId": string;
+          "familyId": string;
+        };
+      };
+      requestBody: {
+        content: {
+          "application/json": components['schemas']['BatchUpdatePhotosRequestDto'];
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['PhotoListResponseDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies/{babyId}/photo-upload-batches/{batchId}/photos/{photoId}/complete": {
+    post: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "batchId": string;
+          "familyId": string;
+          "photoId": string;
+        };
+      };
+      responses: {
+        "202": {
+          content: Record<string, never>;
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies/{babyId}/photo-upload-batches/{batchId}/photos/{photoId}/reissue": {
+    post: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "batchId": string;
+          "familyId": string;
+          "photoId": string;
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['PhotoUploadInstructionDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies/{babyId}/photo-upload-batches/{batchId}/publish": {
+    post: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "batchId": string;
+          "familyId": string;
+        };
+      };
+      requestBody: {
+        content: {
+          "application/json": components['schemas']['PublishPhotosRequestDto'];
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['PhotoListResponseDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies/{babyId}/photos/{photoId}": {
+    delete: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+          "photoId": string;
+        };
+      };
+      responses: {
+        "204": {
+          content: Record<string, never>;
+        };
+      };
+    };
+    patch: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+          "photoId": string;
+        };
+      };
+      requestBody: {
+        content: {
+          "application/json": components['schemas']['UpdatePhotoRequestDto'];
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['PhotoSummaryDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies/{babyId}/photos/{photoId}/preview": {
+    get: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+          "photoId": string;
+        };
+        "query"?: {
+          "variant"?: "THUMBNAIL" | "DISPLAY" | "ARCHIVE";
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['PhotoPreviewDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies/{babyId}/photos/{photoId}/restore": {
+    post: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+          "photoId": string;
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['PhotoSummaryDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies/{babyId}/photos/{photoId}/trash": {
+    post: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+          "photoId": string;
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['PhotoSummaryDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies/{babyId}/photos/manage": {
+    get: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+        };
+        "query"?: {
+          "cursor"?: unknown;
+          "limit"?: unknown;
+          "scope"?: "mine" | "family";
+          "status"?: unknown;
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['PhotoManagementPageDto'];
           };
         };
       };

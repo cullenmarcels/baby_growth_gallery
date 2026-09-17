@@ -12,11 +12,12 @@
     "dev": "concurrently --kill-others --names web,api --prefix-colors magenta,cyan \"pnpm dev:web\" \"pnpm dev:api\"",
     "dev:web": "pnpm --filter @baby-growth-gallery/web dev",
     "dev:api": "pnpm --filter @baby-growth-gallery/api dev",
-    "infra:up": "docker compose up -d --wait postgres redis minio && docker compose up --no-deps minio-init",
+    "infra:up": "docker compose up -d --wait postgres redis minio storage-proxy && docker compose up --no-deps minio-init",
     "infra:down": "docker compose down",
     "stack:up": "pnpm infra:up && docker compose --profile app up -d --build --wait --no-deps api && docker compose --profile app up -d --build --wait --no-deps web",
     "stack:down": "docker compose --profile app down",
     "api:generate": "pnpm --filter @baby-growth-gallery/api openapi:export && pnpm --filter @baby-growth-gallery/api-client generate",
+    "photo:dependencies:check": "node hooks/validate-photo-dependencies.mjs",
     "branch-flow:check": "node hooks/validate-branch-flow.mjs",
     "branch-flow:test": "node --test tests/*.test.mjs",
     "lint": "eslint . --max-warnings 0",
@@ -25,7 +26,7 @@
     "test": "pnpm branch-flow:test && pnpm -r --if-present test",
     "build": "pnpm -r --if-present build",
     "e2e": "playwright test",
-    "validate": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build && pwsh -NoProfile -File hooks/validate-project.ps1 -Check"
+    "validate": "pnpm photo:dependencies:check && pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build && pwsh -NoProfile -File hooks/validate-project.ps1 -Check"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

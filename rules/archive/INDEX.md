@@ -2,7 +2,7 @@
 
 > 本目录只保存已被替代或退役的 Ruleset/Stage 快照。正常任务不得把历史版本当作当前约束。
 
-- 最后更新：`2026-09-11T15:18:21+08:00`
+- 最后更新：`2026-09-17T10:43:49+08:00`
 - 防篡改清单：[`MANIFEST.sha256`](./MANIFEST.sha256)
 - 关联 Plan：[`PLAN-20260908-001`](../../docs/plans/PLAN-20260908-001/plan.md)
 - 初始体系 Achievement：[`ACH-20260907-001`](../../docs/achievements/ACH-20260907-001-rules-lifecycle-system.md)
@@ -16,6 +16,7 @@
 | `RULESET-REPOSITORY-SAFETY` | `1` | `superseded` | 2026-09-08 | `2` | `PLAN-20260908-001` | [快照](./RULESET-REPOSITORY-SAFETY/v001-20260907.md) |
 | `RULESET-TESTING-QUALITY` | `1` | `superseded` | 2026-09-08 | `2` | `PLAN-20260908-001` | [快照](./RULESET-TESTING-QUALITY/v001-20260907.md) |
 | `RULESET-IMPLEMENTATION-QUALITY` | `1` | `superseded` | 2026-09-11 | `2` | `PLAN-20260911-JBANR2J8` | [快照](./RULESET-IMPLEMENTATION-QUALITY/v001-20260911.md) |
+| `RULESET-SECURITY-PRIVACY` | `1` | `superseded` | 2026-09-17 | `2` | `PLAN-20260917-ABAHN8QT` | [快照](./RULESET-SECURITY-PRIVACY/v001-20260917.md) |
 | `STAGE-EXPLORATION` | `1` | `superseded` | 2026-09-08 | `2` | `PLAN-20260908-001` | [快照](./STAGE-EXPLORATION/v001-20260907.md) |
 | `STAGE-PLANNING` | `1` | `superseded` | 2026-09-08 | `2` | `PLAN-20260908-001` | [快照](./STAGE-PLANNING/v001-20260907.md) |
 | `STAGE-DEVELOPMENT` | `1` | `superseded` | 2026-09-08 | `2` | `PLAN-20260908-001` | [快照](./STAGE-DEVELOPMENT/v001-20260907.md) |

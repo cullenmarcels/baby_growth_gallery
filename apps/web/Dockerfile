@@ -5,9 +5,11 @@ ARG NPM_REGISTRY=https://registry.npmjs.org
 WORKDIR /workspace
 RUN corepack enable && corepack prepare pnpm@11.21.0 --activate && pnpm config set registry "$NPM_REGISTRY"
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml tsconfig.base.json ./
+COPY apps/web/package.json apps/web/package.json
+COPY packages/api-client/package.json packages/api-client/package.json
+RUN --mount=type=cache,id=pnpm-store-web,target=/root/.local/share/pnpm/store pnpm install --frozen-lockfile
 COPY apps/web apps/web
 COPY packages/api-client packages/api-client
-RUN --mount=type=cache,id=pnpm-store-web,target=/root/.local/share/pnpm/store pnpm install --frozen-lockfile
 ARG VITE_API_BASE_URL
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 RUN test -n "$VITE_API_BASE_URL" && pnpm --filter @baby-growth-gallery/web build

@@ -41,8 +41,9 @@ export class BabyMaintenanceService implements OnModuleInit, OnModuleDestroy {
       );
       if (!lock?.acquired) return 0;
       const expired = await transaction.$queryRawUnsafe<Array<{ id: string }>>(
-        `SELECT id FROM baby_profiles
-         WHERE status = 'ARCHIVED' AND purge_after <= $1
+        `SELECT baby.id FROM baby_profiles baby
+         WHERE baby.status = 'ARCHIVED' AND baby.purge_after <= $1
+           AND NOT EXISTS (SELECT 1 FROM photos photo WHERE photo.baby_id = baby.id)
          ORDER BY purge_after ASC, id ASC
          LIMIT $2
          FOR UPDATE SKIP LOCKED`,
