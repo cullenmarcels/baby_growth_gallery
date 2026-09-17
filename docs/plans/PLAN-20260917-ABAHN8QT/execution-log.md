@@ -2,9 +2,9 @@
 id: PLAN-20260917-ABAHN8QT-EXEC
 type: execution_log
 title: "照片回收权限修订执行记录"
-status: in_progress
+status: archived
 created_at: 2026-09-17T10:43:49+08:00
-updated_at: 2026-09-17T10:43:49+08:00
+updated_at: 2026-09-17T17:36:46+08:00
 plan_id: PLAN-20260917-ABAHN8QT
 related_ids: [PLAN-20260917-ABAHN8QT, SPEC-20260917-NHHC01TR, DES-20260917-8EVTR3RJ]
 supersedes: []
@@ -32,3 +32,4 @@ superseded_by: []
 - 用户另行明确授权“授权合并 PR #24 到 develop”。合并前复核 PR OPEN、base `develop@fb6fa7a94528255aca77ab04b0009f1cd3064b29`、Head `1847ea047c09e3088a66c1a56b5f55e4c474cefd`、验收 digest 可重算一致，三项检查全部 PASS；`gh pr merge 24 --merge` exit 0。PR 状态 MERGED，merge commit 为 `fb059f073c6c64ffc4e787281a75227e52a1a84a`，其两个父提交依次为固定 base 与 PR Head。
 - `git fetch --prune origin` 后 `origin/develop` 为精确 merge commit；集成 tree 与 PR Head 无文件差异，integrated v2 digest `B90FC3FAEC9DCC6CB8A6254A2301B34B1767F3A0EAB767770487DFB1A4C5C80A` 与 accepted digest 相同。`develop` Quality run `35205302697` 最终 success，quality 与 e2e-auth Job 均通过。
 - 在精确集成提交上独立复验：`pnpm validate` exit 0（branch-flow 5、API 48、Web 34、lint、format、typecheck、build 与项目校验）；Docker `pnpm e2e` exit 0（36 passed、27 designed skips、0 failed）；`prisma migrate deploy` 报告 5 个 migration、无 pending；Docker 全栈运行、readiness HTTP 200。首次 Windows format 检查因 `core.autocrlf=true` 将 33 个新增源码工作副本检出为 CRLF 而失败；运行 Prettier 规范化后逐个核对 Git blob 与 HEAD 相同、Git 差异为零，再复跑全套通过，未改变验收范围。
+- `integration_review` 的精确提交、Regression、Acceptance 和索引证据已单独记录；accepted 与 integrated 摘要一致，Review、Regression 和远端 CI 均通过。按已确认的 Plan D 集成后归档流程生成同编号 Achievement，并将完整 Plan 包和 Achievement 纳入 `docs/ARCHIVE.sha256`；后续修改必须新建 Plan。

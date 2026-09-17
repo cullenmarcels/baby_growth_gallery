@@ -2,7 +2,7 @@
 id: PLAN-20260917-ABAHN8QT-STATE
 type: plan_state
 plan_id: PLAN-20260917-ABAHN8QT
-status: integration_review
+status: archived
 repository_mode: git_remote
 remote_name: origin
 integration_target: origin/develop
@@ -23,4 +23,4 @@ integrated_scope_digest: B90FC3FAEC9DCC6CB8A6254A2301B34B1767F3A0EAB767770487DFB
 
 # Plan State
 
-用户于 2026-09-17 明确验收实现候选 `4d4360e0e1deca3ab9cdd1c88c21ee5cc3cee62d`，随后单独授权合并 PR #24。PR Head `1847ea047c09e3088a66c1a56b5f55e4c474cefd` 经普通 merge 进入 `origin/develop@fb059f073c6c64ffc4e787281a75227e52a1a84a`；accepted 与 integrated v2 摘要完全相同。精确集成提交的本地验证和远端 CI 均通过，当前进行归档前集成 Review。
+用户于 2026-09-17 明确验收实现候选 `4d4360e0e1deca3ab9cdd1c88c21ee5cc3cee62d`，随后单独授权合并 PR #24。PR Head `1847ea047c09e3088a66c1a56b5f55e4c474cefd` 经普通 merge 进入 `origin/develop@fb059f073c6c64ffc4e787281a75227e52a1a84a`；accepted 与 integrated v2 摘要完全相同。精确集成提交的本地验证和远端 CI 均通过，Plan D 完成归档。归档后 Plan 包只读；后续变更应建立新 Plan。
