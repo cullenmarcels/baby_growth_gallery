@@ -22,4 +22,4 @@ superseded_by: []
 
 # Acceptance Record
 
-修订候选尚未形成；人工验收与 PR 合并授权均为 pending。
+修订候选已形成并完成自动化验证；人工验收仍为 pending。待 Review、独立 Regression 和候选 scope digest 固定后，再交由用户在运行中的 Docker 页面进行手动校验；本记录不包含 PR 合并授权。

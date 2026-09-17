@@ -17,4 +17,4 @@ superseded_by: []
 
 # Review Report
 
-修订实现尚未形成固定候选，Review 为 pending。原 Plan D 候选和报告仅保留历史证据；当前不可进入 Regression 或人工验收。
+修订实现已完成候选级自动化验证，当前 Review 仍为 pending。候选实现提交为 `4d4360e0e1deca3ab9cdd1c88c21ee5cc3cee62d`，验证证据提交为 `2e54ba0f092f6729edd2532a4a0f8c3dcab0db99`；正式 reviewed commit/digest 尚未写入。原 Plan D 保留的两项门禁决策未确认：CI 失败产物的安全上传口径，以及 Presigned POST 是否要求服务端一次性执行语义。因此暂不宣称 Review 通过，也不进入人工验收。

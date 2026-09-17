@@ -23,4 +23,4 @@ integrated_scope_digest: null
 
 # Plan State
 
-用户于 2026-09-17 确认管理员优先的长期规则和照片回收修订方案。原 Plan D 已标记 `superseded`；本 Plan 从同一 feature 分支继续，尚未形成修订实现候选。
+用户于 2026-09-17 确认管理员优先的长期规则和照片回收修订方案。原 Plan D 已标记 `superseded`；本 Plan 已完成实现与 Docker 自动化候选验证，当前等待两项 Review 门禁决策后固定最终 scope digest，再进入正式 Review、独立 Regression 和人工验收。
