@@ -2,7 +2,7 @@
 id: PLAN-20260917-ABAHN8QT-STATE
 type: plan_state
 plan_id: PLAN-20260917-ABAHN8QT
-status: acceptance_pending
+status: integration_pending
 repository_mode: git_remote
 remote_name: origin
 integration_target: origin/develop
@@ -15,12 +15,12 @@ owned_paths: [AGENTS.md, README.md, apps/api, apps/web, packages/api-client, tes
 overlapping_plan_ids: []
 reviewed_commit: 4d4360e0e1deca3ab9cdd1c88c21ee5cc3cee62d
 reviewed_scope_digest: BEC7641DB2358A29349AA8046449EAFA0647B96C08847A48B33AB2AE6D5F3A2E
-accepted_commit: null
-accepted_scope_digest: null
+accepted_commit: 1847ea047c09e3088a66c1a56b5f55e4c474cefd
+accepted_scope_digest: B90FC3FAEC9DCC6CB8A6254A2301B34B1767F3A0EAB767770487DFB1A4C5C80A
 integrated_commit: null
 integrated_scope_digest: null
 ---
 
 # Plan State
 
-用户于 2026-09-17 确认管理员优先的长期规则和照片回收修订方案，并于本轮确认 CI 失败产物与 Presigned POST 两项 Review 门禁口径。候选 `4d4360e0e1deca3ab9cdd1c88c21ee5cc3cee62d` 的 Review、独立 Regression 和本地 Docker 自动化验证均已通过；当前等待用户对固定候选进行人工试玩与明确验收。
+用户于 2026-09-17 明确人工验收实现候选 `4d4360e0e1deca3ab9cdd1c88c21ee5cc3cee62d` 并授权进入 PR 流程。PR #24 的 Head 为 `1847ea047c09e3088a66c1a56b5f55e4c474cefd`，其差异限于 Plan/索引证据；本状态绑定该 PR Head 的 v2 摘要。当前等待远端 CI 及用户对 PR #24 的单独合并授权。

@@ -26,3 +26,5 @@ superseded_by: []
 - 用户随后确认两项门禁口径：CI 失败时只上传安全状态摘要，不上传原始 trace、截图和完整报告；Presigned POST 接受固定对象 Key + 服务端幂等 `complete`，不要求 S3 层严格一次性执行。该确认已写入 Plan，并按确认语义完成 Review 与独立 Regression。
 - 正式 Review 结论 `PASS`：绑定候选 `4d4360e0e1deca3ab9cdd1c88c21ee5cc3cee62d` 和 v2 digest `BEC7641DB2358A29349AA8046449EAFA0647B96C08847A48B33AB2AE6D5F3A2E`，65 条适用 Rule 全部 PASS，无 FAIL/UNVERIFIED。独立 Regression 结论 `PASS`：本地质量门禁、Docker 完整 E2E（36 passed / 27 skipped / 0 failed）、迁移、readiness 和三视口回归均通过。
 - Plan 当前进入 `acceptance_pending`；尚未创建 PR、尚未合并 develop，也尚未获得用户人工验收或合并授权。
+- 用户原文确认“人工验收通过候选 4d4360e，并授权进入 PR 流程”。本轮 `git fetch --prune origin` exit 0；GitHub API 与本地均核对 `origin/develop@fb6fa7a94528255aca77ab04b0009f1cd3064b29`，工作树 clean，候选实现与 PR Head 间只有 Plan/索引证据文档差异。首次远端预检网络超时给出 `remote_unverified`，重试和 feature 分支建立 upstream 后预检为 `verified`。
+- 按授权普通推送 `feature/photo-upload-foundation` 并创建指向 `develop` 的 PR #24：`https://github.com/cullenmarcels/baby_growth_gallery/pull/24`。PR Head `1847ea047c09e3088a66c1a56b5f55e4c474cefd`，v2 owned-scope digest `B90FC3FAEC9DCC6CB8A6254A2301B34B1767F3A0EAB767770487DFB1A4C5C80A`。验收原文、实现候选、PR Head 和 digest 已记录在 Acceptance Record；合并授权尚未取得。
