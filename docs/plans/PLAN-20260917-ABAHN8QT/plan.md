@@ -62,6 +62,6 @@ applicable_rules:
 
 ## Review、Regression 与验收门禁
 
-候选执行 `pnpm lint`、`pnpm format:check`、`pnpm typecheck`、`pnpm test`、`pnpm build`、`pnpm e2e`、`pnpm validate` 和 `hooks/validate-project.ps1 -Check`，另验证空库及 Plan D 旧数据库前向迁移、Docker 全栈 readiness、对象清理与 375／834／1440 正常/加载/错误状态。Review 必须绑定新候选提交与 v2 owned-scope digest，逐条覆盖 65 条固定 Rule；独立 Regression 不能由 Review 替代。原 Plan D 尚待用户确认的 CI 失败产物安全口径和 Presigned POST 单次语义继续阻止 Review 通过，不因本次权限修订自动视为已同意。
+候选执行 `pnpm lint`、`pnpm format:check`、`pnpm typecheck`、`pnpm test`、`pnpm build`、`pnpm e2e`、`pnpm validate` 和 `hooks/validate-project.ps1 -Check`，另验证空库及 Plan D 旧数据库前向迁移、Docker 全栈 readiness、对象清理与 375／834／1440 正常/加载/错误状态。Review 必须绑定新候选提交与 v2 owned-scope digest，逐条覆盖 65 条固定 Rule；独立 Regression 不能由 Review 替代。用户已确认两项门禁口径：CI 失败只上传安全状态摘要；Presigned POST 采用固定对象 Key 与服务端幂等 `complete`，不要求 S3 层严格一次性执行。
 
 用户对固定新候选人工试玩并明确验收后，仍须单独授权相应 PR 合并到 develop；集成提交重新计算 digest 并独立复验，CI 失败或摘要变化阻止归档。本 Plan 不创建产品发布 Tag，也不执行 develop 之后的版本晋升。
