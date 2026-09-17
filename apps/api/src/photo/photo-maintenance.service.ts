@@ -105,7 +105,13 @@ export class PhotoMaintenanceService implements OnModuleInit, OnModuleDestroy {
     if (!photo) return false;
     try {
       await this.storage.delete(photo.quarantineObjectKey);
-      for (const variant of photo.variants) await this.storage.delete(variant.objectKey);
+      const variantKeys = new Set([
+        `photos/${photo.id}/thumbnail.webp`,
+        `photos/${photo.id}/display.webp`,
+        `photos/${photo.id}/archive.webp`,
+        ...photo.variants.map((variant) => variant.objectKey),
+      ]);
+      for (const key of variantKeys) await this.storage.delete(key);
     } catch {
       return false;
     }

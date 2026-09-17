@@ -71,7 +71,7 @@ function photo(status: Photo['status'] = 'QUEUED'): Photo {
   };
 }
 
-async function processSource(source: Buffer, declaredContentType: string) {
+async function processSource(source: Buffer, declaredContentType: string, currentPhoto?: Photo) {
   const processingPhoto = {
     ...photo('PROCESSING'),
     declaredContentType,
@@ -81,7 +81,7 @@ async function processSource(source: Buffer, declaredContentType: string) {
     $queryRaw: jest.fn().mockResolvedValue([{ id: photoId }]),
     photo: {
       update: jest.fn().mockImplementation(() => Promise.resolve(processingPhoto)),
-      findUnique: jest.fn().mockResolvedValue(processingPhoto),
+      findUnique: jest.fn().mockResolvedValue(currentPhoto ?? processingPhoto),
     },
     photoVariant: {
       deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
@@ -109,7 +109,7 @@ async function processSource(source: Buffer, declaredContentType: string) {
     storage as never,
   );
   await expect(service.processOne()).resolves.toBe(true);
-  return { prisma, transaction, uploaded };
+  return { prisma, transaction, storage, uploaded };
 }
 
 describe('photo upload domain boundaries', () => {
@@ -231,7 +231,7 @@ describe('photo upload domain boundaries', () => {
   it('rejects disguised content and a 16384-pixel side with stable failure codes', async () => {
     const disguised = await processSource(Buffer.from('not a photo'), 'image/jpeg');
     expect(disguised.uploaded).toHaveLength(0);
-    expect(disguised.prisma.photo.updateMany).toHaveBeenLastCalledWith(
+    expect(disguised.prisma.photo.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
           status: 'FAILED',
@@ -252,7 +252,7 @@ describe('photo upload domain boundaries', () => {
       .toBuffer();
     const dimensions = await processSource(tooWide, 'image/png');
     expect(dimensions.uploaded).toHaveLength(0);
-    expect(dimensions.prisma.photo.updateMany).toHaveBeenLastCalledWith(
+    expect(dimensions.prisma.photo.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
           status: 'FAILED',
@@ -260,6 +260,59 @@ describe('photo upload domain boundaries', () => {
         }),
       }),
     );
+  });
+
+  it('does not delete shared object keys when an expired worker no longer owns the attempt', async () => {
+    const claimed = photo('PROCESSING');
+    const transaction = {
+      $queryRaw: jest.fn().mockResolvedValue([{ id: photoId }]),
+      photo: { update: jest.fn().mockResolvedValue(claimed) },
+    };
+    const prisma = {
+      $transaction: jest.fn(async (run: (client: typeof transaction) => Promise<unknown>) =>
+        run(transaction),
+      ),
+      photo: { updateMany: jest.fn().mockResolvedValue({ count: 0 }) },
+    };
+    const storage = {
+      getBuffer: jest.fn().mockResolvedValue(Buffer.from('not a photo')),
+      delete: jest.fn(),
+    };
+    const service = new PhotoProcessingService(
+      { backgroundJobsEnabled: false, photos: { processingConcurrency: 1 } } as never,
+      prisma as never,
+      storage as never,
+    );
+
+    await expect(service.processOne()).resolves.toBe(true);
+    expect(prisma.photo.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          id: photoId,
+          processingAttempts: claimed.processingAttempts,
+        }),
+      }),
+    );
+    expect(storage.delete).not.toHaveBeenCalled();
+  });
+
+  it('does not commit variants from a superseded processing attempt', async () => {
+    const source = await sharp({
+      create: {
+        width: 8,
+        height: 8,
+        channels: 3,
+        background: { r: 20, g: 40, b: 60 },
+      },
+    })
+      .png()
+      .toBuffer();
+    const newerAttempt = { ...photo('PROCESSING'), processingAttempts: 2 };
+    const result = await processSource(source, 'image/png', newerAttempt);
+    expect(result.uploaded).toHaveLength(3);
+    expect(result.transaction.photoVariant.createMany).not.toHaveBeenCalled();
+    expect(result.transaction.photo.update).toHaveBeenCalledTimes(1);
+    expect(result.storage.delete).not.toHaveBeenCalled();
   });
 
   it('converts an expired third processing lease to a retained failure for cleanup', async () => {
@@ -543,7 +596,7 @@ describe('photo upload domain boundaries', () => {
   it('keeps a PURGING database row and activity until every object deletion succeeds', async () => {
     const deleting = {
       ...photo('PURGING'),
-      variants: [{ objectKey: `photos/${photoId}/thumbnail.webp` }],
+      variants: [],
     };
     const transaction = {
       $queryRawUnsafe: jest.fn().mockResolvedValue([{ acquired: true }]),
@@ -579,8 +632,53 @@ describe('photo upload domain boundaries', () => {
     );
     await expect(service.purgeExpired()).resolves.toBe(0);
     expect(storage.delete).toHaveBeenCalledWith(deleting.quarantineObjectKey);
-    expect(storage.delete).toHaveBeenCalledWith(deleting.variants[0]!.objectKey);
+    expect(storage.delete).toHaveBeenCalledWith(`photos/${photoId}/thumbnail.webp`);
     expect(transaction.photo.delete).not.toHaveBeenCalled();
     expect(activities.tombstoneSubject).not.toHaveBeenCalled();
+  });
+
+  it('removes unrecorded processing variants before deleting a failed photo row', async () => {
+    const deleting = { ...photo('PURGING'), variants: [] };
+    const transaction = {
+      $queryRawUnsafe: jest.fn().mockResolvedValue([{ acquired: true }]),
+      photo: {
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+        findMany: jest.fn().mockResolvedValue([{ id: photoId }]),
+        delete: jest.fn().mockResolvedValue(deleting),
+      },
+      photoUploadBatch: { deleteMany: jest.fn().mockResolvedValue({ count: 1 }) },
+    };
+    const prisma = {
+      $transaction: jest.fn(async (run: (client: typeof transaction) => Promise<unknown>) =>
+        run(transaction),
+      ),
+      photo: {
+        findFirst: jest.fn().mockResolvedValue(deleting),
+        findMany: jest.fn().mockResolvedValue([]),
+      },
+    };
+    const storage = { delete: jest.fn().mockResolvedValue(undefined) };
+    const activities = { tombstoneSubject: jest.fn().mockResolvedValue(undefined) };
+    const service = new PhotoMaintenanceService(
+      { backgroundJobsEnabled: false } as never,
+      prisma as never,
+      storage as never,
+      activities as never,
+    );
+
+    await expect(service.purgeExpired()).resolves.toBe(1);
+    expect(storage.delete.mock.calls.map(([key]) => key)).toEqual([
+      deleting.quarantineObjectKey,
+      `photos/${photoId}/thumbnail.webp`,
+      `photos/${photoId}/display.webp`,
+      `photos/${photoId}/archive.webp`,
+    ]);
+    expect(activities.tombstoneSubject).toHaveBeenCalledWith(
+      transaction,
+      familyId,
+      'PHOTO',
+      photoId,
+    );
+    expect(transaction.photo.delete).toHaveBeenCalledWith({ where: { id: photoId } });
   });
 });

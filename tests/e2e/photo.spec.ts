@@ -4,7 +4,7 @@ import {
   test,
   type APIRequestContext,
 } from '@playwright/test';
-import { randomInt } from 'node:crypto';
+import { randomInt, randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -72,6 +72,7 @@ test('uploads to private storage, isolates drafts, publishes an activity, and re
   );
   const owner = await registerAccount();
   const member = await registerAccount();
+  const spectator = await registerAccount();
   const familyResponse = await post(owner.context, '/api/v1/families', owner.csrf, {
     name: '合成照片家庭',
     displayName: '合成创建者',
@@ -104,11 +105,25 @@ test('uploads to private storage, isolates drafts, publishes an activity, and re
       })
     ).status(),
   ).toBe(200);
+  const spectatorInvitation = await post(
+    owner.context,
+    `/api/v1/families/${familyId}/invitations`,
+    owner.csrf,
+  );
+  expect(spectatorInvitation.status()).toBe(201);
+  expect(
+    (
+      await post(spectator.context, '/api/v1/family-invitations/accept', spectator.csrf, {
+        token: ((await spectatorInvitation.json()) as { token: string }).token,
+        displayName: '合成旁观成员',
+      })
+    ).status(),
+  ).toBe(200);
 
   const createBatch = await post(
-    owner.context,
+    member.context,
     `/api/v1/families/${familyId}/babies/${babyId}/photo-upload-batches`,
-    owner.csrf,
+    member.csrf,
     {
       files: [
         { contentType: 'image/png', sizeBytes: syntheticPng.length, capturedOn: '2026-01-02' },
@@ -133,6 +148,14 @@ test('uploads to private storage, isolates drafts, publishes an activity, and re
   const photoId = batch.photos[0]!.id;
   const heicPhotoId = batch.photos[1]!.id;
   const storage = await playwrightRequest.newContext();
+  const tamperedUpload = await storage.post(batch.uploadInstructions[0]!.url, {
+    multipart: {
+      ...batch.uploadInstructions[0]!.fields,
+      key: `quarantine/${randomUUID()}`,
+      file: { name: 'synthetic.png', mimeType: 'image/png', buffer: syntheticPng },
+    },
+  });
+  expect(tamperedUpload.status()).toBe(403);
   for (const [index, source] of [
     { name: 'synthetic.png', mimeType: 'image/png', buffer: syntheticPng },
     { name: 'synthetic.heic', mimeType: 'image/heic', buffer: syntheticHeic },
@@ -143,9 +166,9 @@ test('uploads to private storage, isolates drafts, publishes an activity, and re
     });
     expect(uploaded.ok()).toBe(true);
     const completed = await post(
-      owner.context,
+      member.context,
       `/api/v1/families/${familyId}/babies/${babyId}/photo-upload-batches/${batch.id}/photos/${instruction.photoId}/complete`,
-      owner.csrf,
+      member.csrf,
     );
     expect(completed.status()).toBe(202);
   }
@@ -153,7 +176,7 @@ test('uploads to private storage, isolates drafts, publishes an activity, and re
   await expect
     .poll(
       async () => {
-        const response = await owner.context.get(
+        const response = await member.context.get(
           `/api/v1/families/${familyId}/babies/${babyId}/photo-upload-batches/${batch.id}`,
         );
         return ((await response.json()) as { photos: Array<{ status: string }> }).photos
@@ -163,7 +186,7 @@ test('uploads to private storage, isolates drafts, publishes an activity, and re
       { timeout: 30_000 },
     )
     .toBe('DRAFT,DRAFT');
-  const processedBatch = await owner.context.get(
+  const processedBatch = await member.context.get(
     `/api/v1/families/${familyId}/babies/${babyId}/photo-upload-batches/${batch.id}`,
   );
   expect(
@@ -174,13 +197,29 @@ test('uploads to private storage, isolates drafts, publishes an activity, and re
     ).photos.map((photo) => photo.sourceFormat),
   ).toEqual(['PNG', 'HEIC']);
 
-  const hiddenDraft = await member.context.get(
+  const hiddenDraft = await owner.context.get(
     `/api/v1/families/${familyId}/babies/${babyId}/photos/${photoId}/preview?variant=THUMBNAIL`,
   );
   expect(hiddenDraft.status()).toBe(404);
   expect(((await hiddenDraft.json()) as { code: string }).code).toBe('PHOTO_NOT_FOUND');
+  expect(
+    (
+      await owner.context.get(
+        `/api/v1/families/${familyId}/babies/${babyId}/photo-upload-batches/${batch.id}`,
+      )
+    ).status(),
+  ).toBe(404);
+  const familyManage = await owner.context.get(
+    `/api/v1/families/${familyId}/babies/${babyId}/photos/manage?scope=family`,
+  );
+  expect(familyManage.status()).toBe(200);
+  expect(
+    ((await familyManage.json()) as { items: Array<{ id: string }> }).items.some(
+      (item) => item.id === photoId || item.id === heicPhotoId,
+    ),
+  ).toBe(false);
 
-  const preview = await owner.context.get(
+  const preview = await member.context.get(
     `/api/v1/families/${familyId}/babies/${babyId}/photos/${photoId}/preview?variant=THUMBNAIL`,
   );
   expect(preview.status()).toBe(200);
@@ -189,18 +228,18 @@ test('uploads to private storage, isolates drafts, publishes an activity, and re
   expect(previewObject.status()).toBe(200);
   expect((await previewObject.body()).subarray(0, 4).toString('ascii')).toBe('RIFF');
 
-  const updated = await owner.context.patch(
+  const updated = await member.context.patch(
     `/api/v1/families/${familyId}/babies/${babyId}/photos/${photoId}`,
     {
-      headers: { Origin: webOrigin, 'x-csrf-token': owner.csrf },
+      headers: { Origin: webOrigin, 'x-csrf-token': member.csrf },
       data: { title: '合成色块', location: '合成地点', capturedOn: '2026-01-02' },
     },
   );
   expect(updated.status()).toBe(200);
   const published = await post(
-    owner.context,
+    member.context,
     `/api/v1/families/${familyId}/babies/${babyId}/photo-upload-batches/${batch.id}/publish`,
-    owner.csrf,
+    member.csrf,
     { photoIds: [photoId, heicPhotoId] },
   );
   expect(published.status()).toBe(200);
@@ -211,11 +250,25 @@ test('uploads to private storage, isolates drafts, publishes an activity, and re
   ).toEqual(['PUBLISHED', 'PUBLISHED']);
   expect(
     (
-      await member.context.get(
+      await owner.context.get(
         `/api/v1/families/${familyId}/babies/${babyId}/photos/${photoId}/preview?variant=DISPLAY`,
       )
     ).status(),
   ).toBe(200);
+  expect(
+    (
+      await spectator.context.get(
+        `/api/v1/families/${familyId}/babies/${babyId}/photos/${photoId}/preview?variant=DISPLAY`,
+      )
+    ).status(),
+  ).toBe(200);
+  const deniedTrash = await post(
+    spectator.context,
+    `/api/v1/families/${familyId}/babies/${babyId}/photos/${photoId}/trash`,
+    spectator.csrf,
+  );
+  expect(deniedTrash.status()).toBe(403);
+  expect(((await deniedTrash.json()) as { code: string }).code).toBe('PHOTO_PERMISSION_DENIED');
   const activityResponse = await owner.context.get(`/api/v1/families/${familyId}/activities`);
   const activities = (await activityResponse.json()) as {
     items: Array<{ type: string; subject?: { id: string }; summary?: Record<string, unknown> }>;
@@ -244,6 +297,7 @@ test('uploads to private storage, isolates drafts, publishes an activity, and re
   await storage.dispose();
   await owner.context.dispose();
   await member.context.dispose();
+  await spectator.context.dispose();
 });
 
 test('uploads and publishes a synthetic photo in the responsive flow', async ({

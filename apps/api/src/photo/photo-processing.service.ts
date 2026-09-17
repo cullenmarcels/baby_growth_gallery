@@ -126,12 +126,26 @@ export class PhotoProcessingService implements OnModuleInit, OnModuleDestroy {
         this.variant(decoded.factory, 'DISPLAY', keys.DISPLAY, 2048, 84),
         this.variant(decoded.factory, 'ARCHIVE', keys.ARCHIVE, undefined, 90),
       ]);
+      const lease = await this.prisma.photo.updateMany({
+        where: {
+          id: photo.id,
+          status: 'PROCESSING',
+          processingAttempts: photo.processingAttempts,
+          processingLeaseUntil: { gt: new Date() },
+        },
+        data: { processingLeaseUntil: new Date(Date.now() + 5 * 60_000) },
+      });
+      if (lease.count !== 1) throw new PhotoProcessingError('PHOTO_PROCESSING_FAILED', false);
       for (const variant of variants) await this.storage.putWebp(variant.key, variant.body);
       const processedAt = new Date();
       await this.prisma.$transaction(async (transaction) => {
         const current = await transaction.photo.findUnique({ where: { id: photo.id } });
-        if (!current || current.status !== 'PROCESSING')
-          throw new PhotoProcessingError('PHOTO_STATE_CONFLICT');
+        if (
+          !current ||
+          current.status !== 'PROCESSING' ||
+          current.processingAttempts !== photo.processingAttempts
+        )
+          throw new PhotoProcessingError('PHOTO_PROCESSING_FAILED', false);
         await transaction.photoVariant.deleteMany({ where: { photoId: photo.id } });
         await transaction.photoVariant.createMany({
           data: variants.map((item) => ({
@@ -340,7 +354,11 @@ export class PhotoProcessingService implements OnModuleInit, OnModuleDestroy {
     if (!terminal) {
       const minutes = [1, 5, 15][Math.min(photo.processingAttempts - 1, 2)] ?? 15;
       await this.prisma.photo.updateMany({
-        where: { id: photo.id, status: 'PROCESSING' },
+        where: {
+          id: photo.id,
+          status: 'PROCESSING',
+          processingAttempts: photo.processingAttempts,
+        },
         data: {
           status: 'QUEUED',
           processingLeaseUntil: null,
@@ -350,24 +368,30 @@ export class PhotoProcessingService implements OnModuleInit, OnModuleDestroy {
       });
       return;
     }
-    let quarantineDeleted = false;
-    await Promise.allSettled(variantKeys.map((key) => this.storage.delete(key)));
-    try {
-      await this.storage.delete(photo.quarantineObjectKey);
-      quarantineDeleted = true;
-    } catch {
-      /* maintenance retries */
-    }
-    await this.prisma.photo.updateMany({
-      where: { id: photo.id, status: 'PROCESSING' },
+    const claimed = await this.prisma.photo.updateMany({
+      where: {
+        id: photo.id,
+        status: 'PROCESSING',
+        processingAttempts: photo.processingAttempts,
+      },
       data: {
         status: 'FAILED',
         processingLeaseUntil: null,
         nextProcessingAt: null,
         failureCode: typed.code,
         purgeAfter: new Date(Date.now() + DRAFT_RETENTION_MS),
-        ...(quarantineDeleted ? { quarantineObjectKey: null } : {}),
       },
     });
+    if (claimed.count !== 1) return;
+    await Promise.allSettled(variantKeys.map((key) => this.storage.delete(key)));
+    try {
+      await this.storage.delete(photo.quarantineObjectKey);
+      await this.prisma.photo.updateMany({
+        where: { id: photo.id, status: 'FAILED' },
+        data: { quarantineObjectKey: null },
+      });
+    } catch {
+      /* maintenance retries */
+    }
   }
 }
