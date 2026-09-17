@@ -4,7 +4,7 @@ type: execution_log
 title: '照片上传基础执行记录'
 status: in_progress
 created_at: 2026-09-16T13:30:00+08:00
-updated_at: 2026-09-16T16:09:00+08:00
+updated_at: 2026-09-16T16:11:30+08:00
 plan_id: PLAN-20260916-83SYH180
 related_ids: [PLAN-20260916-83SYH180, SPEC-20260916-5Z69DCQE, DES-20260916-4XCFYD80]
 supersedes: []
@@ -28,6 +28,7 @@ superseded_by: []
 | 2026-09-16T13:30:00+08:00 | confirmed | in_progress | 远端、工作树、规则、基线与冲突门禁通过。 |
 | 2026-09-16T15:47:00+08:00 | in_progress | in_review | 固定 `f47ed97` 候选与 v2 scope digest，开始候选审查。 |
 | 2026-09-16T16:05:00+08:00 | in_review | in_progress | 发现上传恢复、HEIC 缩略图和站内离开确认缺口，返回开发。 |
+| 2026-09-16T16:11:30+08:00 | in_progress | in_review | 修复与本地/Docker 全量门禁通过，固定 `5cce3eb` 新候选。 |
 
 ## 已执行
 
@@ -107,3 +108,13 @@ superseded_by: []
 - 站内导航拦截加入后，首次 `pnpm validate` 因无 `await` 的 async handler 在 lint 阶段 exit 1；改为返回已完成 Promise。第二次因新增 E2E 测试格式不符在 format:check 阶段 exit 1；按仓库 Prettier 格式化。第三次 `pnpm validate` exit 0：API 42、Web 31、分支流向 5，lint、format、typecheck、build、项目知识库全部通过。
 - 重建 Web 生产镜像 exit 0；完整 Windows 宿主 Docker 栈在新的独立 Redis 前缀下 `pnpm e2e` exit 0：36 passed、27 designed skips、0 failed。随后 API 恢复常规本地配置，readiness 仍为 `ok` 且 PostgreSQL/Redis/objectStorage 均 `up`；`quarantine/` 递归列表为空。
 - `origin/develop` 远端精确引用仍为 `fb6fa7a94528255aca77ab04b0009f1cd3064b29`；工作区只有 Plan D owned paths 的修改，无归档变更。以上尚不是新的已提交候选，Review 继续 pending。
+- 上述实现和测试已提交为 `5cce3ebe75fd1d3c6d759747f36c9962dbbe2ea6`；v2 owned-scope digest 重算为 `11705A56DEF02804FBBEE7D44961191C0EF6431E3494F9AB2AB570D6B1E293F9`，重新进入 Review。后续报告变更提交不替代此实现候选；人工验收需在最终证据提交上另行固定摘要。
+
+## 2026-09-17 Review 继续与 Worker 并发清理修复
+
+- `git fetch --prune origin` exit 0，`git ls-remote origin refs/heads/develop` 仍为固定基线 `fb6fa7a94528255aca77ab04b0009f1cd3064b29`。通用 `repository-preflight.ps1 -Remote -AsJson` 因本功能分支未配置 upstream 继续给出 `upstream_not_configured`，不能误报为通用预检通过；已单独验证 Plan 精确目标。工作区仅有 Plan D owned paths 的未提交变更。
+- 用户在桌面端启动 Docker 后，原 `5cce3eb` 镜像的完整真实栈 `pnpm e2e` exit 0：36 passed、27 designed skips、0 failed。新测试覆盖 MEMBER 私有草稿对 OWNER 不可见、发布后家庭成员可读、非作者 MEMBER 不可回收、篡改 Presigned POST Key 被拒绝。该结果不代表后续 Worker 修复已通过容器复验。
+- Review 发现旧 Worker 租约过期并由新 Worker 重领时，旧任务只核对 `PROCESSING` 状态、不核对尝试编号，终止清理可能误删新任务的共享变体。修复为写变体前续租并核对尝试编号，数据库提交再次核对，失败清理先以尝试编号条件标记 `FAILED`，只有持有者才能删除对象；非终止重试亦按尝试编号条件更新。
+- Review 同时发现处理失败的半成品变体可能尚未入 `PhotoVariant` 表；过期清理若只按表中对象 Key 删除，会留下孤儿对象。清理改为始终尝试三个固定 Photo UUID 变体 Key，另合并已记录 Key；删除任一对象失败时保留 `PURGING` 行和 Activity，供下次重试。
+- 新增针对过期 Worker、过时尝试、无变体记录的对象优先清理与删除失败保留的单元测试。首次定向测试因旧断言只检查最后一次数据库更新而失败，调整断言同时容纳随后清空隔离 Key 的更新；定向 18/18 通过。`pnpm validate` exit 0：API 45、Web 31、branch-flow 5，lint、format、typecheck、build、知识库校验通过。
+- 新 API Alpine 镜像 `docker compose --profile app build api` exit 0，`pnpm deploy` 曾受 registry 慢响应和非致命 bin-link 警告影响，但最终镜像成功运行。独立 Redis 前缀、真实 PostgreSQL/Redis/MinIO/Web 下完整 `pnpm e2e` exit 0：36 passed、27 designed skips、0 failed；包含三视口上传流程和桌面真实合成 HEIC。readiness 中三个依赖均 `up`；`quarantine/` 递归对象枚举为空。随后恢复 API 常规本地配置，Web `http://localhost:8080/login` 返回 200，应用栈保持运行。

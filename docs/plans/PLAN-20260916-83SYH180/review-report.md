@@ -4,11 +4,11 @@ type: review_report
 title: "照片上传基础 Review"
 status: pending
 created_at: 2026-09-16T13:30:00+08:00
-updated_at: 2026-09-16T16:05:00+08:00
+updated_at: 2026-09-17T10:27:35+08:00
 plan_id: PLAN-20260916-83SYH180
 repository_mode: git_remote
-reviewed_commit: null
-reviewed_scope_digest: null
+reviewed_commit: 20bcfe9275022c6e71c8659bad74fc1ed5c2b55f
+reviewed_scope_digest: 8503BA92A4334E5699C4E2D94A4D534389A0CDDA6788D54718B0E91D7FEE848D
 ci_status: pending
 related_ids: [PLAN-20260916-83SYH180, SPEC-20260916-5Z69DCQE, DES-20260916-4XCFYD80]
 supersedes: []
@@ -17,7 +17,7 @@ superseded_by: []
 
 # Review Report
 
-上一轮候选 `f47ed97b4e9f6c5d492c563c867f7748df29f56e` 的 v2 owned-scope digest 为 `77748D9D48E3007F396A246993BCE7F43B13F594B73DDC87A1254194B8DEC1DF`；Review 发现新的 UI 契约缺口并已返回 Development。该提交保留为历史审查事实，不再是待验收候选。当前结论为 `pending`，修复提交与摘要尚待重新固定，不得进入 Regression。
+当前实现候选为 `20bcfe9275022c6e71c8659bad74fc1ed5c2b55f`，v2 owned-scope digest 为 `8503BA92A4334E5699C4E2D94A4D534389A0CDDA6788D54718B0E91D7FEE848D`。上一轮 `5cce3eb` 仅保留为历史审查事实。Review 仍为 `pending`，不得进入 Regression。
 
 ## 已核对事实
 
@@ -26,7 +26,8 @@ superseded_by: []
 - 最新 Alpine API 镜像真实处理 JPEG、PNG、WebP、HEIC、HEIF；Windows 宿主 Docker 完整栈的 375/834/1440 Playwright 为 36 passed、27 designed skips、0 failed；PostgreSQL/Redis/对象存储 readiness 均 up；隔离区枚举为 0。
 - 空库和 Plan C 数据库的前向 migration、OpenAPI 双次确定生成、Bucket 私有访问及精确 Origin/方法 CORS 已完成验证；仅使用合成文件与合成账号。
 - 前期 Review 发现的第三次 lease 崩溃滞留、处理中丢弃、回收站授权预览、重签到期跨越 1 小时窗口、维护日志底层 stack 与 E2E 等待竞态均已修复并复查。
-- 本轮 Review 又发现上传批次刷新后不可返回编辑、HEIC 安全缩略图未替换和站内导航缺少上传中确认。实现与组件测试已补齐，等待在新固定提交上重跑完整门禁和 Review。
+- 本轮 Review 又发现上传批次刷新后不可返回编辑、HEIC 安全缩略图未替换和站内导航缺少上传中确认。新候选已修复：Web 31、API 42、branch-flow 5、`pnpm validate` exit 0；完整 Docker E2E 在 375/834/1440 为 36 passed、27 designed skips、0 failed，其中桌面流程使用真实合成 HEIC。运行时所有依赖 ready，隔离区为空。
+- `20bcfe9` 追加真实 S3 篡改与跨角色私有草稿测试，并修复 Worker 租约过期后旧尝试误删新尝试变体的竞态；对没有数据库 Variant 行的半成品 Key 也执行对象优先清理。新候选 `pnpm validate` exit 0：API 45、Web 31、branch-flow 5；新 Alpine API 镜像构建 exit 0，完整 Docker E2E 36 passed、27 designed skips、0 failed。PostgreSQL/Redis/对象存储 readiness 均 up，隔离区 0 个对象；应用已恢复常规本地配置。
 
 ## 尚待用户确认的验收口径
 
