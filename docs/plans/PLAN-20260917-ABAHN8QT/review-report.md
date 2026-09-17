@@ -47,6 +47,76 @@ superseded_by: []
 | `RULESET-RESPONSIVE-UI v1` | `RESP-001`, `RESP-002`, `RESP-003`, `RESP-004`, `RESP-005`, `RESP-006` | PASS：375、834、1440 三视口覆盖；管理员反馈、错误、焦点和无溢出状态与既有令牌一致。 |
 | `RULESET-SECURITY-PRIVACY v2` | `SAFE-001`, `SAFE-002`, `SAFE-003`, `SAFE-004`, `SAFE-005` | PASS：仅合成/脱敏数据；不上传原始 CI 敏感产物；不记录密码、Cookie、签名秘密；管理员优先规则服务端强制且成员不可逆转管理员限制。 |
 
+## 机器核对用逐条结果
+
+| Rule | Result |
+| --- | --- |
+| `SRC-001` | PASS |
+| `SRC-002` | PASS |
+| `SRC-003` | PASS |
+| `SRC-004` | PASS |
+| `SRC-005` | PASS |
+| `SRC-006` | PASS |
+| `SRC-007` | PASS |
+| `SRC-008` | PASS |
+| `SRC-009` | PASS |
+| `SRC-010` | PASS |
+| `REPO-001` | PASS |
+| `REPO-002` | PASS |
+| `REPO-003` | PASS |
+| `REPO-004` | PASS |
+| `REPO-005` | PASS |
+| `REPO-006` | PASS |
+| `REPO-007` | PASS |
+| `GIT-001` | PASS |
+| `GIT-002` | PASS |
+| `GIT-003` | PASS |
+| `GIT-004` | PASS |
+| `GIT-005` | PASS |
+| `GIT-006` | PASS |
+| `GIT-007` | PASS |
+| `GIT-008` | PASS |
+| `GIT-009` | PASS |
+| `GIT-010` | PASS |
+| `BRANCH-001` | PASS |
+| `BRANCH-002` | PASS |
+| `BRANCH-003` | PASS |
+| `BRANCH-004` | PASS |
+| `BRANCH-005` | PASS |
+| `BRANCH-006` | PASS |
+| `BRANCH-007` | PASS |
+| `BRANCH-008` | PASS |
+| `BRANCH-009` | PASS |
+| `BRANCH-010` | PASS |
+| `IMPL-001` | PASS |
+| `IMPL-002` | PASS |
+| `IMPL-003` | PASS |
+| `IMPL-004` | PASS |
+| `IMPL-005` | PASS |
+| `IMPL-006` | PASS |
+| `IMPL-007` | PASS |
+| `TEST-001` | PASS |
+| `TEST-002` | PASS |
+| `TEST-003` | PASS |
+| `TEST-004` | PASS |
+| `TEST-005` | PASS |
+| `TEST-006` | PASS |
+| `TEST-007` | PASS |
+| `TEST-008` | PASS |
+| `TEST-009` | PASS |
+| `TEST-010` | PASS |
+| `RESP-001` | PASS |
+| `RESP-002` | PASS |
+| `RESP-003` | PASS |
+| `RESP-004` | PASS |
+| `RESP-005` | PASS |
+| `RESP-006` | PASS |
+| `SAFE-001` | PASS |
+| `SAFE-002` | PASS |
+| `SAFE-003` | PASS |
+| `SAFE-004` | PASS |
+| `SAFE-005` | PASS |
+
 ## 剩余边界
 
 - `ci_status: configured_scope_passed` 表示本地质量和 Docker E2E 已通过，远端 PR 的 `quality`、`e2e-auth` 和 `branch-flow-develop` 仍须在创建 PR 后验证。
