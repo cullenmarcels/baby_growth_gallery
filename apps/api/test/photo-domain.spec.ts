@@ -65,6 +65,8 @@ function photo(status: Photo['status'] = 'QUEUED'): Photo {
     draftExpiresAt: null,
     publishedAt: null,
     trashedAt: null,
+    trashedByMembershipId: null,
+    trashedByRole: null,
     purgeAfter: null,
     createdAt: new Date('2026-09-16T13:00:00.000Z'),
     updatedAt: new Date('2026-09-16T13:00:00.000Z'),
@@ -158,6 +160,149 @@ describe('photo upload domain boundaries', () => {
     expect(
       policy.canManagePublished(membership('MEMBER'), { ...otherDraft, status: 'PUBLISHED' }),
     ).toBe(false);
+  });
+
+  it('lets members restore only photos they themselves recycled as members', () => {
+    const policy = new PhotoPolicyService({} as never, {} as never);
+    const ownTrash = {
+      ...photo('TRASHED'),
+      trashedAt: new Date(),
+      purgeAfter: new Date(Date.now() + 86_400_000),
+      trashedByMembershipId: membershipId,
+      trashedByRole: 'MEMBER' as const,
+    };
+    expect(policy.canRestore(membership('MEMBER'), ownTrash)).toBe(true);
+    expect(policy.canRestore(membership('MEMBER'), { ...ownTrash, trashedByRole: 'ADMIN' })).toBe(
+      false,
+    );
+    expect(
+      policy.canRestore(membership('MEMBER'), {
+        ...ownTrash,
+        trashedByMembershipId: '00000000-0000-4000-8000-000000000098',
+      }),
+    ).toBe(false);
+    expect(policy.canRestore(membership('MEMBER'), { ...ownTrash, trashedByRole: null })).toBe(
+      false,
+    );
+    expect(
+      policy.canRestore(membership('MEMBER'), {
+        ...ownTrash,
+        createdByMembershipId: '00000000-0000-4000-8000-000000000099',
+      }),
+    ).toBe(false);
+    expect(policy.canRestore(membership('OWNER'), { ...ownTrash, trashedByRole: null })).toBe(true);
+    expect(policy.canRestore(membership('ADMIN'), { ...ownTrash, trashedByRole: 'OWNER' })).toBe(
+      true,
+    );
+    expect(
+      policy.canRestore(membership('OWNER'), {
+        ...ownTrash,
+        purgeAfter: new Date(Date.now() - 1000),
+      }),
+    ).toBe(false);
+  });
+
+  it('records trash authority and rejects an author restoring an admin-recycled photo', async () => {
+    const current = photo('PUBLISHED');
+    const actor = membership('ADMIN');
+    const policy = new PhotoPolicyService({} as never, {} as never);
+    jest.spyOn(policy, 'requirePhoto').mockResolvedValue({ membership: actor, photo: current });
+    const trashed = {
+      ...current,
+      status: 'TRASHED' as const,
+      trashedAt: new Date(),
+      purgeAfter: new Date(Date.now() + 86_400_000),
+      trashedByMembershipId: actor.id,
+      trashedByRole: 'ADMIN' as const,
+    };
+    const prisma = {
+      photo: {
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+        findUniqueOrThrow: jest.fn().mockResolvedValue(trashed),
+      },
+    };
+    const service = new PhotoService(
+      prisma as never,
+      policy,
+      {} as never,
+      {} as never,
+      {} as never,
+    );
+    await expect(service.trash('account', familyId, babyId, photoId)).resolves.toMatchObject({
+      status: 'TRASHED',
+      canRestore: true,
+    });
+    expect(prisma.photo.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          status: 'TRASHED',
+          trashedByMembershipId: actor.id,
+          trashedByRole: 'ADMIN',
+        }),
+      }),
+    );
+    jest.spyOn(policy, 'requirePhoto').mockResolvedValue({
+      membership: membership('MEMBER'),
+      photo: trashed,
+    });
+    const rejected = service.restore('account', familyId, babyId, photoId);
+    await expect(rejected).rejects.toMatchObject({
+      status: 403,
+      response: { code: 'PHOTO_RESTORE_ADMIN_REQUIRED' },
+    });
+    expect(prisma.photo.updateMany).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses a conditional snapshot to restore a member-recycled photo and clears that snapshot', async () => {
+    const actor = membership('MEMBER');
+    const current = {
+      ...photo('TRASHED'),
+      trashedAt: new Date(),
+      purgeAfter: new Date(Date.now() + 86_400_000),
+      trashedByMembershipId: actor.id,
+      trashedByRole: 'MEMBER' as const,
+    };
+    const policy = new PhotoPolicyService({} as never, {} as never);
+    jest.spyOn(policy, 'requirePhoto').mockResolvedValue({ membership: actor, photo: current });
+    const prisma = {
+      photo: {
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+        findUniqueOrThrow: jest.fn().mockResolvedValue({
+          ...current,
+          status: 'PUBLISHED',
+          trashedAt: null,
+          trashedByMembershipId: null,
+          trashedByRole: null,
+          purgeAfter: null,
+        }),
+      },
+    };
+    const service = new PhotoService(
+      prisma as never,
+      policy,
+      {} as never,
+      {} as never,
+      {} as never,
+    );
+    await expect(service.restore('account', familyId, babyId, photoId)).resolves.toMatchObject({
+      status: 'PUBLISHED',
+      canRestore: false,
+    });
+    expect(prisma.photo.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          status: 'TRASHED',
+          trashedAt: current.trashedAt,
+          trashedByMembershipId: actor.id,
+          trashedByRole: 'MEMBER',
+        }),
+        data: expect.objectContaining({
+          status: 'PUBLISHED',
+          trashedByMembershipId: null,
+          trashedByRole: null,
+        }),
+      }),
+    );
   });
 
   it('creates three static metadata-free WebP variants from a synthetic transparent PNG', async () => {
@@ -528,7 +673,10 @@ describe('photo upload domain boundaries', () => {
         run(transaction),
       ),
     };
-    const policy = { requireActiveBaby: jest.fn().mockResolvedValue({ membership: membership() }) };
+    const policy = {
+      requireActiveBaby: jest.fn().mockResolvedValue({ membership: membership() }),
+      canRestore: jest.fn().mockReturnValue(false),
+    };
     const activities = { record: jest.fn().mockResolvedValue(undefined) };
     const service = new PhotoService(
       prisma as never,

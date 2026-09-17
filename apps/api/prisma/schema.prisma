@@ -119,6 +119,7 @@ model FamilyMembership {
   createdBabies       BabyProfile[]          @relation("BabyCreator")
   createdPhotoBatches PhotoUploadBatch[]     @relation("PhotoBatchCreator")
   createdPhotos       Photo[]                @relation("PhotoCreator")
+  trashedPhotos       Photo[]                @relation("PhotoTrashActor")
 
   @@unique([familyId, accountId])
   @@index([accountId, status, joinedAt])
@@ -233,6 +234,8 @@ model Photo {
   draftExpiresAt        DateTime?          @map("draft_expires_at") @db.Timestamptz(3)
   publishedAt           DateTime?          @map("published_at") @db.Timestamptz(3)
   trashedAt             DateTime?          @map("trashed_at") @db.Timestamptz(3)
+  trashedByMembershipId String?            @map("trashed_by_membership_id") @db.Uuid
+  trashedByRole         FamilyRole?        @map("trashed_by_role")
   purgeAfter            DateTime?          @map("purge_after") @db.Timestamptz(3)
   createdAt             DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt             DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
@@ -240,11 +243,13 @@ model Photo {
   family                Family             @relation(fields: [familyId], references: [id], onDelete: Restrict)
   baby                  BabyProfile        @relation(fields: [babyId], references: [id], onDelete: Restrict)
   createdBy             FamilyMembership   @relation("PhotoCreator", fields: [createdByMembershipId], references: [id], onDelete: Restrict)
+  trashedBy             FamilyMembership?  @relation("PhotoTrashActor", fields: [trashedByMembershipId], references: [id], onDelete: Restrict)
   variants              PhotoVariant[]
 
   @@index([uploadBatchId, displayOrder])
   @@index([familyId, babyId, updatedAt(sort: Desc), id(sort: Desc)])
   @@index([createdByMembershipId, status, updatedAt(sort: Desc), id(sort: Desc)])
+  @@index([trashedByMembershipId])
   @@index([status, nextProcessingAt, processingLeaseUntil])
   @@index([status, purgeAfter])
   @@map("photos")

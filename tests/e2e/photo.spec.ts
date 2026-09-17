@@ -286,13 +286,47 @@ test('uploads to private storage, isolates drafts, publishes an activity, and re
     `/api/v1/families/${familyId}/babies/${babyId}/photos/${photoId}/trash`,
     owner.csrf,
   );
-  expect(((await trashed.json()) as { status: string }).status).toBe('TRASHED');
+  expect((await trashed.json()) as { status: string; canRestore: boolean }).toMatchObject({
+    status: 'TRASHED',
+    canRestore: true,
+  });
+  const memberTrashPage = await member.context.get(
+    `/api/v1/families/${familyId}/babies/${babyId}/photos/manage?scope=mine&status=TRASHED`,
+  );
+  expect(memberTrashPage.status()).toBe(200);
+  expect(
+    ((await memberTrashPage.json()) as { items: Array<{ id: string; canRestore: boolean }> }).items,
+  ).toContainEqual(expect.objectContaining({ id: photoId, canRestore: false }));
+  const deniedRestore = await post(
+    member.context,
+    `/api/v1/families/${familyId}/babies/${babyId}/photos/${photoId}/restore`,
+    member.csrf,
+  );
+  expect(deniedRestore.status()).toBe(403);
+  expect(((await deniedRestore.json()) as { code: string }).code).toBe(
+    'PHOTO_RESTORE_ADMIN_REQUIRED',
+  );
   const restored = await post(
     owner.context,
     `/api/v1/families/${familyId}/babies/${babyId}/photos/${photoId}/restore`,
     owner.csrf,
   );
   expect(((await restored.json()) as { status: string }).status).toBe('PUBLISHED');
+  const selfTrashed = await post(
+    member.context,
+    `/api/v1/families/${familyId}/babies/${babyId}/photos/${heicPhotoId}/trash`,
+    member.csrf,
+  );
+  expect((await selfTrashed.json()) as { status: string; canRestore: boolean }).toMatchObject({
+    status: 'TRASHED',
+    canRestore: true,
+  });
+  const selfRestored = await post(
+    member.context,
+    `/api/v1/families/${familyId}/babies/${babyId}/photos/${heicPhotoId}/restore`,
+    member.csrf,
+  );
+  expect(((await selfRestored.json()) as { status: string }).status).toBe('PUBLISHED');
 
   await storage.dispose();
   await owner.context.dispose();

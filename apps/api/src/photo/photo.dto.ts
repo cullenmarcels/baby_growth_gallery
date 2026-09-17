@@ -45,6 +45,7 @@ export class PhotoSummaryDto {
   @ApiProperty({ type: String, nullable: true, format: 'date-time' }) publishedAt!: string | null;
   @ApiProperty({ type: String, nullable: true, format: 'date-time' }) trashedAt!: string | null;
   @ApiProperty({ type: String, nullable: true, format: 'date-time' }) purgeAfter!: string | null;
+  @ApiProperty({ type: Boolean }) canRestore!: boolean;
   @ApiProperty({ type: String, nullable: true }) failureCode!: string | null;
   @ApiProperty({ type: String, format: 'date-time' }) updatedAt!: string;
 }

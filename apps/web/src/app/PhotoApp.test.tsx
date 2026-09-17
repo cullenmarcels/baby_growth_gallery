@@ -86,6 +86,97 @@ describe('photo upload application states', () => {
     expect(await screen.findByText('这里还没有照片。')).toBeInTheDocument();
   });
 
+  it('shows an administrator-only explanation instead of recovery for a member photo', async () => {
+    vi.spyOn(api, 'getFamily').mockResolvedValue({
+      id: auth.account.activeFamilyId,
+      name: '合成家庭',
+      createdAt: '2026-09-16T00:00:00.000Z',
+      currentMembership: {
+        id: '00000000-0000-4000-8000-000000000011',
+        displayName: '合成成员',
+        role: 'MEMBER',
+      },
+    });
+    const trashed = {
+      id: '00000000-0000-4000-8000-000000000031',
+      batchId: '00000000-0000-4000-8000-000000000041',
+      babyId: auth.account.activeBabyId,
+      status: 'TRASHED' as const,
+      title: '合成回收照片',
+      description: null,
+      capturedOn: '2026-09-15',
+      location: null,
+      sourceFormat: 'PNG' as const,
+      width: 32,
+      height: 24,
+      draftExpiresAt: null,
+      publishedAt: '2026-09-16T01:00:00.000Z',
+      trashedAt: '2026-09-16T02:00:00.000Z',
+      purgeAfter: '2026-10-16T02:00:00.000Z',
+      canRestore: false,
+      failureCode: null,
+      updatedAt: '2026-09-16T02:00:00.000Z',
+    };
+    vi.spyOn(api, 'managePhotos').mockResolvedValue({ items: [trashed], nextCursor: null });
+    vi.spyOn(api, 'getPhotoPreview').mockResolvedValue({
+      url: 'data:image/webp;base64,UklGRg==',
+      expiresAt: '2026-09-16T02:05:00.000Z',
+    });
+    const restore = vi.spyOn(api, 'restorePhoto');
+    renderPage(<PhotoManagePage />, '/app/photos/manage');
+    expect(await screen.findByText('合成回收照片')).toBeInTheDocument();
+    expect(
+      screen.getByText('此照片不可自行恢复；若仍在恢复期，请联系家庭管理员。'),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '恢复' })).not.toBeInTheDocument();
+    expect(restore).not.toHaveBeenCalled();
+  });
+
+  it('keeps the recovery action available when the server grants canRestore', async () => {
+    vi.spyOn(api, 'getFamily').mockResolvedValue({
+      id: auth.account.activeFamilyId,
+      name: '合成家庭',
+      createdAt: '2026-09-16T00:00:00.000Z',
+      currentMembership: {
+        id: '00000000-0000-4000-8000-000000000011',
+        displayName: '合成管理员',
+        role: 'ADMIN',
+      },
+    });
+    vi.spyOn(api, 'managePhotos').mockResolvedValue({
+      items: [
+        {
+          id: '00000000-0000-4000-8000-000000000031',
+          batchId: '00000000-0000-4000-8000-000000000041',
+          babyId: auth.account.activeBabyId,
+          status: 'TRASHED',
+          title: '管理员可恢复照片',
+          description: null,
+          capturedOn: '2026-09-15',
+          location: null,
+          sourceFormat: 'PNG',
+          width: 32,
+          height: 24,
+          draftExpiresAt: null,
+          publishedAt: '2026-09-16T01:00:00.000Z',
+          trashedAt: '2026-09-16T02:00:00.000Z',
+          purgeAfter: '2026-10-16T02:00:00.000Z',
+          canRestore: true,
+          failureCode: null,
+          updatedAt: '2026-09-16T02:00:00.000Z',
+        },
+      ],
+      nextCursor: null,
+    });
+    vi.spyOn(api, 'getPhotoPreview').mockResolvedValue({
+      url: 'data:image/webp;base64,UklGRg==',
+      expiresAt: '2026-09-16T02:05:00.000Z',
+    });
+    renderPage(<PhotoManagePage />, '/app/photos/manage');
+    expect(await screen.findByText('管理员可恢复照片')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '恢复' })).toBeInTheDocument();
+  });
+
   it('loads the next opaque management page without replacing the first page', async () => {
     vi.spyOn(api, 'getFamily').mockResolvedValue({
       id: auth.account.activeFamilyId,
@@ -113,6 +204,7 @@ describe('photo upload application states', () => {
       publishedAt: '2026-09-16T01:00:00.000Z',
       trashedAt: null,
       purgeAfter: null,
+      canRestore: false,
       failureCode: null,
       updatedAt: '2026-09-16T01:00:00.000Z',
     };
@@ -159,6 +251,7 @@ describe('photo upload application states', () => {
       publishedAt: null,
       trashedAt: null,
       purgeAfter: null,
+      canRestore: false,
       failureCode: null,
       updatedAt: '2026-09-16T01:00:00.000Z',
     };
@@ -230,6 +323,7 @@ describe('photo upload application states', () => {
       publishedAt: null,
       trashedAt: null,
       purgeAfter: null,
+      canRestore: false,
       failureCode: null,
       updatedAt: '2026-09-16T01:00:00.000Z',
     };
@@ -285,6 +379,7 @@ describe('photo upload application states', () => {
           publishedAt: null,
           trashedAt: null,
           purgeAfter: null,
+          canRestore: false,
           failureCode: null,
           updatedAt: '2026-09-16T00:00:00.000Z',
         },

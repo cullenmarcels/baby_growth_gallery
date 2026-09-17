@@ -2,7 +2,7 @@
 id: PLAN-20260916-83SYH180-STATE
 type: plan_state
 plan_id: PLAN-20260916-83SYH180
-status: in_review
+status: superseded
 repository_mode: git_remote
 remote_name: origin
 integration_target: origin/develop
@@ -23,4 +23,4 @@ integrated_scope_digest: null
 
 # Plan State
 
-新实现候选已固定于 `20bcfe9275022c6e71c8659bad74fc1ed5c2b55f`，v2 owned-scope digest 为 `8503BA92A4334E5699C4E2D94A4D534389A0CDDA6788D54718B0E91D7FEE848D`。批次恢复、HEIC 缩略图、离开确认、Worker 尝试编号与半成品对象清理均已修复并复验，Review 重新进行。CI 失败证据形式与 Presigned POST 的单次语义仍需用户确认，不得进入 Regression、人工验收或集成。
+实现候选 `20bcfe9275022c6e71c8659bad74fc1ed5c2b55f` 的 v2 owned-scope digest 为 `8503BA92A4334E5699C4E2D94A4D534389A0CDDA6788D54718B0E91D7FEE848D`。用户于 2026-09-17 确认管理员回收后成员不得恢复，并确认旧回收记录仅管理员可恢复；该调整改变权限与响应契约，因此本 Plan 由 `PLAN-20260917-ABAHN8QT` 替代。原 Review 证据保留为历史，不再作为最终候选验收依据。

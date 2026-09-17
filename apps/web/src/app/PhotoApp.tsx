@@ -894,6 +894,7 @@ export function PhotoManagePage(): React.JSX.Element {
                 familyId={familyId}
                 babyId={babyId}
                 photo={photo}
+                canManageFamily={canManageFamily}
                 onTrash={() =>
                   act(
                     '放入回收站？',
@@ -907,7 +908,11 @@ export function PhotoManagePage(): React.JSX.Element {
                     .restorePhoto(familyId, babyId, photo.id)
                     .then(refresh)
                     .then(() => setNotice('照片已恢复。'))
-                    .catch((error) => setNotice(userFacingError(error)))
+                    .catch((error) => {
+                      setNotice(userFacingError(error));
+                      void refresh();
+                      void family.refetch();
+                    })
                 }
                 onDiscard={() =>
                   act(
@@ -952,6 +957,7 @@ function ManageCard({
   familyId,
   babyId,
   photo,
+  canManageFamily,
   onTrash,
   onRestore,
   onDiscard,
@@ -959,6 +965,7 @@ function ManageCard({
   familyId: string;
   babyId: string;
   photo: PhotoSummary;
+  canManageFamily: boolean;
   onTrash: () => void;
   onRestore: () => void;
   onDiscard: () => void;
@@ -1002,7 +1009,7 @@ function ManageCard({
               回收
             </button>
           ) : null}
-          {photo.status === 'TRASHED' ? (
+          {photo.status === 'TRASHED' && photo.canRestore ? (
             <button type="button" onClick={onRestore}>
               <RotateCcw size={15} />
               恢复
@@ -1015,6 +1022,13 @@ function ManageCard({
             </button>
           ) : null}
         </div>
+        {photo.status === 'TRASHED' && !photo.canRestore ? (
+          <p role="status">
+            {canManageFamily
+              ? '恢复期限已过，无法恢复。'
+              : '此照片不可自行恢复；若仍在恢复期，请联系家庭管理员。'}
+          </p>
+        ) : null}
       </div>
     </article>
   );

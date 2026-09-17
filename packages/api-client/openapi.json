@@ -970,6 +970,9 @@
             "format": "uuid",
             "type": "string"
           },
+          "canRestore": {
+            "type": "boolean"
+          },
           "capturedOn": {
             "format": "date",
             "type": "string"
@@ -1066,6 +1069,7 @@
           "publishedAt",
           "trashedAt",
           "purgeAfter",
+          "canRestore",
           "failureCode",
           "updatedAt"
         ],

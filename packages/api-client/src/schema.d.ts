@@ -202,6 +202,7 @@ export interface components {
     "PhotoSummaryDto": {
       "babyId": string;
       "batchId": string;
+      "canRestore": boolean;
       "capturedOn": string;
       "description": string | null;
       "draftExpiresAt": string | null;

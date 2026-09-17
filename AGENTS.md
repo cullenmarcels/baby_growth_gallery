@@ -2,7 +2,7 @@
 > 本文件是所有 AI 进入项目后的第一阅读入口。探索、扫描、核对、设计、编码或测试前，必须先读取本文件，再按下方索引定位资料。
 ## 1. 项目状态
 
-- 项目为 PC、平板、移动端自适应网站；工程基础、分支治理与 Plan A–C 均已归档，Plan D 照片隔离上传、安全处理、私有草稿与回收站正在实施，最终持续交付以已确认知识为准的可运行、可验证网站。
+- 项目为 PC、平板、移动端自适应网站；工程基础、分支治理与 Plan A–C 均已归档，照片隔离上传、安全处理、私有草稿与回收站的 Plan D 修订版正在实施，最终持续交付以已确认知识为准的可运行、可验证网站。
 ## 2. 权威性与冲突优先级
 
 从高到低依次为：
@@ -87,7 +87,7 @@
 | 宝宝成长业务规格 | `docs/specs/SPEC-20260915-8RKJ7RGM-baby-growth-mvp/spec.md` | 已生效 | 多宝宝、照片、里程碑、成长数据与首页闭环边界 |
 | 宝宝成长补充设计 | `docs/designs/DES-20260915-S2PV4FM8-baby-growth-mvp-ui/design.md` | 已生效 | 多宝宝上下文、内容页面、三视口与完整状态 |
 | 多宝宝档案 Plan / Achievement | `docs/plans/PLAN-20260915-PQ8NHNZ2/plan.md` / `docs/achievements/ACH-20260915-PQ8NHNZ2-baby-profile-foundation.md` | 已归档 | 宝宝档案、当前宝宝 Session、归档恢复、清理与完成证据 |
-| 照片上传 Spec / Design / Plan | `docs/plans/PLAN-20260916-83SYH180/plan.md` | 实施中 | 私有直传、安全处理、草稿发布与回收站；关联 `SPEC-20260916-5Z69DCQE`、`DES-20260916-4XCFYD80` |
+| 照片回收权限修订 Spec / Design / Plan | `docs/plans/PLAN-20260917-ABAHN8QT/plan.md` | 实施中 | 管理员回收优先、旧记录安全降级、成员中文反馈；关联 `SPEC-20260917-NHHC01TR`、`DES-20260917-8EVTR3RJ` |
 
 执行任务时先用 `rules/INDEX.md` 定位阶段；进入 `docs/` 后读取 `docs/README.md` 和 `docs/INDEX.md`。不得仅按文件日期推断当前有效资料。
 

@@ -41,6 +41,25 @@ export class PhotoPolicyService {
     );
   }
 
+  canRestore(membership: FamilyMembership, photo: Photo): boolean {
+    if (photo.status !== 'TRASHED' || !photo.purgeAfter || photo.purgeAfter <= new Date())
+      return false;
+    if (membership.role === 'OWNER' || membership.role === 'ADMIN') return true;
+    return (
+      photo.createdByMembershipId === membership.id &&
+      photo.trashedByMembershipId === membership.id &&
+      photo.trashedByRole === 'MEMBER'
+    );
+  }
+
+  restoreRequiresAdmin(): never {
+    throw new ApiProblemException(
+      403,
+      '需要家庭管理员恢复此照片。',
+      'PHOTO_RESTORE_ADMIN_REQUIRED',
+    );
+  }
+
   requirePrivateOwner(membership: FamilyMembership, photo: Photo): void {
     if (photo.createdByMembershipId !== membership.id) this.notFound();
   }

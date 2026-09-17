@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import { z } from 'zod';
-import type { Photo } from '../generated/prisma/client.js';
+import type { FamilyMembership, Photo } from '../generated/prisma/client.js';
 import { ApiProblemException } from '../common/api-problem.exception.js';
 import { FamilyActivityService } from '../family/family-activity.service.js';
 import { ObjectStorageService } from '../infrastructure/object-storage.service.js';
@@ -93,36 +93,41 @@ export class PhotoService {
         babyId,
         createdAt: batch.createdAt.toISOString(),
         photos: photoRows.map((photo) =>
-          this.summary({
-            ...photo,
-            uploadBatchId: batch.id,
-            familyId,
-            babyId,
-            createdByMembershipId: membership.id,
-            status: 'AWAITING_UPLOAD',
-            declaredContentType: photo.contentType,
-            declaredSizeBytes: photo.sizeBytes,
-            sourceFormat: null,
-            sourceSizeBytes: null,
-            sourceSha256: null,
-            sourceWidth: null,
-            sourceHeight: null,
-            title: null,
-            description: null,
-            location: null,
-            quarantineObjectKey: photo.key,
-            uploadWindowExpiresAt,
-            processingAttempts: 0,
-            processingLeaseUntil: null,
-            nextProcessingAt: null,
-            failureCode: null,
-            draftExpiresAt: null,
-            publishedAt: null,
-            trashedAt: null,
-            purgeAfter: null,
-            createdAt: batch.createdAt,
-            updatedAt: batch.createdAt,
-          }),
+          this.summary(
+            {
+              ...photo,
+              uploadBatchId: batch.id,
+              familyId,
+              babyId,
+              createdByMembershipId: membership.id,
+              status: 'AWAITING_UPLOAD',
+              declaredContentType: photo.contentType,
+              declaredSizeBytes: photo.sizeBytes,
+              sourceFormat: null,
+              sourceSizeBytes: null,
+              sourceSha256: null,
+              sourceWidth: null,
+              sourceHeight: null,
+              title: null,
+              description: null,
+              location: null,
+              quarantineObjectKey: photo.key,
+              uploadWindowExpiresAt,
+              processingAttempts: 0,
+              processingLeaseUntil: null,
+              nextProcessingAt: null,
+              failureCode: null,
+              draftExpiresAt: null,
+              publishedAt: null,
+              trashedAt: null,
+              trashedByMembershipId: null,
+              trashedByRole: null,
+              purgeAfter: null,
+              createdAt: batch.createdAt,
+              updatedAt: batch.createdAt,
+            },
+            membership,
+          ),
         ),
         uploadInstructions,
       };
@@ -151,7 +156,7 @@ export class PhotoService {
       id: batch.id,
       babyId: batch.babyId,
       createdAt: batch.createdAt.toISOString(),
-      photos: batch.photos.map((photo) => this.summary(photo)),
+      photos: batch.photos.map((photo) => this.summary(photo, membership)),
     };
   }
 
@@ -275,7 +280,7 @@ export class PhotoService {
           : {}),
       },
     });
-    return this.summary(updated);
+    return this.summary(updated, membership);
   }
 
   async batchUpdate(
@@ -319,7 +324,7 @@ export class PhotoService {
         where: { id: { in: uniqueIds } },
         orderBy: { displayOrder: 'asc' },
       });
-      return { items: updated.map((photo) => this.summary(photo)) };
+      return { items: updated.map((photo) => this.summary(photo, membership)) };
     });
   }
 
@@ -380,7 +385,7 @@ export class PhotoService {
         where: { id: { in: uniqueIds } },
         orderBy: { displayOrder: 'asc' },
       });
-      return { items: published.map((photo) => this.summary(photo)) };
+      return { items: published.map((photo) => this.summary(photo, membership)) };
     });
   }
 
@@ -434,7 +439,7 @@ export class PhotoService {
     const pageRows = hasMore ? rows.slice(0, query.limit) : rows;
     const last = pageRows.at(-1);
     return {
-      items: pageRows.map((photo) => this.summary(photo)),
+      items: pageRows.map((photo) => this.summary(photo, membership)),
       nextCursor: hasMore && last ? this.encodeCursor(last.updatedAt, last.id) : null,
     };
   }
@@ -487,11 +492,16 @@ export class PhotoService {
       data: {
         status: 'TRASHED',
         trashedAt: now,
+        trashedByMembershipId: membership.id,
+        trashedByRole: membership.role,
         purgeAfter: new Date(now.valueOf() + RETENTION_MS),
       },
     });
     if (result.count !== 1) this.policy.stateConflict();
-    return this.summary(await this.prisma.photo.findUniqueOrThrow({ where: { id: photoId } }));
+    return this.summary(
+      await this.prisma.photo.findUniqueOrThrow({ where: { id: photoId } }),
+      membership,
+    );
   }
 
   async restore(
@@ -506,17 +516,41 @@ export class PhotoService {
       babyId,
       photoId,
     );
-    if (!this.policy.canManagePublished(membership, photo)) this.policy.permissionDenied();
     if (photo.status !== 'TRASHED') this.policy.stateConflict();
     const now = new Date();
     if (!photo.purgeAfter || photo.purgeAfter <= now)
       throw new ApiProblemException(409, '照片恢复期限已过。', 'PHOTO_RESTORE_EXPIRED');
+    if (!this.policy.canRestore(membership, photo)) this.policy.restoreRequiresAdmin();
+    const privileged = membership.role === 'OWNER' || membership.role === 'ADMIN';
     const result = await this.prisma.photo.updateMany({
-      where: { id: photoId, status: 'TRASHED', purgeAfter: { gt: now } },
-      data: { status: 'PUBLISHED', trashedAt: null, purgeAfter: null },
+      where: {
+        id: photoId,
+        status: 'TRASHED',
+        purgeAfter: { gt: now },
+        trashedAt: photo.trashedAt,
+        trashedByMembershipId: photo.trashedByMembershipId,
+        trashedByRole: photo.trashedByRole,
+        ...(!privileged
+          ? {
+              createdByMembershipId: membership.id,
+              trashedByMembershipId: membership.id,
+              trashedByRole: 'MEMBER' as const,
+            }
+          : {}),
+      },
+      data: {
+        status: 'PUBLISHED',
+        trashedAt: null,
+        trashedByMembershipId: null,
+        trashedByRole: null,
+        purgeAfter: null,
+      },
     });
     if (result.count !== 1) this.policy.stateConflict();
-    return this.summary(await this.prisma.photo.findUniqueOrThrow({ where: { id: photoId } }));
+    return this.summary(
+      await this.prisma.photo.findUniqueOrThrow({ where: { id: photoId } }),
+      membership,
+    );
   }
 
   async discard(
@@ -559,7 +593,7 @@ export class PhotoService {
     return normalized;
   }
 
-  private summary(photo: Photo): PhotoSummaryDto {
+  private summary(photo: Photo, membership: FamilyMembership): PhotoSummaryDto {
     return {
       id: photo.id,
       batchId: photo.uploadBatchId,
@@ -576,6 +610,7 @@ export class PhotoService {
       publishedAt: photo.publishedAt?.toISOString() ?? null,
       trashedAt: photo.trashedAt?.toISOString() ?? null,
       purgeAfter: photo.purgeAfter?.toISOString() ?? null,
+      canRestore: this.policy.canRestore(membership, photo),
       failureCode: photo.failureCode,
       updatedAt: photo.updatedAt.toISOString(),
     };

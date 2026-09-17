@@ -39,6 +39,7 @@ const errorCopyByCode: Readonly<Record<string, string>> = {
   PHOTO_PROCESSING_FAILED: '照片损坏或无法安全处理。',
   PHOTO_NOT_READY: '照片尚未处理完成，请稍后再试。',
   PHOTO_RESTORE_EXPIRED: '照片的 30 天恢复期限已过。',
+  PHOTO_RESTORE_ADMIN_REQUIRED: '需要家庭管理员恢复此照片。',
   PHOTO_STORAGE_UNAVAILABLE: '照片存储暂时不可用，请稍后再试。',
   PHOTO_DEPENDENCY_UNAVAILABLE: '照片服务依赖暂时不可用，请稍后再试。',
 };

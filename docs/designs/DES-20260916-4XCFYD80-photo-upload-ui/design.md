@@ -2,12 +2,12 @@
 id: DES-20260916-4XCFYD80
 type: design
 title: "照片上传流程与管理中心界面补充设计"
-status: active
+status: superseded
 created_at: 2026-09-16T13:30:00+08:00
-updated_at: 2026-09-16T13:30:00+08:00
+updated_at: 2026-09-17T10:43:49+08:00
 related_ids: [DES-20260908-ZVZKM07B, DES-20260915-S2PV4FM8, SPEC-20260916-5Z69DCQE, PLAN-20260916-83SYH180]
 supersedes: []
-superseded_by: []
+superseded_by: [DES-20260917-8EVTR3RJ]
 ---
 
 # 照片上传流程与管理中心界面补充设计
