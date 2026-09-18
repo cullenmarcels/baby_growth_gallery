@@ -22,4 +22,4 @@ superseded_by: []
 
 # Acceptance Record
 
-用户授权实施本修订 Plan；尚未对最终候选提交进行人工验收，也未授权 PR、合并或证据推送。
+用户授权实施本修订 Plan；本地 Review 与独立 Regression 均已通过。待用户人工验收的精确候选为 `26f15120e28edb4eec3179fe70512fa577f3a94d`，v2 owned-scope 摘要为 `150393DC7EC1C484BA91058AA4E922D4B56D704CC00B2F2C09D0D0A1689B682C`。用户尚未对该候选给出验收结论，也未授权 PR、合并或证据推送。人工验收时须记录原始确认语义、上述 SHA 与摘要；集成及集成提交复验另行记录。
