@@ -13,8 +13,8 @@ working_tree_state: clean
 scope_digest_version: 2
 owned_paths: [AGENTS.md, README.md, apps/api, apps/web, packages/api-client, tests/e2e, docs/INDEX.md, docs/specs/SPEC-20260917-KSVSF8BN-photo-gallery-timeline, docs/designs/DES-20260917-YQWSZG09-photo-gallery-timeline-ui, docs/plans/PLAN-20260917-K0AH0D6T]
 overlapping_plan_ids: []
-reviewed_commit: ec033262987f294e4c346574fa6190bacdfec648
-reviewed_scope_digest: 89F31F644FB238E669E2B031F21306D1951DB749257CFCDAC4546899184930AB
+reviewed_commit: 8b780574efddd11ec05d87781c57a4e7d4c3d242
+reviewed_scope_digest: 6A11408184E316639CE5A495E7D0755EA705EEFBE6E8D002C75A2400F68DDB5D
 accepted_commit: null
 accepted_scope_digest: null
 integrated_commit: null
@@ -23,4 +23,4 @@ integrated_scope_digest: null
 
 # Plan State
 
-用户已确认并要求实施 Plan E。远端 `origin/develop` 经核验后快进同步 Plan D 的 4 个归档证据提交，`feature/photo-gallery-timeline` 从精确基线建立。候选 `ec033262987f294e4c346574fa6190bacdfec648` 的本地 Review 与独立 Regression 已通过，现等待精确版本的人工验收；尚无集成授权。
+用户已确认并要求实施 Plan E。远端 `origin/develop` 经核验后快进同步 Plan D 的 4 个归档证据提交，`feature/photo-gallery-timeline` 从精确基线建立。更新候选 `8b780574efddd11ec05d87781c57a4e7d4c3d242` 的本地 Review 与独立 Regression 已通过，现等待精确版本的人工验收；尚无集成授权。

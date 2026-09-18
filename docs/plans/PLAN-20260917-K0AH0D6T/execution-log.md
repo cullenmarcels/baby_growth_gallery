@@ -4,7 +4,7 @@ type: execution_log
 title: "Plan E 执行记录"
 status: in_progress
 created_at: 2026-09-17T21:42:57+08:00
-updated_at: 2026-09-18T09:40:13+08:00
+updated_at: 2026-09-18T09:51:39+08:00
 plan_id: PLAN-20260917-K0AH0D6T
 related_ids: [PLAN-20260917-K0AH0D6T, SPEC-20260917-KSVSF8BN, DES-20260917-YQWSZG09]
 supersedes: []
@@ -29,6 +29,10 @@ superseded_by: []
 | 2026-09-18T09:30:00+08:00 | in_progress | in_review | 本地候选 `ec033262987f294e4c346574fa6190bacdfec648` 已提交，工作区 clean；v2 owned-scope 摘要 `89F31F644FB238E669E2B031F21306D1951DB749257CFCDAC4546899184930AB`。 |
 | 2026-09-18T09:34:00+08:00 | in_review | in_regression | 候选 Review 逐条核对 65 条 Rule，无 FAIL/UNVERIFIED；远端 CI、人工验收和集成仍 pending。 |
 | 2026-09-18T09:40:13+08:00 | in_regression | acceptance_pending | 独立 `pnpm validate` 再次通过；五组隔离 E2E 合计 36 passed、27 设计性 skipped、0 failed。 |
+| 2026-09-18T09:44:00+08:00 | acceptance_pending | in_progress | 发现签名失效重取和并发头像/回收缺少直接测试，返回 Development 补充计划内断言。 |
+| 2026-09-18T09:47:39+08:00 | in_progress | in_review | 更新候选 `8b780574efddd11ec05d87781c57a4e7d4c3d242` 已提交，v2 摘要 `6A11408184E316639CE5A495E7D0755EA705EEFBE6E8D002C75A2400F68DDB5D`；重新 Review。 |
+| 2026-09-18T09:49:00+08:00 | in_review | in_regression | 新增仅两份测试；diff 检查、单测及照片 E2E 均通过，原 65 条 Rule 的本地 Review 复查无 FAIL/UNVERIFIED。 |
+| 2026-09-18T09:51:39+08:00 | in_regression | acceptance_pending | 新候选 Review 后的 `pnpm validate` 通过（API 54、Web 43），隔离照片 E2E 4 passed、2 设计性 skipped、0 failed；其他组在未变生产代码树上已通过。 |
 
 ## 已执行
 
@@ -43,6 +47,7 @@ superseded_by: []
 - 本次验证资料只使用合成手机号、家庭、宝宝与照片；未修改 Plan D 的归档文件。最终 Review、Regression、CI 和人工验收仍待后续门禁。
 - 2026-09-18 对全新临时数据库 `bgg_plan_e_migration_0935` 从空库依次部署 6 个 migration，`prisma migrate status` 返回 up to date；随后精确删除该临时数据库。既有 Plan D 数据库的前向部署已在开发阶段通过。
 - 本次 `git commit` 由用户要求实施 Plan E、且 Plan 明列候选提交与 Review 授权；只提交固定 owned paths，本地 SHA 如上，未 push、merge 或修改归档。
+- 原候选进入待验收后追加签名图片加载失败重取预览的 Web 测试，以及设置头像与照片回收并发的真实 API E2E。更新候选的 `pnpm validate` 通过：branch-flow 5、API 54、Web 43、构建和项目校验；新照片 E2E 4 passed / 2 设计性 skipped / 0 failed。既有生产实现未变，仅两份测试文件增补 43 行。
 
 ## 待记录
 
