@@ -87,7 +87,7 @@
 | 宝宝成长补充设计 | `docs/designs/DES-20260915-S2PV4FM8-baby-growth-mvp-ui/design.md` | 已生效 | 多宝宝上下文、内容页面、三视口与完整状态 |
 | 多宝宝档案 Plan / Achievement | `docs/plans/PLAN-20260915-PQ8NHNZ2/plan.md` / `docs/achievements/ACH-20260915-PQ8NHNZ2-baby-profile-foundation.md` | 已归档 | 宝宝档案、当前宝宝 Session、归档恢复、清理与完成证据 |
 | 照片上传与回收权限 Plan / Achievement | `docs/plans/PLAN-20260917-ABAHN8QT/plan.md` / `docs/achievements/ACH-20260917-ABAHN8QT-photo-upload-foundation.md` | 已归档 | 私有直传、安全变体、草稿、发布、30 天回收及管理员回收优先；关联 `SPEC-20260917-NHHC01TR`、`DES-20260917-8EVTR3RJ` |
-| 图集、时间轴与头像 Plan E | `docs/specs/SPEC-20260917-KSVSF8BN-photo-gallery-timeline/spec.md` / `docs/designs/DES-20260917-YQWSZG09-photo-gallery-timeline-ui/design.md` / `docs/plans/PLAN-20260917-K0AH0D6T/plan.md` | 实施中 | 已发布照片浏览、详情管理与宝宝头像；完成后按独立验收归档 |
+| 图集、时间轴与头像 Plan E | `docs/specs/SPEC-20260917-KSVSF8BN-photo-gallery-timeline/spec.md` / `docs/designs/DES-20260917-YQWSZG09-photo-gallery-timeline-ui/design.md` / `docs/plans/PLAN-20260917-K0AH0D6T/plan.md` | 待人工验收 | 已发布照片浏览、详情管理与宝宝头像；本地 Review/Regression 已通过，后续按集成复验归档 |
 
 执行任务时先用 `rules/INDEX.md` 定位阶段；进入 `docs/` 后读取 `docs/README.md` 和 `docs/INDEX.md`。不得仅按文件日期推断当前有效资料。
 

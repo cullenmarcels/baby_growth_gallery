@@ -4,7 +4,7 @@ type: execution_log
 title: "Plan E 执行记录"
 status: in_progress
 created_at: 2026-09-17T21:42:57+08:00
-updated_at: 2026-09-18T09:29:37+08:00
+updated_at: 2026-09-18T09:40:13+08:00
 plan_id: PLAN-20260917-K0AH0D6T
 related_ids: [PLAN-20260917-K0AH0D6T, SPEC-20260917-KSVSF8BN, DES-20260917-YQWSZG09]
 supersedes: []
@@ -26,6 +26,9 @@ superseded_by: []
 | --- | --- | --- | --- |
 | 2026-09-17T21:42:57+08:00 | — | confirmed | 用户明确要求实施经讨论确认的 Plan E。 |
 | 2026-09-17T21:42:57+08:00 | confirmed | in_progress | 远端、工作区、基线、规则及 owned paths 门禁通过。 |
+| 2026-09-18T09:30:00+08:00 | in_progress | in_review | 本地候选 `ec033262987f294e4c346574fa6190bacdfec648` 已提交，工作区 clean；v2 owned-scope 摘要 `89F31F644FB238E669E2B031F21306D1951DB749257CFCDAC4546899184930AB`。 |
+| 2026-09-18T09:34:00+08:00 | in_review | in_regression | 候选 Review 逐条核对 65 条 Rule，无 FAIL/UNVERIFIED；远端 CI、人工验收和集成仍 pending。 |
+| 2026-09-18T09:40:13+08:00 | in_regression | acceptance_pending | 独立 `pnpm validate` 再次通过；五组隔离 E2E 合计 36 passed、27 设计性 skipped、0 failed。 |
 
 ## 已执行
 
@@ -38,7 +41,9 @@ superseded_by: []
 - 照片 E2E 最终在 375／834／1440 执行 4 passed、2 因 API 场景不依赖视口而按设计 skipped、0 failed。浏览器流程覆盖发布、图集、详情、时间轴、头像，后补充每个视口的空、加载、错误、只读权限及链接键盘 Enter 激活；API 场景覆盖分页顺序、隔离、角色变化、头像回收与恢复。
 - 一次整体 `pnpm e2e` 因同一个 Redis 限流前缀累积达到每 IP 每小时验证码上限而出现 429 级联失败；未放宽真实限流。之后为每个 E2E 文件重建 API 并使用新的前缀，照片、认证、宝宝、家庭、视觉／连通性／状态页五组分别通过，合计 36 passed、27 按设计 skipped、0 failed。2026-09-18 首次照片重跑时 Docker Desktop 未启动，API/Web 端口未监听导致 4 failed；启动服务并隔离限流前缀后，同一照片文件复跑通过。上述失败不计为功能通过证据，保留作为环境偏差。
 - 本次验证资料只使用合成手机号、家庭、宝宝与照片；未修改 Plan D 的归档文件。最终 Review、Regression、CI 和人工验收仍待后续门禁。
+- 2026-09-18 对全新临时数据库 `bgg_plan_e_migration_0935` 从空库依次部署 6 个 migration，`prisma migrate status` 返回 up to date；随后精确删除该临时数据库。既有 Plan D 数据库的前向部署已在开发阶段通过。
+- 本次 `git commit` 由用户要求实施 Plan E、且 Plan 明列候选提交与 Review 授权；只提交固定 owned paths，本地 SHA 如上，未 push、merge 或修改归档。
 
 ## 待记录
 
-候选提交与 v2 摘要、Review、独立 Regression、远端 CI 与人工验收；未运行项不得记为 PASS。
+候选实现与证据的最终 Head、远端 CI、人工验收、单独集成授权及 `origin/develop` 集成复验；未运行项不得记为 PASS。
