@@ -541,6 +541,7 @@ test('uploads and publishes a synthetic photo in the responsive flow', async ({
   await expect(page.getByText('私有草稿已就绪')).toBeVisible({ timeout: 30_000 });
   await expect(page).toHaveURL(/\/app\/photos\/upload\?batchId=/);
   await page.reload();
+  const batchUrl = page.url();
   await expect(page.getByText('私有草稿已就绪')).toBeVisible();
   await expect(page.getByRole('img', { name: '所选照片 1' })).toBeVisible();
   const uploadCard = page.locator('main article').first();
@@ -847,4 +848,43 @@ test('uploads and publishes a synthetic photo in the responsive flow', async ({
   await page.reload();
   await expect(page.getByText('照片列表加载失败，请重试。')).toBeVisible({ timeout: 15_000 });
   await page.unroute(manageApi);
+
+  const batchApi = /\/api\/v1\/families\/[^/]+\/babies\/[^/]+\/photo-upload-batches\/[^/?]+$/;
+  let cardStatus: 'PROCESSING' | 'DRAFT' = 'PROCESSING';
+  await page.route(batchApi, async (route) => {
+    const response = await route.fetch();
+    const body = (await response.json()) as {
+      photos: Array<Record<string, unknown>>;
+    };
+    await route.fulfill({
+      response,
+      json: { ...body, photos: body.photos.map((photo) => ({ ...photo, status: cardStatus })) },
+    });
+  });
+  await page.goto(batchUrl);
+  await expect(page.getByText('正在清除元数据并生成变体')).toBeVisible();
+  await expect(page.getByText('安全缩略图处理中')).toBeVisible();
+  const processingPadding = await page
+    .locator('main article')
+    .first()
+    .evaluate((card) => {
+      const style = getComputedStyle(card);
+      return [style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft];
+    });
+  expect(processingPadding).toEqual(['16px', '16px', '16px', '16px']);
+
+  cardStatus = 'DRAFT';
+  await page.route(previewApi, (route) => route.abort());
+  await page.reload();
+  await expect(page.getByText('安全缩略图暂不可用')).toBeVisible();
+  const unavailablePadding = await page
+    .locator('main article')
+    .first()
+    .evaluate((card) => {
+      const style = getComputedStyle(card);
+      return [style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft];
+    });
+  expect(unavailablePadding).toEqual(['16px', '16px', '16px', '16px']);
+  await page.unroute(previewApi);
+  await page.unroute(batchApi);
 });
