@@ -20,10 +20,16 @@ import {
   BabyListResponseDto,
   BabySummaryDto,
   CreateBabyRequestDto,
+  SetBabyAvatarRequestDto,
   UpdateBabyRequestDto,
 } from './baby.dto.js';
 import { BabyService } from './baby.service.js';
-import { babyListQuerySchema, createBabySchema, updateBabySchema } from './baby.schemas.js';
+import {
+  babyListQuerySchema,
+  createBabySchema,
+  setBabyAvatarSchema,
+  updateBabySchema,
+} from './baby.schemas.js';
 
 @ApiTags('babies')
 @ApiCookieAuth()
@@ -98,6 +104,28 @@ export class BabyController {
     const babyId = parseBody(familyIdSchema, rawBabyId);
     const account = await this.sessions.current(request);
     return this.babies.update(account.id, familyId, babyId, parseBody(updateBabySchema, body));
+  }
+
+  @Patch(':babyId/avatar')
+  @ApiParam({ name: 'familyId', type: String, format: 'uuid' })
+  @ApiParam({ name: 'babyId', type: String, format: 'uuid' })
+  @ApiBody({ type: SetBabyAvatarRequestDto })
+  @ApiResponse({ status: 200, type: BabySummaryDto })
+  async setAvatar(
+    @Param('familyId') rawFamilyId: string,
+    @Param('babyId') rawBabyId: string,
+    @Body() body: unknown,
+    @Req() request: Request,
+  ): Promise<BabySummaryDto> {
+    const familyId = parseBody(familyIdSchema, rawFamilyId);
+    const babyId = parseBody(familyIdSchema, rawBabyId);
+    const account = await this.sessions.current(request);
+    return this.babies.setAvatar(
+      account.id,
+      familyId,
+      babyId,
+      parseBody(setBabyAvatarSchema, body).photoId,
+    );
   }
 
   @Post(':babyId/activate')

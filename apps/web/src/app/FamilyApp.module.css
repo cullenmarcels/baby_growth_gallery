@@ -434,6 +434,16 @@
   border-radius: var(--radius-pill);
   cursor: pointer;
 }
+.babyActions .avatarAction {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 10px;
+  color: var(--color-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+}
 .editPanel {
   margin-top: 22px;
   padding: clamp(20px, 3vw, 30px);

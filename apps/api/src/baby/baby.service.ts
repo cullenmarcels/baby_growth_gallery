@@ -78,6 +78,58 @@ export class BabyService {
     return this.get(accountId, familyId, babyId);
   }
 
+  async setAvatar(
+    accountId: string,
+    familyId: string,
+    babyId: string,
+    photoId: string | null,
+  ): Promise<BabySummaryDto> {
+    return this.prisma.$transaction(async (transaction) => {
+      const { membership } = await this.policy.requireBaby(
+        accountId,
+        familyId,
+        babyId,
+        ['ACTIVE'],
+        transaction,
+      );
+      const [currentMembership] = await transaction.$queryRaw<
+        Array<{ role: string; status: string }>
+      >`
+        SELECT role, status FROM family_memberships WHERE id = ${membership.id}::uuid FOR UPDATE
+      `;
+      if (!currentMembership || currentMembership.status !== 'ACTIVE') this.policy.notFound();
+      this.policy.requireManager({
+        ...membership,
+        role: currentMembership.role as typeof membership.role,
+      });
+      if (photoId) {
+        const [photo] = await transaction.$queryRaw<Array<{ status: string }>>`
+          SELECT status FROM photos
+          WHERE id = ${photoId}::uuid AND family_id = ${familyId}::uuid
+            AND baby_id = ${babyId}::uuid
+          FOR UPDATE
+        `;
+        if (!photo) {
+          throw new ApiProblemException(404, '未找到这张照片。', 'PHOTO_NOT_FOUND');
+        }
+        if (photo.status !== 'PUBLISHED') {
+          throw new ApiProblemException(
+            409,
+            '照片状态已发生变化，请刷新后重试。',
+            'PHOTO_STATE_CONFLICT',
+          );
+        }
+      }
+      const result = await transaction.babyProfile.updateMany({
+        where: { id: babyId, familyId, status: 'ACTIVE' },
+        data: { avatarPhotoId: photoId },
+      });
+      if (result.count !== 1) this.policy.stateConflict();
+      const baby = await transaction.babyProfile.findUniqueOrThrow({ where: { id: babyId } });
+      return this.summary(baby);
+    });
+  }
+
   async archive(accountId: string, familyId: string, babyId: string): Promise<void> {
     const { membership } = await this.policy.requireBaby(accountId, familyId, babyId);
     this.policy.requireManager(membership);
@@ -125,6 +177,7 @@ export class BabyService {
       nickname: baby.nickname,
       birthDate: baby.birthDate.toISOString().slice(0, 10),
       sex: baby.sex,
+      avatarPhotoId: baby.avatarPhotoId,
       status: baby.status === 'ACTIVE' ? 'ACTIVE' : 'ARCHIVED',
       archivedAt: baby.archivedAt?.toISOString() ?? null,
       purgeAfter: baby.purgeAfter?.toISOString() ?? null,

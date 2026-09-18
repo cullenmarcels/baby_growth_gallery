@@ -32,6 +32,7 @@ import { Link, NavLink, Navigate, Outlet, useNavigate, useParams } from 'react-r
 import { z } from 'zod';
 import { useAuth } from './AuthContext';
 import { api } from './api';
+import { BabyAvatar } from './BabyAvatar';
 import { babyKeys } from './baby-query';
 import styles from './FamilyApp.module.css';
 import { userFacingError } from './user-facing-error';
@@ -150,7 +151,14 @@ export function FamilyShell(): React.JSX.Element {
             to="/app/home"
             aria-label={`打开${activeBaby.nickname}的首页`}
           >
-            <span>{activeBaby.nickname.slice(0, 1)}</span>
+            <span>
+              <BabyAvatar
+                familyId={activeFamilyId}
+                babyId={activeBaby.id}
+                nickname={activeBaby.nickname}
+                photoId={activeBaby.avatarPhotoId}
+              />
+            </span>
             <strong>{activeBaby.nickname}</strong>
           </Link>
         ) : null}
@@ -183,7 +191,14 @@ export function FamilyShell(): React.JSX.Element {
                 setMenuOpen(false);
               }}
             >
-              <span>{activeBaby.nickname.slice(0, 1)}</span>
+              <span>
+                <BabyAvatar
+                  familyId={activeFamilyId}
+                  babyId={activeBaby.id}
+                  nickname={activeBaby.nickname}
+                  photoId={activeBaby.avatarPhotoId}
+                />
+              </span>
               <strong>{activeBaby.nickname}</strong>
               <ChevronDown size={15} />
             </button>

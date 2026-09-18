@@ -7,6 +7,7 @@ import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { useAuth } from './AuthContext';
 import { api } from './api';
+import { BabyAvatar } from './BabyAvatar';
 import { babyKeys } from './baby-query';
 import { ConfirmDialog } from './FamilyApp';
 import styles from './FamilyApp.module.css';
@@ -142,7 +143,12 @@ export function BabyHomePage(): React.JSX.Element {
     <div className={styles.babyPage}>
       <section className={styles.babyHero}>
         <div className={styles.babyAvatar} aria-hidden="true">
-          {baby.data.nickname.slice(0, 1)}
+          <BabyAvatar
+            familyId={familyId}
+            babyId={babyId}
+            nickname={baby.data.nickname}
+            photoId={baby.data.avatarPhotoId}
+          />
         </div>
         <div>
           <p className={styles.eyebrow}>宝宝档案</p>
@@ -158,8 +164,8 @@ export function BabyHomePage(): React.JSX.Element {
       <section className={styles.foundationGrid} aria-label="成长功能进度">
         <FeatureCard
           title="珍贵照片"
-          text="上传照片，安全处理后再发布给家人。"
-          to="/app/photos/upload"
+          text="浏览当前宝宝已发布的家庭照片。"
+          to="/app/gallery"
           icon="photo"
         />
         <FeatureCard title="成长里程碑" text="里程碑记录将在后续阶段开放。" />
@@ -300,7 +306,14 @@ export function BabyManagePage(): React.JSX.Element {
                 disabled={baby.status !== 'ACTIVE' || activate.isPending}
                 onClick={() => activate.mutate(baby)}
               >
-                <span className={styles.babyAvatar}>{baby.nickname.slice(0, 1)}</span>
+                <span className={styles.babyAvatar}>
+                  <BabyAvatar
+                    familyId={familyId}
+                    babyId={baby.id}
+                    nickname={baby.nickname}
+                    photoId={baby.avatarPhotoId}
+                  />
+                </span>
                 <span>
                   <strong>{baby.nickname}</strong>
                   <small>
@@ -323,6 +336,11 @@ export function BabyManagePage(): React.JSX.Element {
                         <Pencil size={16} />
                         编辑
                       </button>
+                      {baby.id === auth.account?.activeBabyId ? (
+                        <Link className={styles.avatarAction} to="/app/babies/avatar">
+                          选择头像
+                        </Link>
+                      ) : null}
                       <button type="button" onClick={() => setConfirmArchive(baby)}>
                         <Trash2 size={16} />
                         归档

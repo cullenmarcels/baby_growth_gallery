@@ -23,6 +23,9 @@ export type PhotoUploadInstruction = Omit<
   fields: Record<string, string>;
 };
 export type PhotoManagementPage = components['schemas']['PhotoManagementPageDto'];
+export type PublishedPhotoPage = components['schemas']['PublishedPhotoPageDto'];
+export type PublishedPhotoDetail = components['schemas']['PublishedPhotoDetailDto'];
+export type TimelinePage = components['schemas']['TimelinePageDto'];
 
 export class ApiClientError extends Error {
   constructor(
@@ -319,6 +322,18 @@ export function createApiClient({ baseUrl, fetchImpl }: ApiClientOptions) {
       });
       return requireData<BabySummary>(result.data, result.error, result.response);
     },
+    async setBabyAvatar(
+      familyId: string,
+      babyId: string,
+      photoId: string | null,
+    ): Promise<BabySummary> {
+      const result = await client.PATCH('/api/v1/families/{familyId}/babies/{babyId}/avatar', {
+        params: { path: { familyId, babyId } },
+        body: { photoId },
+        headers: await mutationHeaders(),
+      });
+      return requireData<BabySummary>(result.data, result.error, result.response);
+    },
     async activateBaby(familyId: string, babyId: string): Promise<AccountSummary> {
       const result = await client.POST('/api/v1/families/{familyId}/babies/{babyId}/activate', {
         params: { path: { familyId, babyId } },
@@ -479,6 +494,42 @@ export function createApiClient({ baseUrl, fetchImpl }: ApiClientOptions) {
         params: { path: { familyId, babyId }, query },
       });
       return requireData<PhotoManagementPage>(result.data, result.error, result.response);
+    },
+    async listPublishedPhotos(
+      familyId: string,
+      babyId: string,
+      query: { limit?: number; cursor?: string } = {},
+    ): Promise<PublishedPhotoPage> {
+      const result = await client.GET(
+        '/api/v1/families/{familyId}/babies/{babyId}/photos/published',
+        {
+          params: { path: { familyId, babyId }, query },
+        },
+      );
+      return requireData<PublishedPhotoPage>(result.data, result.error, result.response);
+    },
+    async listTimeline(
+      familyId: string,
+      babyId: string,
+      query: { limit?: number; cursor?: string } = {},
+    ): Promise<TimelinePage> {
+      const result = await client.GET('/api/v1/families/{familyId}/babies/{babyId}/timeline', {
+        params: { path: { familyId, babyId }, query },
+      });
+      return requireData<TimelinePage>(result.data, result.error, result.response);
+    },
+    async getPublishedPhoto(
+      familyId: string,
+      babyId: string,
+      photoId: string,
+    ): Promise<PublishedPhotoDetail> {
+      const result = await client.GET(
+        '/api/v1/families/{familyId}/babies/{babyId}/photos/{photoId}',
+        {
+          params: { path: { familyId, babyId, photoId } },
+        },
+      );
+      return requireData<PublishedPhotoDetail>(result.data, result.error, result.response);
     },
     async getPhotoPreview(
       familyId: string,

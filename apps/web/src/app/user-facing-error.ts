@@ -20,7 +20,7 @@ const errorCopyByCode: Readonly<Record<string, string>> = {
   FAMILY_INVITATION_NOT_FOUND: '找不到这条邀请，它可能已经失效。',
   ALREADY_FAMILY_MEMBER: '你已经是这个家庭的成员，无需重复加入。',
   INVITATION_INVALID: '邀请口令无效或已失效。',
-  CURSOR_INVALID: '动态分页信息已失效，请刷新页面重试。',
+  CURSOR_INVALID: '分页信息已失效，请刷新页面重试。',
   BABY_NOT_FOUND: '找不到这个宝宝档案，它可能已归档或被清理。',
   BABY_PERMISSION_DENIED: '你没有权限管理宝宝档案。',
   BABY_STATE_CONFLICT: '宝宝档案状态已经变化，请刷新后重试。',

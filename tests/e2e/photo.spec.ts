@@ -218,6 +218,11 @@ test('uploads to private storage, isolates drafts, publishes an activity, and re
       (item) => item.id === photoId || item.id === heicPhotoId,
     ),
   ).toBe(false);
+  const hiddenGallery = await owner.context.get(
+    `/api/v1/families/${familyId}/babies/${babyId}/photos/published`,
+  );
+  expect(hiddenGallery.status()).toBe(200);
+  expect(((await hiddenGallery.json()) as { items: unknown[] }).items).toEqual([]);
 
   const preview = await member.context.get(
     `/api/v1/families/${familyId}/babies/${babyId}/photos/${photoId}/preview?variant=THUMBNAIL`,
@@ -248,6 +253,109 @@ test('uploads to private storage, isolates drafts, publishes an activity, and re
       (photo) => photo.status,
     ),
   ).toEqual(['PUBLISHED', 'PUBLISHED']);
+  const galleryBase = `/api/v1/families/${familyId}/babies/${babyId}`;
+  const firstGallery = await owner.context.get(`${galleryBase}/photos/published?limit=1`);
+  expect(firstGallery.status()).toBe(200);
+  const firstPage = (await firstGallery.json()) as {
+    items: Array<{ id: string }>;
+    nextCursor: string | null;
+  };
+  expect(firstPage.items).toHaveLength(1);
+  expect(firstPage.nextCursor).toBeTruthy();
+  const secondGallery = await owner.context.get(
+    `${galleryBase}/photos/published?limit=1&cursor=${encodeURIComponent(firstPage.nextCursor!)}`,
+  );
+  expect(secondGallery.status()).toBe(200);
+  const secondPage = (await secondGallery.json()) as { items: Array<{ id: string }> };
+  expect(new Set([firstPage.items[0]!.id, secondPage.items[0]!.id])).toEqual(
+    new Set([photoId, heicPhotoId]),
+  );
+  const timeline = await owner.context.get(`${galleryBase}/timeline`);
+  expect(timeline.status()).toBe(200);
+  expect(
+    ((await timeline.json()) as { items: Array<{ kind: string; photo: { id: string } }> }).items,
+  ).toEqual([
+    expect.objectContaining({
+      kind: 'PHOTO',
+      photo: expect.objectContaining({ id: firstPage.items[0]!.id }),
+    }),
+    expect.objectContaining({
+      kind: 'PHOTO',
+      photo: expect.objectContaining({ id: secondPage.items[0]!.id }),
+    }),
+  ]);
+  const detail = await owner.context.get(`${galleryBase}/photos/${firstPage.items[0]!.id}`);
+  expect(detail.status()).toBe(200);
+  expect(await detail.json()).toMatchObject({
+    canManage: true,
+    previousPhotoId: null,
+    nextPhotoId: secondPage.items[0]!.id,
+  });
+  const readerDetail = await spectator.context.get(`${galleryBase}/photos/${photoId}`);
+  expect(readerDetail.status()).toBe(200);
+  expect((await readerDetail.json()) as { canManage: boolean }).toMatchObject({ canManage: false });
+  const changedDate = await member.context.patch(`${galleryBase}/photos/${photoId}`, {
+    headers: { Origin: webOrigin, 'x-csrf-token': member.csrf },
+    data: { capturedOn: '2026-01-01' },
+  });
+  expect(changedDate.status()).toBe(200);
+  const reordered = await owner.context.get(`${galleryBase}/photos/published`);
+  expect(
+    ((await reordered.json()) as { items: Array<{ id: string }> }).items.map((item) => item.id),
+  ).toEqual([heicPhotoId, photoId]);
+  expect(
+    (await (await owner.context.get(`${galleryBase}/photos/${photoId}`)).json()) as {
+      previousPhotoId: string;
+      nextPhotoId: null;
+    },
+  ).toMatchObject({
+    previousPhotoId: heicPhotoId,
+    nextPhotoId: null,
+  });
+  const otherBaby = await post(owner.context, `/api/v1/families/${familyId}/babies`, owner.csrf, {
+    nickname: '另一个合成宝宝',
+    birthDate: '2026-01-01',
+    sex: null,
+  });
+  expect(otherBaby.status()).toBe(201);
+  const otherBabyId = ((await otherBaby.json()) as { id: string }).id;
+  expect(
+    (
+      (await (
+        await owner.context.get(
+          `/api/v1/families/${familyId}/babies/${otherBabyId}/photos/published`,
+        )
+      ).json()) as { items: unknown[] }
+    ).items,
+  ).toEqual([]);
+  expect(
+    (
+      await owner.context.get(
+        `/api/v1/families/${familyId}/babies/${otherBabyId}/photos/${photoId}`,
+      )
+    ).status(),
+  ).toBe(404);
+  const deniedAvatar = await spectator.context.patch(`${galleryBase}/avatar`, {
+    headers: { Origin: webOrigin, 'x-csrf-token': spectator.csrf },
+    data: { photoId },
+  });
+  expect(deniedAvatar.status()).toBe(403);
+  const crossBabyAvatar = await owner.context.patch(
+    `/api/v1/families/${familyId}/babies/${otherBabyId}/avatar`,
+    {
+      headers: { Origin: webOrigin, 'x-csrf-token': owner.csrf },
+      data: { photoId },
+    },
+  );
+  expect(crossBabyAvatar.status()).toBe(404);
+  const setAvatar = await owner.context.patch(`${galleryBase}/avatar`, {
+    headers: { Origin: webOrigin, 'x-csrf-token': owner.csrf },
+    data: { photoId },
+  });
+  expect(setAvatar.status()).toBe(200);
+  expect((await setAvatar.json()) as { avatarPhotoId: string }).toMatchObject({
+    avatarPhotoId: photoId,
+  });
   expect(
     (
       await owner.context.get(
@@ -269,6 +377,32 @@ test('uploads to private storage, isolates drafts, publishes an activity, and re
   );
   expect(deniedTrash.status()).toBe(403);
   expect(((await deniedTrash.json()) as { code: string }).code).toBe('PHOTO_PERMISSION_DENIED');
+  const members = await owner.context.get(`/api/v1/families/${familyId}/members`);
+  expect(members.status()).toBe(200);
+  const spectatorMembershipId = (
+    (await members.json()) as { items: Array<{ id: string; displayName: string }> }
+  ).items.find((item) => item.displayName === '合成旁观成员')?.id;
+  expect(spectatorMembershipId).toBeTruthy();
+  const promote = await owner.context.patch(
+    `/api/v1/families/${familyId}/members/${spectatorMembershipId}/role`,
+    { headers: { Origin: webOrigin, 'x-csrf-token': owner.csrf }, data: { role: 'ADMIN' } },
+  );
+  expect(promote.status()).toBe(200);
+  expect(
+    (await (await spectator.context.get(`${galleryBase}/photos/${photoId}`)).json()) as {
+      canManage: boolean;
+    },
+  ).toMatchObject({ canManage: true });
+  const demote = await owner.context.patch(
+    `/api/v1/families/${familyId}/members/${spectatorMembershipId}/role`,
+    { headers: { Origin: webOrigin, 'x-csrf-token': owner.csrf }, data: { role: 'MEMBER' } },
+  );
+  expect(demote.status()).toBe(200);
+  expect(
+    (await (await spectator.context.get(`${galleryBase}/photos/${photoId}`)).json()) as {
+      canManage: boolean;
+    },
+  ).toMatchObject({ canManage: false });
   const activityResponse = await owner.context.get(`/api/v1/families/${familyId}/activities`);
   const activities = (await activityResponse.json()) as {
     items: Array<{ type: string; subject?: { id: string }; summary?: Record<string, unknown> }>;
@@ -290,6 +424,17 @@ test('uploads to private storage, isolates drafts, publishes an activity, and re
     status: 'TRASHED',
     canRestore: true,
   });
+  expect(
+    (await (await owner.context.get(`/api/v1/families/${familyId}/babies/${babyId}`)).json()) as {
+      avatarPhotoId: string | null;
+    },
+  ).toMatchObject({ avatarPhotoId: null });
+  expect((await owner.context.get(`${galleryBase}/photos/${photoId}`)).status()).toBe(404);
+  expect(
+    (await (await owner.context.get(`${galleryBase}/photos/published`)).json()) as {
+      items: Array<{ id: string }>;
+    },
+  ).toMatchObject({ items: [{ id: heicPhotoId }] });
   const memberTrashPage = await member.context.get(
     `/api/v1/families/${familyId}/babies/${babyId}/photos/manage?scope=mine&status=TRASHED`,
   );
@@ -312,6 +457,11 @@ test('uploads to private storage, isolates drafts, publishes an activity, and re
     owner.csrf,
   );
   expect(((await restored.json()) as { status: string }).status).toBe('PUBLISHED');
+  expect(
+    (await (await owner.context.get(`/api/v1/families/${familyId}/babies/${babyId}`)).json()) as {
+      avatarPhotoId: string | null;
+    },
+  ).toMatchObject({ avatarPhotoId: null });
   const selfTrashed = await post(
     member.context,
     `/api/v1/families/${familyId}/babies/${babyId}/photos/${heicPhotoId}/trash`,
@@ -394,9 +544,70 @@ test('uploads and publishes a synthetic photo in the responsive flow', async ({
   ).toBe(true);
   await page.getByRole('link', { name: '我的上传' }).click();
   await expect(page.getByRole('article').getByText('已发布', { exact: true })).toBeVisible();
+  await page.goto('/app/gallery');
+  await expect(page.getByRole('heading', { name: '图集' })).toBeVisible();
+  const galleryTile = page.getByRole('link', { name: /查看照片：/ }).first();
+  await expect(galleryTile).toBeVisible();
+  await galleryTile.focus();
+  await expect(galleryTile).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('heading', { name: '成长照片' })).toBeVisible();
+  const detailUrl = page.url();
+  await expect(page.getByText('合成地点')).toBeVisible();
+  await expect(page.getByText('上一张')).toHaveAttribute('aria-disabled', 'true');
+  await page.goto('/app/timeline');
+  await expect(page.getByRole('heading', { name: /^\d{4} 年 \d{2} 月$/ })).toBeVisible();
+  await page.goto('/app/babies/manage');
+  await page.getByRole('link', { name: '选择头像' }).click();
+  await expect(page.getByRole('heading', { name: '选择头像' })).toBeVisible();
+  await page.locator('button[aria-pressed="false"]').first().click();
+  await expect(page.getByRole('heading', { name: '宝宝档案' })).toBeVisible();
+  await page.goto('/app/home');
+  await expect(page.locator('img[alt=""]:visible').first()).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
   if ((page.viewportSize()?.width ?? 1440) < 1024) {
     await expect(page.getByRole('navigation', { name: '移动端主导航' })).toBeVisible();
   } else {
     await expect(page.getByRole('navigation', { name: '主导航' })).toBeVisible();
   }
+
+  const detailApi = /\/api\/v1\/families\/[^/]+\/babies\/[^/]+\/photos\/[^/]+$/;
+  await page.route(detailApi, async (route) => {
+    const response = await route.fetch();
+    const body = (await response.json()) as Record<string, unknown>;
+    await route.fulfill({ response, json: { ...body, canManage: false } });
+  });
+  await page.goto(detailUrl);
+  await expect(page.getByRole('heading', { name: '成长照片' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '编辑信息' })).toHaveCount(0);
+  await page.unroute(detailApi);
+
+  const listApi = /\/api\/v1\/families\/[^/]+\/babies\/[^/]+\/photos\/published(?:\?.*)?$/;
+  await page.route(listApi, (route) =>
+    route.fulfill({ status: 200, json: { items: [], nextCursor: null } }),
+  );
+  await page.goto('/app/gallery');
+  await expect(page.getByText(/还没有已发布照片/)).toBeVisible();
+  await page.unroute(listApi);
+
+  let releaseList!: () => void;
+  await page.route(listApi, (route) => {
+    releaseList = () => void route.fulfill({ status: 200, json: { items: [], nextCursor: null } });
+  });
+  await page.reload();
+  await expect(page.getByText('正在加载图集…')).toBeVisible();
+  releaseList();
+  await expect(page.getByText(/还没有已发布照片/)).toBeVisible();
+  await page.unroute(listApi);
+
+  await page.route(listApi, (route) => route.abort());
+  await page.reload();
+  await expect(page.getByRole('alert')).toContainText('图集加载失败，请重试。', {
+    timeout: 15_000,
+  });
+  await page.unroute(listApi);
 });

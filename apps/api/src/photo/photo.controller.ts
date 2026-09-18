@@ -22,11 +22,14 @@ import {
   CreatePhotoBatchRequestDto,
   PhotoListResponseDto,
   PhotoManagementPageDto,
+  PublishedPhotoDetailDto,
+  PublishedPhotoPageDto,
   PhotoPreviewDto,
   PhotoSummaryDto,
   PhotoUploadBatchDto,
   PhotoUploadInstructionDto,
   PublishPhotosRequestDto,
+  TimelinePageDto,
   UpdatePhotoRequestDto,
 } from './photo.dto.js';
 import {
@@ -36,6 +39,7 @@ import {
   photoBatchIdSchema,
   photoIdSchema,
   previewQuerySchema,
+  publishedPhotosQuerySchema,
   publishPhotosSchema,
   updatePhotoSchema,
 } from './photo.schemas.js';
@@ -205,6 +209,64 @@ export class PhotoController {
       this.uuid(family),
       this.uuid(baby),
       parseBody(managePhotosQuerySchema, query),
+    );
+  }
+
+  @Get('photos/published')
+  @FamilyBabyParams()
+  @ApiQuery({ name: 'limit', required: false })
+  @ApiQuery({ name: 'cursor', required: false })
+  @ApiResponse({ status: 200, type: PublishedPhotoPageDto })
+  async published(
+    @Param('familyId') family: string,
+    @Param('babyId') baby: string,
+    @Query() query: unknown,
+    @Req() request: Request,
+  ): Promise<PublishedPhotoPageDto> {
+    const account = await this.sessions.current(request);
+    return this.photos.published(
+      account.id,
+      this.uuid(family),
+      this.uuid(baby),
+      parseBody(publishedPhotosQuerySchema, query),
+    );
+  }
+
+  @Get('timeline')
+  @FamilyBabyParams()
+  @ApiQuery({ name: 'limit', required: false })
+  @ApiQuery({ name: 'cursor', required: false })
+  @ApiResponse({ status: 200, type: TimelinePageDto })
+  async timeline(
+    @Param('familyId') family: string,
+    @Param('babyId') baby: string,
+    @Query() query: unknown,
+    @Req() request: Request,
+  ): Promise<TimelinePageDto> {
+    const account = await this.sessions.current(request);
+    return this.photos.timeline(
+      account.id,
+      this.uuid(family),
+      this.uuid(baby),
+      parseBody(publishedPhotosQuerySchema, query),
+    );
+  }
+
+  @Get('photos/:photoId')
+  @PhotoParams()
+  @ApiResponse({ status: 200, type: PublishedPhotoDetailDto })
+  async publishedDetail(
+    @Param('familyId') family: string,
+    @Param('babyId') baby: string,
+    @Param('photoId') photo: string,
+    @Req() request: Request,
+  ): Promise<PublishedPhotoDetailDto> {
+    const account = await this.sessions.current(request);
+    return this.photos.publishedDetail(
+      account.id,
+      this.uuid(family),
+      this.uuid(baby),
+      parseBody(photoIdSchema, photo),
     );
   }
 

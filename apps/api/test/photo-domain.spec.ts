@@ -216,11 +216,17 @@ describe('photo upload domain boundaries', () => {
       trashedByRole: 'ADMIN' as const,
     };
     const prisma = {
+      $queryRaw: jest.fn().mockResolvedValue([{ role: 'ADMIN', status: 'ACTIVE' }]),
       photo: {
         updateMany: jest.fn().mockResolvedValue({ count: 1 }),
         findUniqueOrThrow: jest.fn().mockResolvedValue(trashed),
       },
+      babyProfile: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
+      $transaction: jest.fn(),
     };
+    prisma.$transaction.mockImplementation((run: (client: typeof prisma) => Promise<unknown>) =>
+      run(prisma),
+    );
     const service = new PhotoService(
       prisma as never,
       policy,
@@ -241,6 +247,10 @@ describe('photo upload domain boundaries', () => {
         }),
       }),
     );
+    expect(prisma.babyProfile.updateMany).toHaveBeenCalledWith({
+      where: { id: babyId, familyId, avatarPhotoId: photoId },
+      data: { avatarPhotoId: null },
+    });
     jest.spyOn(policy, 'requirePhoto').mockResolvedValue({
       membership: membership('MEMBER'),
       photo: trashed,

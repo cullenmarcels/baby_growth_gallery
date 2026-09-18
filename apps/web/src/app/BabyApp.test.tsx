@@ -44,6 +44,7 @@ function baby(status: 'ACTIVE' | 'ARCHIVED' = 'ACTIVE') {
     nickname: '小星星',
     birthDate: '2026-01-02',
     sex: null,
+    avatarPhotoId: null,
     status,
     archivedAt: status === 'ARCHIVED' ? '2026-09-01T00:00:00.000Z' : null,
     purgeAfter: status === 'ARCHIVED' ? '2026-10-01T00:00:00.000Z' : null,

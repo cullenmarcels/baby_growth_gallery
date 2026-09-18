@@ -22,6 +22,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useBlocker, useSearchParams } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { api } from './api';
+import { babyKeys } from './baby-query';
 import { ConfirmDialog } from './FamilyApp';
 import styles from './PhotoApp.module.css';
 import { photoKeys } from './photo-query';
@@ -801,6 +802,7 @@ export function PhotoManagePage(): React.JSX.Element {
 
   async function refresh(): Promise<void> {
     await queryClient.invalidateQueries({ queryKey: ['photos', familyId, babyId] });
+    await queryClient.invalidateQueries({ queryKey: babyKeys.all });
   }
   function act(
     title: string,

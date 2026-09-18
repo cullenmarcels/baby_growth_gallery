@@ -78,8 +78,14 @@ export const managePhotosQuerySchema = z.object({
   cursor: z.string().min(1).max(500).optional(),
 });
 
+export const publishedPhotosQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+  cursor: z.string().min(1).max(500).optional(),
+});
+
 export type CreatePhotoBatchInput = z.infer<typeof createPhotoBatchSchema>;
 export type UpdatePhotoInput = z.infer<typeof updatePhotoSchema>;
 export type BatchUpdatePhotosInput = z.infer<typeof batchUpdatePhotosSchema>;
 export type PublishPhotosInput = z.infer<typeof publishPhotosSchema>;
 export type ManagePhotosQuery = z.infer<typeof managePhotosQuerySchema>;
+export type PublishedPhotosQuery = z.infer<typeof publishedPhotosQuerySchema>;

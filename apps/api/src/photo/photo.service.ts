@@ -8,8 +8,11 @@ import { ObjectStorageService } from '../infrastructure/object-storage.service.j
 import { PrismaService } from '../infrastructure/prisma.service.js';
 import type {
   PhotoManagementPageDto,
+  PublishedPhotoDetailDto,
+  PublishedPhotoPageDto,
   PhotoPreviewDto,
   PhotoSummaryDto,
+  TimelinePageDto,
   PhotoUploadBatchDto,
   PhotoUploadInstructionDto,
 } from './photo.dto.js';
@@ -19,6 +22,7 @@ import type {
   BatchUpdatePhotosInput,
   CreatePhotoBatchInput,
   ManagePhotosQuery,
+  PublishedPhotosQuery,
   PublishPhotosInput,
   UpdatePhotoInput,
 } from './photo.schemas.js';
@@ -28,6 +32,12 @@ const RETENTION_MS = 30 * 86_400_000;
 const cursorSchema = z.object({
   v: z.literal(1),
   updatedAt: z.iso.datetime({ offset: true }),
+  id: z.uuid(),
+});
+const publishedCursorSchema = z.object({
+  v: z.literal(1),
+  capturedOn: z.iso.date(),
+  publishedAt: z.iso.datetime({ offset: true }),
   id: z.uuid(),
 });
 
@@ -444,6 +454,82 @@ export class PhotoService {
     };
   }
 
+  async published(
+    accountId: string,
+    familyId: string,
+    babyId: string,
+    query: PublishedPhotosQuery,
+  ): Promise<PublishedPhotoPageDto> {
+    const { membership } = await this.policy.requireActiveBaby(accountId, familyId, babyId);
+    const cursor = query.cursor ? this.decodePublishedCursor(query.cursor) : null;
+    const rows = await this.prisma.photo.findMany({
+      where: {
+        familyId,
+        babyId,
+        status: 'PUBLISHED',
+        ...(cursor ? { OR: this.olderThan(cursor) } : {}),
+      },
+      orderBy: [{ capturedOn: 'desc' }, { publishedAt: 'desc' }, { id: 'desc' }],
+      take: query.limit + 1,
+    });
+    const hasMore = rows.length > query.limit;
+    const items = hasMore ? rows.slice(0, query.limit) : rows;
+    const last = items.at(-1);
+    return {
+      items: items.map((photo) => this.summary(photo, membership)),
+      nextCursor: hasMore && last ? this.encodePublishedCursor(last) : null,
+    };
+  }
+
+  async timeline(
+    accountId: string,
+    familyId: string,
+    babyId: string,
+    query: PublishedPhotosQuery,
+  ): Promise<TimelinePageDto> {
+    const page = await this.published(accountId, familyId, babyId, query);
+    return {
+      items: page.items.map((photo) => ({ kind: 'PHOTO', eventOn: photo.capturedOn, photo })),
+      nextCursor: page.nextCursor,
+    };
+  }
+
+  async publishedDetail(
+    accountId: string,
+    familyId: string,
+    babyId: string,
+    photoId: string,
+  ): Promise<PublishedPhotoDetailDto> {
+    const { membership } = await this.policy.requireActiveBaby(accountId, familyId, babyId);
+    const photo = await this.prisma.photo.findFirst({
+      where: { id: photoId, familyId, babyId, status: 'PUBLISHED' },
+    });
+    if (!photo || !photo.publishedAt) this.policy.notFound();
+    const position = {
+      capturedOn: photo.capturedOn,
+      publishedAt: photo.publishedAt,
+      id: photo.id,
+    };
+    const [previous, next] = await Promise.all([
+      this.prisma.photo.findFirst({
+        where: { familyId, babyId, status: 'PUBLISHED', OR: this.newerThan(position) },
+        orderBy: [{ capturedOn: 'asc' }, { publishedAt: 'asc' }, { id: 'asc' }],
+        select: { id: true },
+      }),
+      this.prisma.photo.findFirst({
+        where: { familyId, babyId, status: 'PUBLISHED', OR: this.olderThan(position) },
+        orderBy: [{ capturedOn: 'desc' }, { publishedAt: 'desc' }, { id: 'desc' }],
+        select: { id: true },
+      }),
+    ]);
+    return {
+      photo: this.summary(photo, membership),
+      canManage: this.policy.canManagePublished(membership, photo),
+      previousPhotoId: previous?.id ?? null,
+      nextPhotoId: next?.id ?? null,
+    };
+  }
+
   async preview(
     accountId: string,
     familyId: string,
@@ -478,30 +564,47 @@ export class PhotoService {
     babyId: string,
     photoId: string,
   ): Promise<PhotoSummaryDto> {
-    const { membership, photo } = await this.policy.requirePhoto(
-      accountId,
-      familyId,
-      babyId,
-      photoId,
-    );
-    if (!this.policy.canManagePublished(membership, photo)) this.policy.permissionDenied();
-    if (photo.status !== 'PUBLISHED') this.policy.stateConflict();
-    const now = new Date();
-    const result = await this.prisma.photo.updateMany({
-      where: { id: photoId, status: 'PUBLISHED' },
-      data: {
-        status: 'TRASHED',
-        trashedAt: now,
-        trashedByMembershipId: membership.id,
-        trashedByRole: membership.role,
-        purgeAfter: new Date(now.valueOf() + RETENTION_MS),
-      },
+    return this.prisma.$transaction(async (transaction) => {
+      const { membership, photo } = await this.policy.requirePhoto(
+        accountId,
+        familyId,
+        babyId,
+        photoId,
+        transaction,
+      );
+      const [currentMembership] = await transaction.$queryRaw<
+        Array<{ role: string; status: string }>
+      >`
+        SELECT role, status FROM family_memberships WHERE id = ${membership.id}::uuid FOR UPDATE
+      `;
+      if (!currentMembership || currentMembership.status !== 'ACTIVE') this.policy.notFound();
+      const actingMembership = {
+        ...membership,
+        role: currentMembership.role as typeof membership.role,
+      };
+      if (!this.policy.canManagePublished(actingMembership, photo)) this.policy.permissionDenied();
+      if (photo.status !== 'PUBLISHED') this.policy.stateConflict();
+      const now = new Date();
+      const result = await transaction.photo.updateMany({
+        where: { id: photoId, familyId, babyId, status: 'PUBLISHED' },
+        data: {
+          status: 'TRASHED',
+          trashedAt: now,
+          trashedByMembershipId: membership.id,
+          trashedByRole: actingMembership.role,
+          purgeAfter: new Date(now.valueOf() + RETENTION_MS),
+        },
+      });
+      if (result.count !== 1) this.policy.stateConflict();
+      await transaction.babyProfile.updateMany({
+        where: { id: babyId, familyId, avatarPhotoId: photoId },
+        data: { avatarPhotoId: null },
+      });
+      return this.summary(
+        await transaction.photo.findUniqueOrThrow({ where: { id: photoId } }),
+        actingMembership,
+      );
     });
-    if (result.count !== 1) this.policy.stateConflict();
-    return this.summary(
-      await this.prisma.photo.findUniqueOrThrow({ where: { id: photoId } }),
-      membership,
-    );
   }
 
   async restore(
@@ -614,6 +717,62 @@ export class PhotoService {
       failureCode: photo.failureCode,
       updatedAt: photo.updatedAt.toISOString(),
     };
+  }
+
+  private olderThan(position: { capturedOn: Date; publishedAt: Date; id: string }) {
+    return [
+      { capturedOn: { lt: position.capturedOn } },
+      { capturedOn: position.capturedOn, publishedAt: { lt: position.publishedAt } },
+      {
+        capturedOn: position.capturedOn,
+        publishedAt: position.publishedAt,
+        id: { lt: position.id },
+      },
+    ];
+  }
+
+  private newerThan(position: { capturedOn: Date; publishedAt: Date; id: string }) {
+    return [
+      { capturedOn: { gt: position.capturedOn } },
+      { capturedOn: position.capturedOn, publishedAt: { gt: position.publishedAt } },
+      {
+        capturedOn: position.capturedOn,
+        publishedAt: position.publishedAt,
+        id: { gt: position.id },
+      },
+    ];
+  }
+
+  private encodePublishedCursor(photo: Photo): string {
+    return Buffer.from(
+      JSON.stringify({
+        v: 1,
+        capturedOn: photo.capturedOn.toISOString().slice(0, 10),
+        publishedAt: photo.publishedAt?.toISOString(),
+        id: photo.id,
+      }),
+      'utf8',
+    ).toString('base64url');
+  }
+
+  private decodePublishedCursor(value: string): {
+    capturedOn: Date;
+    publishedAt: Date;
+    id: string;
+  } {
+    try {
+      if (!/^[A-Za-z0-9_-]+$/.test(value)) throw new Error('invalid');
+      const parsed = publishedCursorSchema.parse(
+        JSON.parse(Buffer.from(value, 'base64url').toString('utf8')),
+      );
+      return {
+        capturedOn: new Date(`${parsed.capturedOn}T00:00:00.000Z`),
+        publishedAt: new Date(parsed.publishedAt),
+        id: parsed.id,
+      };
+    } catch {
+      throw new ApiProblemException(400, '分页游标无效。', 'CURSOR_INVALID');
+    }
   }
 
   private encodeCursor(updatedAt: Date, id: string): string {
