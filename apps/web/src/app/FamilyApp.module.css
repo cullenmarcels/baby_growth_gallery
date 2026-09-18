@@ -307,6 +307,7 @@
 }
 .formActions {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
   gap: 10px;
   margin-top: 10px;
@@ -485,12 +486,15 @@
   padding: 0 17px;
   border-radius: var(--radius-pill);
   cursor: pointer;
+  white-space: nowrap;
 }
 .primaryButton {
-  margin-top: 12px;
   color: var(--color-card);
   background: var(--color-primary);
   border: 0;
+}
+.formCard > .primaryButton {
+  margin-top: 12px;
 }
 .secondaryButton {
   color: var(--color-text-strong);

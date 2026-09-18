@@ -2,7 +2,7 @@
 id: PLAN-20260917-K0AH0D6T-STATE
 type: plan_state
 plan_id: PLAN-20260917-K0AH0D6T
-status: acceptance_pending
+status: superseded
 repository_mode: git_remote
 remote_name: origin
 integration_target: origin/develop
@@ -23,4 +23,4 @@ integrated_scope_digest: null
 
 # Plan State
 
-用户已确认并要求实施 Plan E。远端 `origin/develop` 经核验后快进同步 Plan D 的 4 个归档证据提交，`feature/photo-gallery-timeline` 从精确基线建立。更新候选 `8b780574efddd11ec05d87781c57a4e7d4c3d242` 的本地 Review 与独立 Regression 已通过，现等待精确版本的人工验收；尚无集成授权。
+用户已确认并要求实施 Plan E。远端 `origin/develop` 经核验后快进同步 Plan D 的 4 个归档证据提交，`feature/photo-gallery-timeline` 从精确基线建立。历史候选 `8b780574efddd11ec05d87781c57a4e7d4c3d242` 的本地 Review 与独立 Regression 已通过，但未获人工验收。用户后续确认界面修订，现由 `PLAN-20260918-RC0Y5QH3` 取代；旧候选的报告不用于新候选验收，尚无集成授权。

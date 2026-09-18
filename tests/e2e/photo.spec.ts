@@ -543,6 +543,47 @@ test('uploads and publishes a synthetic photo in the responsive flow', async ({
   await page.reload();
   await expect(page.getByText('私有草稿已就绪')).toBeVisible();
   await expect(page.getByRole('img', { name: '所选照片 1' })).toBeVisible();
+  const uploadCard = page.locator('main article').first();
+  const cardPadding = await uploadCard.evaluate((card) => {
+    const style = getComputedStyle(card);
+    return [style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft];
+  });
+  expect(cardPadding).toEqual(['16px', '16px', '16px', '16px']);
+  const metadata = page.getByRole('button', { name: '保存信息' }).locator('xpath=ancestor::form');
+  const fields = await metadata.locator('label').evaluateAll((labels) =>
+    labels.map((label) => {
+      const bounds = label.getBoundingClientRect();
+      return { x: bounds.x, y: bounds.y, width: bounds.width };
+    }),
+  );
+  expect(fields).toHaveLength(4);
+  if ((page.viewportSize()?.width ?? 1440) > 640) {
+    expect(fields[0]!.width).toBeGreaterThan(fields[1]!.width);
+    expect(Math.abs(fields[1]!.y - fields[2]!.y)).toBeLessThanOrEqual(1);
+  } else {
+    expect(Math.abs(fields[0]!.width - fields[1]!.width)).toBeLessThanOrEqual(1);
+    expect(fields[2]!.y).toBeGreaterThan(fields[1]!.y);
+  }
+  expect(fields[1]!.y).toBeGreaterThan(fields[0]!.y);
+  const [headerButtonStyle, saveButtonStyle] = await Promise.all([
+    page.getByRole('link', { name: '我的上传' }).evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        height: element.getBoundingClientRect().height,
+        padding: style.paddingLeft,
+        background: style.backgroundColor,
+      };
+    }),
+    page.getByRole('button', { name: '保存信息' }).evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        height: element.getBoundingClientRect().height,
+        padding: style.paddingLeft,
+        background: style.backgroundColor,
+      };
+    }),
+  ]);
+  expect(headerButtonStyle).toEqual(saveButtonStyle);
   await page.getByRole('link', { name: '我的上传' }).click();
   await page.getByRole('link', { name: '查看上传批次' }).click();
   await expect(page.getByText('私有草稿已就绪')).toBeVisible();
@@ -574,6 +615,101 @@ test('uploads and publishes a synthetic photo in the responsive flow', async ({
   await page.screenshot({ path: testInfo.outputPath('status-dropdown.png') });
   await page.getByRole('option', { name: '已发布' }).click();
   await expect(statusFilter).toContainText('已发布');
+  const managedNames = [
+    '第一张横向照片',
+    '第二张竖向照片与更长的标题',
+    '第三张照片',
+    '第四张竖向照片',
+    '第五张有较长地点的照片',
+    '第六张照片',
+  ];
+  const managedRatios = [
+    [1600, 900],
+    [600, 1200],
+    [1200, 800],
+    [700, 1000],
+    [1000, 700],
+    [900, 900],
+  ];
+  let managedItems: Array<Record<string, unknown>> = [];
+  const manageApi = /\/api\/v1\/families\/[^/]+\/babies\/[^/]+\/photos\/manage(?:\?.*)?$/;
+  const previewApi = /\/photos\/[^/]+\/preview\?variant=THUMBNAIL$/;
+  await page.route(manageApi, async (route) => {
+    if (managedItems.length === 0) {
+      const response = await route.fetch();
+      const data = (await response.json()) as { items: Array<Record<string, unknown>> };
+      const source = data.items[0]!;
+      managedItems = managedNames.map((title, index) => ({
+        ...source,
+        id: randomUUID(),
+        title,
+        width: managedRatios[index]![0],
+        height: managedRatios[index]![1],
+        location: index === 4 ? '一个很长的合成地点名称用于检查文字换行与卡片高度' : null,
+        updatedAt: new Date(Date.now() - index * 1000).toISOString(),
+      }));
+    }
+    const nextPage = new URL(route.request().url()).searchParams.has('cursor');
+    await route.fulfill({
+      status: 200,
+      json: {
+        items: nextPage ? managedItems.slice(4) : managedItems.slice(0, 4),
+        nextCursor: nextPage ? null : 'synthetic-next',
+      },
+    });
+  });
+  await page.route(previewApi, (route) =>
+    route.fulfill({
+      status: 200,
+      json: {
+        url: `data:image/png;base64,${syntheticPng.toString('base64')}`,
+        expiresAt: '2030-01-01T00:00:00.000Z',
+      },
+    }),
+  );
+  await page.goto('/app/photos/manage');
+  const managedCards = page.getByRole('article');
+  await expect(managedCards).toHaveCount(4);
+  await page.getByRole('button', { name: '加载更多' }).click();
+  await expect(managedCards).toHaveCount(managedNames.length);
+  expect(await managedCards.locator('h2').allTextContents()).toEqual(managedNames);
+  await expect
+    .poll(() =>
+      managedCards.first().evaluate((card) => card.parentElement?.parentElement?.style.gridRowEnd),
+    )
+    .toMatch(/^span \d+$/);
+  const cardGeometry = await managedCards.evaluateAll((cards) =>
+    cards.map((card) => {
+      const bounds = card.getBoundingClientRect();
+      return { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height };
+    }),
+  );
+  for (const [index, first] of cardGeometry.entries()) {
+    for (const second of cardGeometry.slice(index + 1)) {
+      const overlaps =
+        first.x < second.x + second.width &&
+        first.x + first.width > second.x &&
+        first.y < second.y + second.height &&
+        first.y + first.height > second.y;
+      expect(overlaps).toBe(false);
+    }
+  }
+  const columns = new Map<number, typeof cardGeometry>();
+  for (const card of cardGeometry) {
+    const key = Math.round(card.x);
+    columns.set(key, [...(columns.get(key) ?? []), card]);
+  }
+  for (const cards of columns.values()) {
+    cards.sort((first, second) => first.y - second.y);
+    for (let index = 1; index < cards.length; index += 1) {
+      const gap = cards[index]!.y - cards[index - 1]!.y - cards[index - 1]!.height;
+      expect(gap).toBeGreaterThanOrEqual(0);
+      expect(gap).toBeLessThanOrEqual(52);
+    }
+  }
+  await page.screenshot({ path: testInfo.outputPath('manage-masonry.png'), fullPage: true });
+  await page.unroute(manageApi);
+  await page.unroute(previewApi);
   await page.goto('/app/gallery');
   await expect(page.getByRole('heading', { name: '图集' })).toBeVisible();
   const galleryTile = page.getByRole('link', { name: /查看照片：/ }).first();
@@ -594,6 +730,10 @@ test('uploads and publishes a synthetic photo in the responsive flow', async ({
   await expect(page.getByRole('heading', { name: '宝宝档案' })).toBeVisible();
   await page.goto('/app/home');
   await expect(page.locator('img[alt=""]:visible').first()).toBeVisible();
+  const visibleButtonWhiteSpaces = await page
+    .locator('button:visible')
+    .evaluateAll((buttons) => buttons.map((button) => getComputedStyle(button).whiteSpace));
+  expect(visibleButtonWhiteSpaces.every((whiteSpace) => whiteSpace === 'nowrap')).toBe(true);
   const avatarShapes = await page
     .locator('header img[alt=""]:visible, main img[alt=""]:visible')
     .evaluateAll((images) =>

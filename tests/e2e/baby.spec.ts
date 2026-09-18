@@ -178,6 +178,11 @@ test('creates a baby profile from the responsive family application without hori
   await expect(page.getByRole('heading', { name: '合成成长家庭' })).toBeVisible();
   await page.goto('/app/babies/new');
   await expect(page.getByRole('heading', { name: '记录成长故事的主角' })).toBeVisible();
+  await page.getByRole('button', { name: '取消' }).click();
+  await expect(page).toHaveURL(/\/app\/babies\/manage$/);
+  await expect(page.getByText('家庭中还没有宝宝档案。')).toBeVisible();
+  await expect(page.getByRole('heading', { name: '宝宝档案' })).toBeFocused();
+  await page.getByRole('link', { name: '新建档案' }).click();
   await page.getByLabel('宝宝昵称').fill('小星星');
   await page.getByLabel('出生日期').fill('2026-01-02');
   await page.getByRole('button', { name: '性别（选填）' }).click();
@@ -198,4 +203,15 @@ test('creates a baby profile from the responsive family application without hori
   }
   await page.goto('/app/babies/manage');
   await expect(page.getByRole('button', { name: /小星星.*当前宝宝/ })).toBeVisible();
+  await page.getByRole('button', { name: '编辑', exact: true }).click();
+  const editActions = page.locator('section[aria-label^="编辑"]');
+  const cancel = editActions.getByRole('button', { name: '取消' });
+  const save = editActions.getByRole('button', { name: '保存修改' });
+  const [cancelBox, saveBox] = await Promise.all([cancel.boundingBox(), save.boundingBox()]);
+  expect(cancelBox).not.toBeNull();
+  expect(saveBox).not.toBeNull();
+  expect(Math.abs(cancelBox!.height - saveBox!.height)).toBeLessThanOrEqual(1);
+  expect(saveBox!.height).toBe(44);
+  await cancel.click();
+  await expect(editActions).toHaveCount(0);
 });

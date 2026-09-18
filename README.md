@@ -1,6 +1,6 @@
 # baby_growth_gallery
 
-小福宝成长记的前后端分离 Monorepo。工程基础及 Plan A–D 已归档，Plan E 在 `feature/photo-gallery-timeline` 的本地 Review 与 Regression 已通过，等待人工验收。现已提供手机号认证、Redis 服务端会话、多家庭与多宝宝身份，以及私有照片直传、真实内容校验、去元数据 WebP 变体、创建者私有草稿、家庭发布和 30 天回收站。Plan E 候选增加已发布照片图集、按月时间轴、照片详情与宝宝头像选择；时间轴目前只展示照片，尚未接入里程碑。
+小福宝成长记的前后端分离 Monorepo。工程基础及 Plan A–D 已归档；Plan E 的图集、时间轴、照片详情与头像候选正在 `feature/photo-gallery-timeline` 进行界面修订，尚待新候选 Review、Regression 与人工验收。现已提供手机号认证、Redis 服务端会话、多家庭与多宝宝身份，以及私有照片直传、真实内容校验、去元数据 WebP 变体、创建者私有草稿、家庭发布和 30 天回收站。Plan E 候选增加已发布照片图集、按月时间轴、照片详情与宝宝头像选择；时间轴目前只展示照片，尚未接入里程碑。
 
 ## 环境要求
 

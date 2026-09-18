@@ -70,7 +70,7 @@ function renderAt(element: React.ReactNode, path: string): void {
             <Route path="/app/babies/new" element={<h1>新建宝宝档案</h1>} />
           ) : null}
           {path !== '/app/babies/manage' ? (
-            <Route path="/app/babies/manage" element={<h1>管理宝宝档案</h1>} />
+            <Route path="/app/babies/manage" element={<BabyManagePage />} />
           ) : null}
           <Route path="/app/babies/waiting" element={<h1>等待管理员</h1>} />
           <Route path="/app/home" element={<h1>宝宝首页</h1>} />
@@ -129,6 +129,21 @@ describe('baby profile application states', () => {
       birthDate: '2026-01-02',
       sex: null,
     });
+  });
+
+  it('cancels a new profile into the empty management page without creating a baby', async () => {
+    vi.spyOn(api, 'getFamily').mockResolvedValue(family());
+    vi.spyOn(api, 'listBabies').mockResolvedValue({ items: [] });
+    const create = vi.spyOn(api, 'createBaby');
+    renderAt(<BabyCreatePage />, '/app/babies/new');
+
+    await userEvent.type(await screen.findByLabelText('宝宝昵称'), '未保存的昵称');
+    await userEvent.click(screen.getByRole('button', { name: '取消' }));
+
+    const heading = await screen.findByRole('heading', { name: '宝宝档案' });
+    expect(heading).toHaveFocus();
+    expect(screen.getByText('家庭中还没有宝宝档案。')).toBeInTheDocument();
+    expect(create).not.toHaveBeenCalled();
   });
 
   it('saves the selected optional sex from the shared dropdown', async () => {

@@ -18,7 +18,7 @@ import {
   Upload,
   X,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, Navigate, useBlocker, useSearchParams } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { api } from './api';
@@ -898,40 +898,41 @@ export function PhotoManagePage(): React.JSX.Element {
         <>
           <div className={styles.manageGrid}>
             {photoItems.map((photo) => (
-              <ManageCard
-                key={photo.id}
-                familyId={familyId}
-                babyId={babyId}
-                photo={photo}
-                canManageFamily={canManageFamily}
-                onTrash={() =>
-                  act(
-                    '放入回收站？',
-                    '照片将从普通内容中隐藏，并在 30 天后永久清理。',
-                    () => api.trashPhoto(familyId, babyId, photo.id),
-                    '照片已放入回收站。',
-                  )
-                }
-                onRestore={() =>
-                  void api
-                    .restorePhoto(familyId, babyId, photo.id)
-                    .then(refresh)
-                    .then(() => setNotice('照片已恢复。'))
-                    .catch((error) => {
-                      setNotice(userFacingError(error));
-                      void refresh();
-                      void family.refetch();
-                    })
-                }
-                onDiscard={() =>
-                  act(
-                    '丢弃私有项目？',
-                    '对象将由后台安全清理，此操作无法恢复。',
-                    () => api.discardPhoto(familyId, babyId, photo.id),
-                    '已安排安全清理。',
-                  )
-                }
-              />
+              <MasonryItem key={photo.id}>
+                <ManageCard
+                  familyId={familyId}
+                  babyId={babyId}
+                  photo={photo}
+                  canManageFamily={canManageFamily}
+                  onTrash={() =>
+                    act(
+                      '放入回收站？',
+                      '照片将从普通内容中隐藏，并在 30 天后永久清理。',
+                      () => api.trashPhoto(familyId, babyId, photo.id),
+                      '照片已放入回收站。',
+                    )
+                  }
+                  onRestore={() =>
+                    void api
+                      .restorePhoto(familyId, babyId, photo.id)
+                      .then(refresh)
+                      .then(() => setNotice('照片已恢复。'))
+                      .catch((error) => {
+                        setNotice(userFacingError(error));
+                        void refresh();
+                        void family.refetch();
+                      })
+                  }
+                  onDiscard={() =>
+                    act(
+                      '丢弃私有项目？',
+                      '对象将由后台安全清理，此操作无法恢复。',
+                      () => api.discardPhoto(familyId, babyId, photo.id),
+                      '已安排安全清理。',
+                    )
+                  }
+                />
+              </MasonryItem>
             ))}
           </div>
           {photos.hasNextPage ? (
@@ -962,6 +963,38 @@ export function PhotoManagePage(): React.JSX.Element {
   );
 }
 
+function MasonryItem({ children }: { children: React.ReactNode }): React.JSX.Element {
+  const itemRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const item = itemRef.current;
+    const content = contentRef.current;
+    const grid = item?.parentElement;
+    if (!item || !content || !grid) return;
+    const measure = () => {
+      const gridStyle = getComputedStyle(grid);
+      const rowHeight = Number.parseFloat(gridStyle.gridAutoRows);
+      const gap = Number.parseFloat(gridStyle.rowGap);
+      if (!rowHeight || Number.isNaN(gap)) return;
+      const span = Math.max(
+        1,
+        Math.ceil((content.getBoundingClientRect().height + gap) / (rowHeight + gap)),
+      );
+      item.style.gridRowEnd = `span ${span}`;
+    };
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(content);
+    return () => observer.disconnect();
+  }, []);
+  return (
+    <div ref={itemRef} className={styles.manageGridItem}>
+      <div ref={contentRef}>{children}</div>
+    </div>
+  );
+}
+
 function ManageCard({
   familyId,
   babyId,
@@ -987,7 +1020,14 @@ function ManageCard({
   });
   return (
     <article className={styles.manageCard}>
-      <div className={styles.manageImage}>
+      <div
+        className={styles.manageImage}
+        style={
+          photo.width && photo.height
+            ? { aspectRatio: `${photo.width} / ${photo.height}` }
+            : undefined
+        }
+      >
         {preview.data ? (
           <img src={preview.data.url} alt={photo.title || '家庭照片缩略图'} />
         ) : (

@@ -1,9 +1,9 @@
 import type { BabySummary, FamilySummary } from '@baby-growth-gallery/api-client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArchiveRestore, Baby, CalendarDays, Camera, Pencil, Plus, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { useAuth } from './AuthContext';
 import { api } from './api';
@@ -218,6 +218,10 @@ export function BabyManagePage(): React.JSX.Element {
   const auth = useAuth();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const location = useLocation();
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const focusedAfterCancel = useRef(false);
+  const focusHeading = (location.state as { focusHeading?: boolean } | null)?.focusHeading === true;
   const { familyId, family, pending, error } = useCurrentFamily();
   const canManage = Boolean(family && ['OWNER', 'ADMIN'].includes(family.currentMembership.role));
   const babies = useQuery({
@@ -225,6 +229,18 @@ export function BabyManagePage(): React.JSX.Element {
     queryFn: () => api.listBabies(familyId, canManage),
     enabled: Boolean(familyId && family),
   });
+  useEffect(() => {
+    if (
+      !focusHeading ||
+      focusedAfterCancel.current ||
+      pending ||
+      babies.isPending ||
+      babies.isError
+    )
+      return;
+    headingRef.current?.focus();
+    focusedAfterCancel.current = true;
+  }, [focusHeading, pending, babies.isPending, babies.isError]);
   const [editing, setEditing] = useState<BabySummary>();
   const [confirmArchive, setConfirmArchive] = useState<BabySummary>();
   const [notice, setNotice] = useState<string>();
@@ -278,7 +294,9 @@ export function BabyManagePage(): React.JSX.Element {
       <div className={styles.manageHeading}>
         <div>
           <p className={styles.eyebrow}>当前家庭</p>
-          <h1>宝宝档案</h1>
+          <h1 ref={headingRef} tabIndex={-1}>
+            宝宝档案
+          </h1>
           <p>查看并切换家庭中的宝宝档案。</p>
         </div>
         {canManage ? (
@@ -484,11 +502,17 @@ function BabyForm({
         />
       </div>
       <div className={styles.formActions}>
-        {onComplete ? (
-          <button className={styles.secondaryButton} type="button" onClick={onComplete}>
-            取消
-          </button>
-        ) : null}
+        <button
+          className={styles.secondaryButton}
+          type="button"
+          disabled={isSubmitting}
+          onClick={() => {
+            if (onComplete) onComplete();
+            else void navigate('/app/babies/manage', { state: { focusHeading: true } });
+          }}
+        >
+          取消
+        </button>
         <button className={styles.primaryButton} type="submit" disabled={isSubmitting}>
           {isSubmitting ? '正在保存…' : baby ? '保存修改' : '创建宝宝档案'}
         </button>
