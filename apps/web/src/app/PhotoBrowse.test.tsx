@@ -1,6 +1,6 @@
 import { ApiClientError, type PhotoSummary } from '@baby-growth-gallery/api-client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { afterEach, vi } from 'vitest';
@@ -107,6 +107,29 @@ describe('published photo browsing', () => {
     expect(screen.getByText('正在加载图集…')).toBeInTheDocument();
     complete({ items: [], nextCursor: null });
     expect(await screen.findByText(/还没有已发布照片/)).toBeInTheDocument();
+  });
+
+  it('requests a fresh private thumbnail when a signed image stops loading', async () => {
+    vi.spyOn(api, 'listPublishedPhotos').mockResolvedValue({ items: [photo], nextCursor: null });
+    const preview = vi
+      .spyOn(api, 'getPhotoPreview')
+      .mockResolvedValueOnce({
+        url: 'https://private.example/expired',
+        expiresAt: '2026-09-17T02:05:00.000Z',
+      })
+      .mockResolvedValueOnce({
+        url: 'https://private.example/renewed',
+        expiresAt: '2026-09-17T02:10:00.000Z',
+      });
+    renderAt('/app/gallery');
+    const image = await screen.findByRole('img', { name: '合成生日照' });
+    expect(image).toHaveAttribute('src', 'https://private.example/expired');
+    fireEvent.error(image);
+    expect(await screen.findByRole('img', { name: '合成生日照' })).toHaveAttribute(
+      'src',
+      'https://private.example/renewed',
+    );
+    expect(preview).toHaveBeenCalledTimes(2);
   });
 
   it('honors detail manage permission and disables boundary navigation', async () => {

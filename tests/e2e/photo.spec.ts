@@ -478,6 +478,25 @@ test('uploads to private storage, isolates drafts, publishes an activity, and re
   );
   expect(((await selfRestored.json()) as { status: string }).status).toBe('PUBLISHED');
 
+  const [avatarRace, trashRace] = await Promise.all([
+    owner.context.patch(`${galleryBase}/avatar`, {
+      headers: { Origin: webOrigin, 'x-csrf-token': owner.csrf },
+      data: { photoId: heicPhotoId },
+    }),
+    post(
+      member.context,
+      `/api/v1/families/${familyId}/babies/${babyId}/photos/${heicPhotoId}/trash`,
+      member.csrf,
+    ),
+  ]);
+  expect([200, 409]).toContain(avatarRace.status());
+  expect(trashRace.status()).toBe(200);
+  expect(
+    (await (await owner.context.get(`/api/v1/families/${familyId}/babies/${babyId}`)).json()) as {
+      avatarPhotoId: string | null;
+    },
+  ).toMatchObject({ avatarPhotoId: null });
+
   await storage.dispose();
   await owner.context.dispose();
   await member.context.dispose();
