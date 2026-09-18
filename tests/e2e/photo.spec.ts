@@ -824,4 +824,27 @@ test('uploads and publishes a synthetic photo in the responsive flow', async ({
     timeout: 15_000,
   });
   await page.unroute(listApi);
+
+  await page.route(manageApi, (route) =>
+    route.fulfill({ status: 200, json: { items: [], nextCursor: null } }),
+  );
+  await page.goto('/app/photos/manage');
+  await expect(page.getByText('这里还没有照片。')).toBeVisible();
+  await page.unroute(manageApi);
+
+  let releaseManage!: () => void;
+  await page.route(manageApi, (route) => {
+    releaseManage = () =>
+      void route.fulfill({ status: 200, json: { items: [], nextCursor: null } });
+  });
+  await page.reload();
+  await expect(page.getByText('正在加载照片…')).toBeVisible();
+  releaseManage();
+  await expect(page.getByText('这里还没有照片。')).toBeVisible();
+  await page.unroute(manageApi);
+
+  await page.route(manageApi, (route) => route.abort());
+  await page.reload();
+  await expect(page.getByText('照片列表加载失败，请重试。')).toBeVisible({ timeout: 15_000 });
+  await page.unroute(manageApi);
 });
