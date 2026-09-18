@@ -517,7 +517,7 @@ test('creates a real family from onboarding without horizontal overflow', async 
   if (process.platform === 'win32') {
     await expect(page).toHaveScreenshot('family-space.png', {
       animations: 'disabled',
-      mask: [page.locator('time')],
+      mask: [page.locator('time'), page.getByText(/^加入于 /)],
       maxDiffPixels: 20,
     });
   }
