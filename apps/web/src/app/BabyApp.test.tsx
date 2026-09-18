@@ -131,6 +131,25 @@ describe('baby profile application states', () => {
     });
   });
 
+  it('saves the selected optional sex from the shared dropdown', async () => {
+    vi.spyOn(api, 'getFamily').mockResolvedValue(family());
+    const create = vi.spyOn(api, 'createBaby').mockResolvedValue(baby());
+    vi.spyOn(api, 'activateBaby').mockResolvedValue({ ...auth.account, activeBabyId: babyId });
+    renderAt(<BabyCreatePage />, '/app/babies/new');
+
+    await userEvent.type(await screen.findByLabelText('宝宝昵称'), '小星星');
+    await userEvent.type(screen.getByLabelText('出生日期'), '2026-01-02');
+    await userEvent.click(screen.getByRole('button', { name: '性别（选填）' }));
+    await userEvent.click(screen.getByRole('option', { name: '女宝宝' }));
+    await userEvent.click(screen.getByRole('button', { name: '创建宝宝档案' }));
+
+    expect(create).toHaveBeenCalledWith(familyId, {
+      nickname: '小星星',
+      birthDate: '2026-01-02',
+      sex: 'FEMALE',
+    });
+  });
+
   it('requires confirmation before archiving and exposes archived recovery', async () => {
     auth.account.activeBabyId = babyId;
     vi.spyOn(api, 'getFamily').mockResolvedValue(family());

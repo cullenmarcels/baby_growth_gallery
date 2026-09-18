@@ -34,6 +34,7 @@ import { useAuth } from './AuthContext';
 import { api } from './api';
 import { BabyAvatar } from './BabyAvatar';
 import { babyKeys } from './baby-query';
+import { DropdownSelect } from './DropdownSelect';
 import styles from './FamilyApp.module.css';
 import { userFacingError } from './user-facing-error';
 
@@ -87,6 +88,30 @@ export function FamilyShell(): React.JSX.Element {
   const [menuOpen, setMenuOpen] = useState(false);
   const [babyMenuOpen, setBabyMenuOpen] = useState(false);
   const [notice, setNotice] = useState<string>();
+  const menuRootRef = useRef<HTMLDivElement>(null);
+  const menuTriggerRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!menuOpen && !babyMenuOpen) return;
+    const dismissOutside = (event: PointerEvent) => {
+      if (!menuRootRef.current?.contains(event.target as Node)) {
+        setMenuOpen(false);
+        setBabyMenuOpen(false);
+      }
+    };
+    const dismissEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMenuOpen(false);
+        setBabyMenuOpen(false);
+        menuTriggerRef.current?.focus();
+      }
+    };
+    document.addEventListener('pointerdown', dismissOutside);
+    document.addEventListener('keydown', dismissEscape);
+    return () => {
+      document.removeEventListener('pointerdown', dismissOutside);
+      document.removeEventListener('keydown', dismissEscape);
+    };
+  }, [menuOpen, babyMenuOpen]);
   const families = useQuery({ queryKey: familyKeys.all, queryFn: () => api.listFamilies() });
   const activeFamilyId = auth.account?.activeFamilyId ?? '';
   const babies = useQuery({
@@ -180,13 +205,14 @@ export function FamilyShell(): React.JSX.Element {
             </NavLink>
           ) : null}
         </nav>
-        <div className={styles.headerActions}>
+        <div className={styles.headerActions} ref={menuRootRef}>
           {activeBaby ? (
             <button
               className={styles.babySwitch}
               type="button"
               aria-expanded={babyMenuOpen}
-              onClick={() => {
+              onClick={(event) => {
+                menuTriggerRef.current = event.currentTarget;
                 setBabyMenuOpen((open) => !open);
                 setMenuOpen(false);
               }}
@@ -207,7 +233,8 @@ export function FamilyShell(): React.JSX.Element {
             className={styles.familySwitch}
             type="button"
             aria-expanded={menuOpen}
-            onClick={() => {
+            onClick={(event) => {
+              menuTriggerRef.current = event.currentTarget;
               setMenuOpen((open) => !open);
               setBabyMenuOpen(false);
             }}
@@ -228,7 +255,9 @@ export function FamilyShell(): React.JSX.Element {
             className={styles.mobileMenuButton}
             type="button"
             aria-label="打开家庭切换器"
-            onClick={() => {
+            aria-expanded={menuOpen}
+            onClick={(event) => {
+              menuTriggerRef.current = event.currentTarget;
               setMenuOpen((open) => !open);
               setBabyMenuOpen(false);
             }}
@@ -243,6 +272,7 @@ export function FamilyShell(): React.JSX.Element {
                   key={family.id}
                   type="button"
                   disabled={activate.isPending}
+                  aria-current={family.id === auth.account?.activeFamilyId}
                   onClick={() => activate.mutate(family.id)}
                 >
                   <span>{family.name}</span>
@@ -257,6 +287,7 @@ export function FamilyShell(): React.JSX.Element {
                       key={baby.id}
                       type="button"
                       disabled={activateBaby.isPending}
+                      aria-current={baby.id === auth.account?.activeBabyId}
                       onClick={() => activateBaby.mutate(baby)}
                     >
                       <span>{baby.nickname}</span>
@@ -287,6 +318,7 @@ export function FamilyShell(): React.JSX.Element {
                   key={baby.id}
                   type="button"
                   disabled={activateBaby.isPending}
+                  aria-current={baby.id === auth.account?.activeBabyId}
                   onClick={() => activateBaby.mutate(baby)}
                 >
                   <span>{baby.nickname}</span>
@@ -647,11 +679,16 @@ function MembersPanel({
             {roleLabel(member.role)}
           </span>
           {actorRole === 'OWNER' && !member.isCurrentAccount && member.role !== 'OWNER' ? (
-            <select
-              aria-label={`调整 ${member.displayName} 的角色`}
+            <DropdownSelect
+              label={`调整 ${member.displayName} 的角色`}
               value={member.role}
-              onChange={(event) => {
-                const next = event.target.value as 'ADMIN' | 'MEMBER';
+              size="compact"
+              align="end"
+              options={[
+                { value: 'MEMBER', label: '成员' },
+                { value: 'ADMIN', label: '管理员' },
+              ]}
+              onChange={(next) => {
                 setConfirm({
                   title: '确认调整角色？',
                   message: `${member.displayName} 将变为${roleLabel(next)}。`,
@@ -662,10 +699,7 @@ function MembersPanel({
                     ),
                 });
               }}
-            >
-              <option value="MEMBER">成员</option>
-              <option value="ADMIN">管理员</option>
-            </select>
+            />
           ) : null}
           {canRemove(member) ? (
             <button

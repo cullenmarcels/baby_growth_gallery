@@ -80,10 +80,22 @@ describe('photo upload application states', () => {
         role: 'ADMIN',
       },
     });
-    vi.spyOn(api, 'managePhotos').mockResolvedValue({ items: [], nextCursor: null });
+    const manage = vi.spyOn(api, 'managePhotos').mockResolvedValue({ items: [], nextCursor: null });
     renderPage(<PhotoManagePage />);
     expect(await screen.findByRole('button', { name: '家庭已发布' })).toBeInTheDocument();
     expect(await screen.findByText('这里还没有照片。')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '状态筛选' }));
+    fireEvent.click(screen.getByRole('option', { name: '已发布' }));
+    await waitFor(() =>
+      expect(manage).toHaveBeenLastCalledWith(
+        auth.account.activeFamilyId,
+        auth.account.activeBabyId,
+        {
+          scope: 'mine',
+          status: 'PUBLISHED',
+        },
+      ),
+    );
   });
 
   it('shows an administrator-only explanation instead of recovery for a member photo', async () => {

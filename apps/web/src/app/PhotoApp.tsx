@@ -24,6 +24,7 @@ import { useAuth } from './AuthContext';
 import { api } from './api';
 import { babyKeys } from './baby-query';
 import { ConfirmDialog } from './FamilyApp';
+import { DropdownSelect } from './DropdownSelect';
 import styles from './PhotoApp.module.css';
 import { photoKeys } from './photo-query';
 import { userFacingError } from './user-facing-error';
@@ -866,21 +867,27 @@ export function PhotoManagePage(): React.JSX.Element {
           </button>
         ) : null}
       </div>
-      <label className={styles.filter}>
-        状态筛选
-        <select value={status} onChange={(event) => setStatus(event.target.value)}>
-          <option value="">全部状态</option>
-          {scope === 'mine' ? (
-            <>
-              <option value="PROCESSING">处理中</option>
-              <option value="DRAFT">私有草稿</option>
-              <option value="FAILED">处理失败</option>
-            </>
-          ) : null}
-          <option value="PUBLISHED">已发布</option>
-          <option value="TRASHED">回收站</option>
-        </select>
-      </label>
+      <div className={styles.filter}>
+        <span>状态筛选</span>
+        <DropdownSelect
+          label="状态筛选"
+          value={status}
+          onChange={setStatus}
+          size="compact"
+          options={[
+            { value: '', label: '全部状态' },
+            ...(scope === 'mine'
+              ? [
+                  { value: 'PROCESSING', label: '处理中' },
+                  { value: 'DRAFT', label: '私有草稿' },
+                  { value: 'FAILED', label: '处理失败' },
+                ]
+              : []),
+            { value: 'PUBLISHED', label: '已发布' },
+            { value: 'TRASHED', label: '回收站' },
+          ]}
+        />
+      </div>
       {photos.isPending ? (
         <ManageState text="正在加载照片…" busy />
       ) : photos.isError ? (

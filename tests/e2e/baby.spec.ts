@@ -180,7 +180,9 @@ test('creates a baby profile from the responsive family application without hori
   await expect(page.getByRole('heading', { name: '记录成长故事的主角' })).toBeVisible();
   await page.getByLabel('宝宝昵称').fill('小星星');
   await page.getByLabel('出生日期').fill('2026-01-02');
-  await page.getByLabel('性别（选填）').selectOption('FEMALE');
+  await page.getByRole('button', { name: '性别（选填）' }).click();
+  await expect(page.getByRole('listbox', { name: '性别（选填）' })).toBeVisible();
+  await page.getByRole('option', { name: '女宝宝' }).click();
   await page.getByRole('button', { name: '创建宝宝档案' }).click();
   await expect(page.getByRole('heading', { name: '小星星' })).toBeVisible();
   await expect(page.getByText(/女宝宝/)).toBeVisible();

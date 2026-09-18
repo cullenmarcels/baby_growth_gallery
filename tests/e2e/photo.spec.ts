@@ -563,6 +563,17 @@ test('uploads and publishes a synthetic photo in the responsive flow', async ({
   ).toBe(true);
   await page.getByRole('link', { name: '我的上传' }).click();
   await expect(page.getByRole('article').getByText('已发布', { exact: true })).toBeVisible();
+  const statusFilter = page.getByRole('button', { name: '状态筛选' });
+  await statusFilter.click();
+  const statusMenu = page.getByRole('listbox', { name: '状态筛选' });
+  await expect(statusMenu).toBeVisible();
+  const menuBounds = await statusMenu.boundingBox();
+  expect(menuBounds).not.toBeNull();
+  expect(menuBounds!.x).toBeGreaterThanOrEqual(0);
+  expect(menuBounds!.x + menuBounds!.width).toBeLessThanOrEqual(page.viewportSize()!.width);
+  await page.screenshot({ path: testInfo.outputPath('status-dropdown.png') });
+  await page.getByRole('option', { name: '已发布' }).click();
+  await expect(statusFilter).toContainText('已发布');
   await page.goto('/app/gallery');
   await expect(page.getByRole('heading', { name: '图集' })).toBeVisible();
   const galleryTile = page.getByRole('link', { name: /查看照片：/ }).first();
@@ -583,6 +594,50 @@ test('uploads and publishes a synthetic photo in the responsive flow', async ({
   await expect(page.getByRole('heading', { name: '宝宝档案' })).toBeVisible();
   await page.goto('/app/home');
   await expect(page.locator('img[alt=""]:visible').first()).toBeVisible();
+  const avatarShapes = await page
+    .locator('header img[alt=""]:visible, main img[alt=""]:visible')
+    .evaluateAll((images) =>
+      images.map((image) => {
+        const frame = image.parentElement!;
+        const bounds = frame.getBoundingClientRect();
+        const frameStyle = getComputedStyle(frame);
+        const imageStyle = getComputedStyle(image);
+        return {
+          width: bounds.width,
+          height: bounds.height,
+          radius: frameStyle.borderRadius,
+          overflow: frameStyle.overflow,
+          borderWidth: frameStyle.borderWidth,
+          objectFit: imageStyle.objectFit,
+        };
+      }),
+    );
+  expect(avatarShapes.length).toBeGreaterThanOrEqual(2);
+  for (const avatar of avatarShapes) {
+    expect(Math.abs(avatar.width - avatar.height)).toBeLessThanOrEqual(1);
+    expect(avatar.radius).toBe('50%');
+    expect(avatar.overflow).toBe('hidden');
+    expect(avatar.borderWidth).toBe('1px');
+    expect(avatar.objectFit).toBe('cover');
+  }
+  await page.screenshot({ path: testInfo.outputPath('avatar-home.png') });
+  const familySwitcher =
+    (page.viewportSize()?.width ?? 1440) < 1024
+      ? page.getByRole('button', { name: '打开家庭切换器' })
+      : page.locator('header button[aria-expanded]:visible').last();
+  await familySwitcher.click();
+  const familyMenu = page.getByText('我的家庭').locator('..');
+  await expect(familyMenu).toBeVisible();
+  const familyMenuBounds = await familyMenu.boundingBox();
+  expect(familyMenuBounds).not.toBeNull();
+  expect(familyMenuBounds!.x).toBeGreaterThanOrEqual(0);
+  expect(familyMenuBounds!.x + familyMenuBounds!.width).toBeLessThanOrEqual(
+    page.viewportSize()!.width,
+  );
+  await page.screenshot({ path: testInfo.outputPath('family-dropdown.png') });
+  await page.keyboard.press('Escape');
+  await expect(familyMenu).not.toBeVisible();
+  await expect(familySwitcher).toBeFocused();
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,

@@ -2,7 +2,7 @@ import type { BabySummary, FamilySummary } from '@baby-growth-gallery/api-client
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArchiveRestore, Baby, CalendarDays, Camera, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { useAuth } from './AuthContext';
@@ -10,6 +10,7 @@ import { api } from './api';
 import { BabyAvatar } from './BabyAvatar';
 import { babyKeys } from './baby-query';
 import { ConfirmDialog } from './FamilyApp';
+import { DropdownSelect } from './DropdownSelect';
 import styles from './FamilyApp.module.css';
 import { userFacingError } from './user-facing-error';
 
@@ -394,6 +395,7 @@ function BabyForm({
   const navigate = useNavigate();
   const [serverError, setServerError] = useState<string>();
   const {
+    control,
     register,
     handleSubmit,
     setError,
@@ -462,14 +464,25 @@ function BabyForm({
       {errors.birthDate?.message ? (
         <span className={styles.fieldError}>{errors.birthDate.message}</span>
       ) : null}
-      <label>
-        性别（选填）
-        <select {...register('sex')}>
-          <option value="">暂不填写</option>
-          <option value="MALE">男宝宝</option>
-          <option value="FEMALE">女宝宝</option>
-        </select>
-      </label>
+      <div className={styles.formField}>
+        <span>性别（选填）</span>
+        <Controller
+          name="sex"
+          control={control}
+          render={({ field }) => (
+            <DropdownSelect
+              label="性别（选填）"
+              value={field.value}
+              onChange={field.onChange}
+              options={[
+                { value: '', label: '暂不填写' },
+                { value: 'MALE', label: '男宝宝' },
+                { value: 'FEMALE', label: '女宝宝' },
+              ]}
+            />
+          )}
+        />
+      </div>
       <div className={styles.formActions}>
         {onComplete ? (
           <button className={styles.secondaryButton} type="button" onClick={onComplete}>
