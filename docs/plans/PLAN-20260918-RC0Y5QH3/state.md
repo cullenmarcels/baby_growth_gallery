@@ -2,7 +2,7 @@
 id: PLAN-20260918-RC0Y5QH3-STATE
 type: plan_state
 plan_id: PLAN-20260918-RC0Y5QH3
-status: integration_pending
+status: archived
 repository_mode: git_remote
 remote_name: origin
 integration_target: origin/develop
@@ -17,10 +17,10 @@ reviewed_commit: 8fc539813c28d5f56e973f59eb6ff6eb11c86470
 reviewed_scope_digest: 9C500B481CC4770DB5EF3E3E8ABE808E391ECDE4C5CF447625F4DC01E688EAB7
 accepted_commit: 8fc539813c28d5f56e973f59eb6ff6eb11c86470
 accepted_scope_digest: 9C500B481CC4770DB5EF3E3E8ABE808E391ECDE4C5CF447625F4DC01E688EAB7
-integrated_commit: null
-integrated_scope_digest: null
+integrated_commit: 5e9244a19c56e4da76ab467678bb839d98689099
+integrated_scope_digest: 9C500B481CC4770DB5EF3E3E8ABE808E391ECDE4C5CF447625F4DC01E688EAB7
 ---
 
 # Plan State
 
-本修订 Plan 已由用户确认，取代尚未人工验收的原 Plan E 候选。原 Plan 的状态转为 `superseded`，路径不再并行占有。用户后续明确要求将图集也改为瀑布流，故在同一修订 Plan 内补充图集界面范围，冻结的 `plan.md` 保持不变。最终产品候选 `8fc539813c28d5f56e973f59eb6ff6eb11c86470` 已完成 Review 和独立 Regression，固定 v2 owned-scope 摘要 `9C500B481CC4770DB5EF3E3E8ABE808E391ECDE4C5CF447625F4DC01E688EAB7`；用户于 `2026-09-20T13:32:50+08:00` 明确回复“验收通过”，验收已绑定该精确候选与摘要。`2026-09-20T13:38:13+08:00` 的只读远端预检确认 `origin/develop@c0e2108226886183e35f6a9d1ae6f4075d15acb5` 未变化，仍是当前功能分支祖先，remote_freshness 为 `verified`。功能分支已推送并创建目标为 `develop` 的 [PR #25](https://github.com/cullenmarcels/baby_growth_gallery/pull/25)，首次远端 Head `e1dc0c9` 的全部检查通过。Plan 保持 `integration_pending`，等待用户决定是否合并；此前 `26f15120`、`0a9b1e5` 与 `67e6e0b` 仅保留为历史证据。`AGENTS.md`、`README.md`、`docs/INDEX.md` 与 Plan 状态、报告是随生命周期变化的导航或证据文件，照计划维护并由项目校验器检查，不纳入用户验收的产品作用范围摘要。
+本修订 Plan 已由用户确认，取代尚未人工验收的原 Plan E 候选。原 Plan 的状态转为 `superseded`，路径不再并行占有。用户后续明确要求将图集也改为瀑布流，故在同一修订 Plan 内补充图集界面范围，冻结的 `plan.md` 保持不变。最终产品候选 `8fc539813c28d5f56e973f59eb6ff6eb11c86470` 已完成 Review 和独立 Regression，固定 v2 owned-scope 摘要 `9C500B481CC4770DB5EF3E3E8ABE808E391ECDE4C5CF447625F4DC01E688EAB7`；用户于 `2026-09-20T13:32:50+08:00` 明确回复“验收通过”，验收已绑定该精确候选与摘要。功能分支最终 Head `aaabf126b9ec7ce05791971440176947912a97a4` 的 `branch-flow-develop`、`quality` 与 `e2e-auth` 全部通过；用户随后授权推送剩余证据并在新检查通过后合并 PR #25。PR 已以普通 merge commit 集成到 `origin/develop@5e9244a19c56e4da76ab467678bb839d98689099`，其第二父提交为最终 PR Head。Integrated v2 摘要与 accepted 摘要完全相同，原人工验收继续有效；精确集成提交的远端 CI、完整项目门禁和独立三视口宝宝／照片 E2E 均通过。Plan E 已完成归档；此前 `26f15120`、`0a9b1e5` 与 `67e6e0b` 仅保留为历史证据。`AGENTS.md`、`README.md`、`docs/INDEX.md` 与 Plan 状态、报告是随生命周期变化的导航或证据文件，照计划维护并由项目校验器检查，不纳入用户验收的产品作用范围摘要。

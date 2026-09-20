@@ -2,9 +2,9 @@
 id: PLAN-20260918-RC0Y5QH3-EXEC
 type: execution_log
 title: 'Plan E 界面修订执行记录'
-status: in_progress
+status: archived
 created_at: 2026-09-18T14:37:52+08:00
-updated_at: 2026-09-18T14:37:52+08:00
+updated_at: 2026-09-20T14:30:49+08:00
 plan_id: PLAN-20260918-RC0Y5QH3
 related_ids: [PLAN-20260918-RC0Y5QH3, DES-20260918-Y2GFD47V]
 supersedes: []
@@ -52,3 +52,9 @@ superseded_by: []
 - 用户于 `2026-09-20T13:32:50+08:00` 明确回复“验收通过”。验收记录绑定产品候选 `8fc539813c28d5f56e973f59eb6ff6eb11c86470` 与 v2 owned-scope 摘要 `9C500B481CC4770DB5EF3E3E8ABE808E391ECDE4C5CF447625F4DC01E688EAB7`。本次验收不推断远端刷新、推送、PR、合并或归档授权；Plan 转为 `integration_pending`，待后续分别处理。
 - 用户后续要求继续开发；先执行只读远端预检。`2026-09-20T13:38:13+08:00` 刷新后确认 `origin/develop@c0e2108226886183e35f6a9d1ae6f4075d15acb5` 未变化，仍为功能分支祖先，分支为 `0 behind / 17 ahead`，无分叉或阻断。未推送、未创建 PR、未合并；下一步仍需明确授权相应远端动作。
 - 用户明确授权推送 Plan E 功能分支并创建目标为 `develop` 的 PR，检查通过后再由用户决定是否合并。推送 `feature/photo-gallery-timeline` 后创建 [PR #25](https://github.com/cullenmarcels/baby_growth_gallery/pull/25)，实际 Base=`develop`、Head=`feature/photo-gallery-timeline`、首次远端 Head=`e1dc0c96e5696557ed624eada57d57caadd4688a`。截至 `2026-09-20T13:53:28+08:00`，`branch-flow-develop`、`quality`、`e2e-auth` 全部通过；PR 为 open、mergeable，未执行合并。本次将 PR URL 与首次 CI 结果写入证据后推送，后续 Head 检查仍需通过。
+- 用户进一步明确授权“授权推送剩余证据提交；新检查通过后合并 PR #25 到 develop”。剩余证据提交 `aaabf126b9ec7ce05791971440176947912a97a4` 推送后成为最终 PR Head；新一轮 `branch-flow-develop`（run `35493353971`）、`quality` 与 `e2e-auth`（run `35493354935`）全部成功。合并前再次核对 Base、Head、mergeable=CLEAN 和三项检查，随后 `gh pr merge 25 --merge` exit 0，保留功能分支。
+- PR #25 于 `2026-09-20T14:11:14+08:00` 合并，merge commit 为 `5e9244a19c56e4da76ab467678bb839d98689099`。`git fetch --prune origin` 后 `origin/develop` 精确指向该提交，两个父提交依次为原 `develop@c0e2108226886183e35f6a9d1ae6f4075d15acb5` 与最终 PR Head；Head 祖先检查通过。Integrated v2 owned-scope 摘要为 `9C500B481CC4770DB5EF3E3E8ABE808E391ECDE4C5CF447625F4DC01E688EAB7`，与 accepted 摘要相同，人工验收继续有效。
+- Merge commit 的 develop push `Quality` run `35493573502` 成功，`quality` 与 `e2e-auth` 两个 Job 均通过。精确集成提交上的 `corepack pnpm validate` 也通过：照片依赖、Lint、Prettier、类型、分支流向 5 项、API 54 项、Web 50 项、构建及项目知识库终值 `PROJECT_VALIDATION=PASSED`。
+- Windows 系统 `core.autocrlf=true` 在本地 `develop` 快进后把 37 个新增文本文件检出为 CRLF，导致一次 Prettier 失败；同一提交在 LF 工作树已通过。逐项核对索引/HEAD blob 为 LF、工作树内容哈希一致且 Git diff 为零后，用仓库 Prettier恢复 LF，并使用一次性临时索引完成完整验证；随后从真实索引恢复系统预期工作树，最终 `git status` clean。没有提交行尾变更或改变验收作用范围。
+- 从 merge commit 重建 Docker API/Web，全部服务健康；用 `bgg-plan-e-integration-20260920` Redis 前缀隔离本轮限流键。`baby.spec.ts` 与 `photo.spec.ts` 在 375／834／1440 合计 8 passed、4 设计性 skipped、0 failed。集成 Regression 为 passed。
+- accepted 与 integrated 摘要一致，PR Head CI、develop CI、本地完整项目门禁及独立集成 E2E 全部通过。按 git_remote 生命周期生成同编号 Achievement，并把完整 Plan 包与 Achievement 纳入 `docs/ARCHIVE.sha256`。归档证据在本地形成；用户本轮未授权推送归档后的新证据提交，也未授权向 `release`、`master` 或 `main` 晋升。

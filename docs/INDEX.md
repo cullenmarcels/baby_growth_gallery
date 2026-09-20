@@ -4,7 +4,7 @@
 
 - 最后协议更新：`2026-09-08T11:34:45+08:00`
 - 索引状态：`consistent`
-- 当前阶段：工程基础、分支治理与 Plan A–D 均已归档；原 Plan E 候选由 `PLAN-20260918-RC0Y5QH3` 取代，宝宝档案与照片管理界面修订已完成 Review／Regression和人工验收；[PR #25](https://github.com/cullenmarcels/baby_growth_gallery/pull/25) 目标为 `develop` 且首次远端检查通过，Plan 保持 `integration_pending`，尚未授权合并。
+- 当前阶段：工程基础、分支治理与 Plan A–E 均已归档；原 Plan E 候选由 `PLAN-20260918-RC0Y5QH3` 取代，图集、时间轴、照片详情、宝宝头像与界面修订已通过 [PR #25](https://github.com/cullenmarcels/baby_growth_gallery/pull/25) 集成到 `develop`。最终 PR Head、develop push CI、accepted／integrated 摘要一致性与精确集成回归均已通过；本阶段未执行发布分支晋升。
 - 仓库协作状态：不缓存；每次运行 [`repository-preflight.ps1`](../hooks/repository-preflight.ps1)。分支治理验收集成提交为 `origin/main@19590f9db9bc55c85e9beb3608bdaec684a6a8a3`；归档工作分支为 `feature/branch-governance-archive`。
 - 归档基线：[`ARCHIVE.sha256`](./ARCHIVE.sha256)
 - 生成命令：`hooks/update-indexes.ps1 -Write`；核对命令：`hooks/update-indexes.ps1 -Check`
@@ -38,7 +38,7 @@
 | Plan ID | 标题 | 状态 | 仓库模式 | 基线提交 | 候选提交 | 集成提交 | Review | Regression | 验收有效性 | Achievement |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 <!-- GENERATED:BEGIN PLANS -->
-| [PLAN-20260918-RC0Y5QH3](./plans/PLAN-20260918-RC0Y5QH3/plan.md) | 修订 Plan E 宝宝档案与照片管理界面 | `integration_pending` | `git_remote` | `d401a2d0d29fd9e3b0f71ffae815c3a307a72242` | `8fc539813c28d5f56e973f59eb6ff6eb11c86470` | `-` | [passed](./plans/PLAN-20260918-RC0Y5QH3/review-report.md) | [passed](./plans/PLAN-20260918-RC0Y5QH3/regression-report.md) | recorded | - |
+| [PLAN-20260918-RC0Y5QH3](./plans/PLAN-20260918-RC0Y5QH3/plan.md) | 修订 Plan E 宝宝档案与照片管理界面 | `archived` | `git_remote` | `d401a2d0d29fd9e3b0f71ffae815c3a307a72242` | `8fc539813c28d5f56e973f59eb6ff6eb11c86470` | `5e9244a19c56e4da76ab467678bb839d98689099` | [passed](./plans/PLAN-20260918-RC0Y5QH3/review-report.md) | [passed](./plans/PLAN-20260918-RC0Y5QH3/regression-report.md) | confirmed 2026-09-20T13:32:50+08:00 | [ACH-20260918-RC0Y5QH3](./achievements/ACH-20260918-RC0Y5QH3-photo-gallery-timeline-ui.md) |
 | [PLAN-20260917-K0AH0D6T](./plans/PLAN-20260917-K0AH0D6T/plan.md) | 实现图集、时间轴、照片详情与宝宝头像 | `superseded` | `git_remote` | `c0e2108226886183e35f6a9d1ae6f4075d15acb5` | `8b780574efddd11ec05d87781c57a4e7d4c3d242` | `-` | [passed](./plans/PLAN-20260917-K0AH0D6T/review-report.md) | [passed](./plans/PLAN-20260917-K0AH0D6T/regression-report.md) | pending | - |
 | [PLAN-20260917-ABAHN8QT](./plans/PLAN-20260917-ABAHN8QT/plan.md) | 修订照片回收权限并继续照片上传阶段 | `archived` | `git_remote` | `fb6fa7a94528255aca77ab04b0009f1cd3064b29` | `4d4360e0e1deca3ab9cdd1c88c21ee5cc3cee62d` | `fb059f073c6c64ffc4e787281a75227e52a1a84a` | [passed](./plans/PLAN-20260917-ABAHN8QT/review-report.md) | [passed](./plans/PLAN-20260917-ABAHN8QT/regression-report.md) | confirmed 2026-09-17T17:18:27+08:00 | [ACH-20260917-ABAHN8QT](./achievements/ACH-20260917-ABAHN8QT-photo-upload-foundation.md) |
 | [PLAN-20260916-83SYH180](./plans/PLAN-20260916-83SYH180/plan.md) | 建立照片隔离上传、安全处理、私有草稿与回收站基础 | `superseded` | `git_remote` | `fb6fa7a94528255aca77ab04b0009f1cd3064b29` | `20bcfe9275022c6e71c8659bad74fc1ed5c2b55f` | `-` | [pending](./plans/PLAN-20260916-83SYH180/review-report.md) | [pending](./plans/PLAN-20260916-83SYH180/regression-report.md) | pending | - |
@@ -63,6 +63,7 @@
 | Achievement ID | Plan ID | 标题 | 确认时间 | 归档文件 |
 | --- | --- | --- | --- | --- |
 <!-- GENERATED:BEGIN ACHIEVEMENTS -->
+| `ACH-20260918-RC0Y5QH3` | [PLAN-20260918-RC0Y5QH3](./plans/PLAN-20260918-RC0Y5QH3/plan.md) | 图集、时间轴、照片详情、宝宝头像与界面修订：完成归档 | 2026-09-20T13:32:50+08:00 | [archive](./achievements/ACH-20260918-RC0Y5QH3-photo-gallery-timeline-ui.md) |
 | `ACH-20260917-ABAHN8QT` | [PLAN-20260917-ABAHN8QT](./plans/PLAN-20260917-ABAHN8QT/plan.md) | 照片隔离上传、安全处理与管理员优先回收：完成归档 | 2026-09-17T17:18:27+08:00 | [archive](./achievements/ACH-20260917-ABAHN8QT-photo-upload-foundation.md) |
 | `ACH-20260915-PQ8NHNZ2` | [PLAN-20260915-PQ8NHNZ2](./plans/PLAN-20260915-PQ8NHNZ2/plan.md) | 多宝宝档案与当前宝宝会话基础：完成归档 | 2026-09-16T09:50:05+08:00 | [archive](./achievements/ACH-20260915-PQ8NHNZ2-baby-profile-foundation.md) |
 | `ACH-20260911-JBANR2J8` | [PLAN-20260911-JBANR2J8](./plans/PLAN-20260911-JBANR2J8/plan.md) | 家庭身份、成员权限、单次邀请与家庭动态基础：完成归档 | 2026-09-14T13:31:00+08:00 | [archive](./achievements/ACH-20260911-JBANR2J8-family-identity-foundation.md) |

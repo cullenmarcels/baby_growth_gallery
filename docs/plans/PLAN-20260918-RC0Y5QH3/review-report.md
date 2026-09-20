@@ -4,7 +4,7 @@ type: review_report
 title: 'Plan E 界面修订 Review'
 status: passed
 created_at: 2026-09-18T14:37:52+08:00
-updated_at: 2026-09-18T15:27:46+08:00
+updated_at: 2026-09-20T14:30:49+08:00
 plan_id: PLAN-20260918-RC0Y5QH3
 repository_mode: git_remote
 reviewed_commit: 8fc539813c28d5f56e973f59eb6ff6eb11c86470
@@ -57,7 +57,7 @@ Review 期间发现新加的管理空／加载／错误浏览器断言需要再�
 - `playwright test tests/e2e/photo.spec.ts --grep 'responsive flow'`：新增处理卡片 `PROCESSING` 和安全缩略图不可用两状态的四边 16px 断言，375／834／1440 合计 3 passed、0 failed；加入最终候选后独立 Regression 再验证。
 - `git diff --check`、`corepack pnpm format:check` 通过。远端 CI 未触发，记录为 `pending`，不充当本地 Review 的通过证据。
 - 图集补充后 `corepack pnpm validate` 使用临时 Corepack 转发执行，照片依赖、Lint、Prettier、类型、分支流向 5 项、API 54 项、Web 50 项、构建和项目校验全部通过，终值 `PROJECT_VALIDATION=PASSED`；修复后的三视口图集流程 3 passed、0 failed。
-- [PR #25](https://github.com/cullenmarcels/baby_growth_gallery/pull/25) 首次远端 Head `e1dc0c96e5696557ed624eada57d57caadd4688a` 的 `branch-flow-develop`、`quality` 与 `e2e-auth` 全部通过；该 Head 包含已验收产品候选和后续证据提交，产品作用范围摘要不变。
+- [PR #25](https://github.com/cullenmarcels/baby_growth_gallery/pull/25) 首次远端 Head `e1dc0c96e5696557ed624eada57d57caadd4688a` 与最终 Head `aaabf126b9ec7ce05791971440176947912a97a4` 的 `branch-flow-develop`、`quality` 与 `e2e-auth` 均通过；最终检查对应 Branch Flow run `35493353971` 和 Quality run `35493354935`。两个 Head 均包含已验收产品候选，后续变化只有作用范围外的生命周期证据，产品摘要保持不变。
 
 ## 固定规则逐条结果
 

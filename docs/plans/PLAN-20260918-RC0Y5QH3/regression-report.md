@@ -4,11 +4,13 @@ type: regression_report
 title: 'Plan E 界面修订 Regression'
 status: passed
 created_at: 2026-09-18T14:37:52+08:00
-updated_at: 2026-09-18T15:29:18+08:00
+updated_at: 2026-09-20T14:30:49+08:00
 plan_id: PLAN-20260918-RC0Y5QH3
-phase: candidate
+phase: integrated
 reviewed_commit: 8fc539813c28d5f56e973f59eb6ff6eb11c86470
 reviewed_scope_digest: 9C500B481CC4770DB5EF3E3E8ABE808E391ECDE4C5CF447625F4DC01E688EAB7
+integrated_commit: 5e9244a19c56e4da76ab467678bb839d98689099
+integrated_scope_digest: 9C500B481CC4770DB5EF3E3E8ABE808E391ECDE4C5CF447625F4DC01E688EAB7
 ci_status: passed
 related_ids: [PLAN-20260918-RC0Y5QH3, DES-20260918-Y2GFD47V]
 supersedes: []
@@ -19,7 +21,7 @@ superseded_by: []
 
 ## 候选结论与影响范围
 
-前一候选 `26f15120` 的独立 Regression 已因新增图集瀑布流范围而失效；`0a9b1e5`、`67e6e0b` 也未通过最终候选门禁，正文仅保留其历史检查结果。本次独立 Regression 精确绑定最终产品候选 `8fc539813c28d5f56e973f59eb6ff6eb11c86470` 与 v2 owned-scope 摘要 `9C500B481CC4770DB5EF3E3E8ABE808E391ECDE4C5CF447625F4DC01E688EAB7`，结论为 passed。远端 CI 与集成提交复验仍为 pending。
+前一候选 `26f15120` 的独立 Regression 已因新增图集瀑布流范围而失效；`0a9b1e5`、`67e6e0b` 也未通过最终候选门禁，正文仅保留其历史检查结果。候选 Regression 精确绑定最终产品候选 `8fc539813c28d5f56e973f59eb6ff6eb11c86470` 与 v2 owned-scope 摘要 `9C500B481CC4770DB5EF3E3E8ABE808E391ECDE4C5CF447625F4DC01E688EAB7`。PR #25 合并后的集成 Regression 精确绑定 `origin/develop@5e9244a19c56e4da76ab467678bb839d98689099`；集成摘要与 accepted 摘要一致，候选和集成结论均为 passed。
 
 | 既有能力／依赖                | 选择依据                                         | 检查和结果                                                                                                                                                                                                                    |
 | ----------------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -40,6 +42,14 @@ superseded_by: []
 - `update-indexes.ps1 -Write` 和 `validate-project.ps1 -Check` 在候选 Review 重新绑定后通过。第一次聚合校验末尾因生成索引过期而失败，更新索引后复跑通过；无 Git 环境替代配置的单次校验报告 `UNAVAILABLE`，未作为通过证据。
 - 本地 Docker PostgreSQL、Redis、MinIO、API 和 Web 健康。测试组使用独立 Redis 前缀，保留产品验证码限流，不放宽安全策略。浏览器使用 Windows Chromium 375／834／1440，截图基线仅对 Windows Chromium 更新。
 
+## 集成提交复验
+
+- 用户授权剩余证据提交推送后，PR #25 的最终 Head `aaabf126b9ec7ce05791971440176947912a97a4` 重新触发检查；`branch-flow-develop`（run `35493353971`）、`quality` 与 `e2e-auth`（run `35493354935`）全部成功。合并前 PR 为 OPEN、Base=`develop`、Head 精确匹配、mergeable=CLEAN。
+- PR #25 以普通 merge commit 合并。`git fetch --prune origin` 后，`origin/develop` 精确为 `5e9244a19c56e4da76ab467678bb839d98689099`；两个父提交依次为原 `develop@c0e2108226886183e35f6a9d1ae6f4075d15acb5` 与最终 PR Head。PR Head 是目标分支祖先，集成 v2 owned-scope 摘要重算为 `9C500B481CC4770DB5EF3E3E8ABE808E391ECDE4C5CF447625F4DC01E688EAB7`，与 accepted 摘要相同。
+- 精确 merge commit 的 develop push `Quality` run `35493573502` 成功：`quality` Job `106032523428` 与 `e2e-auth` Job `106032753992` 均通过；其中数据库迁移、确定性 OpenAPI 客户端、Alpine 图像编解码、项目知识库、MinIO、Playwright 和隔离上传清理检查均成功。
+- 本地在精确 merge commit 上运行完整 `corepack pnpm validate`，照片依赖、ESLint、Prettier、API／客户端／Web TypeScript、分支流向 5 项、API 54 项、Web 50 项、构建和项目校验全部通过，终值 `PROJECT_VALIDATION=PASSED`。Windows 系统 `core.autocrlf=true` 曾把同一 blob 检出为 CRLF；核对工作树与 HEAD blob 哈希一致、Git diff 为零后，使用 LF 工作树和一次性临时索引完成格式及项目验证，未产生产品变更。
+- 从 merge commit 重建 Docker API/Web；PostgreSQL、Redis、MinIO、storage-proxy、API 与 Web 健康。以独立 Redis 前缀运行 `baby.spec.ts` 与 `photo.spec.ts`，375／834／1440 合计 8 passed、4 按既有条件设计性 skipped、0 failed；真实 API 权限与并发检查仍按项目配置仅在 1440 执行。
+
 ## 视口 × 状态矩阵
 
 | 视口 | 正常／响应式                                                                       | 空／加载／错误                                                         | 权限／键盘／其他边界                                                                                |
@@ -52,7 +62,6 @@ superseded_by: []
 
 - 首次全量回归的家庭截图因已确认的单行按钮改动与旧基线不一致而失败；更新三张基线后，独立无更新标志的三视口复跑通过。加入日期动态文字已遮罩，避免每日快照漂移。
 - 首次连通性测试遗漏 `E2E_API_BASE_URL`，属于运行参数缺失；配置该测试要求的本地 API URL 后 3 passed。
-- 当前自动化只证明 Windows Chromium 三视口，不证明其他浏览器、真实移动设备或人工视觉验收。预览不可用由浏览器 API 拦截模拟，未在真实存储故障中拍摄三视口截图。
-- 远端 feature PR／CI、用户对精确 SHA 与摘要的人工验收、集成到 `develop` 及集成提交复验尚未发生；`ci_status: pending` 不作为归档证据。既有签名链接自然到期边界保持原 Plan E 说明。
+- 本地自动化只证明 Windows Chromium 三视口，远端 CI 使用 GitHub Actions Ubuntu/Chromium；不证明 Safari、Firefox 或真实移动设备。预览不可用由浏览器 API 拦截模拟，未在真实存储故障中拍摄三视口截图；既有签名链接自然到期边界保持原 Plan E 说明。
 - `67e6e0b` 的第一次聚合回归被 Prettier 正确拒绝；格式化后形成 `8fc5398` 并重新绑定 Review、重建运行栈及复跑独立 Regression，因此旧候选结果没有被沿用为最终候选证据。
-- [PR #25](https://github.com/cullenmarcels/baby_growth_gallery/pull/25) 首次远端 Head `e1dc0c96e5696557ed624eada57d57caadd4688a` 的 `branch-flow-develop`、`quality` 与 `e2e-auth` 全部通过；远端工作流包含依赖、格式、Lint、类型、单元测试、确定性客户端、构建、Alpine 图像编解码、项目知识库、迁移、MinIO 与 Playwright E2E。尚未执行合并及集成提交复验。
+- [PR #25](https://github.com/cullenmarcels/baby_growth_gallery/pull/25) 的首次 Head 与最终 Head 检查均通过；最终 Head 已集成到 `develop`，精确 merge commit 的 push CI 和本地独立集成复验也已通过。未执行 `develop → release → master → main` 晋升，也未创建发布 Tag。
