@@ -93,10 +93,7 @@ describe('published photo browsing', () => {
     renderAt('/app/timeline');
     expect(await screen.findByRole('heading', { name: '2026 年 09 月' })).toBeInTheDocument();
     const timelineTile = screen.getByRole('link', { name: /合成生日照/ });
-    expect(timelineTile).toHaveAttribute(
-      'href',
-      `/app/photos/${photoId}`,
-    );
+    expect(timelineTile).toHaveAttribute('href', `/app/photos/${photoId}`);
     expect(timelineTile.firstElementChild).not.toHaveAttribute('style');
     expect(screen.queryByText(/里程碑/)).not.toBeInTheDocument();
   });

@@ -239,12 +239,7 @@ export function GalleryPage(): React.JSX.Element {
           <div className={styles.galleryGrid}>
             {items.map((photo) => (
               <MasonryItem key={photo.id}>
-                <PhotoTile
-                  familyId={familyId}
-                  babyId={babyId}
-                  photo={photo}
-                  naturalAspectRatio
-                />
+                <PhotoTile familyId={familyId} babyId={babyId} photo={photo} naturalAspectRatio />
               </MasonryItem>
             ))}
           </div>
