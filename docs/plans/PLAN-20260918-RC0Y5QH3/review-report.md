@@ -7,8 +7,8 @@ created_at: 2026-09-18T14:37:52+08:00
 updated_at: 2026-09-18T15:27:46+08:00
 plan_id: PLAN-20260918-RC0Y5QH3
 repository_mode: git_remote
-reviewed_commit: 67e6e0bc5861bfea49ee6c1291daafa00fb43d32
-reviewed_scope_digest: 488F7ACFC48F5DF14AA9885D101168D046533E5BA26A2616DF17DDA7617C2A42
+reviewed_commit: 8fc539813c28d5f56e973f59eb6ff6eb11c86470
+reviewed_scope_digest: 9C500B481CC4770DB5EF3E3E8ABE808E391ECDE4C5CF447625F4DC01E688EAB7
 ci_status: pending
 related_ids: [PLAN-20260918-RC0Y5QH3, DES-20260918-Y2GFD47V]
 supersedes: []
@@ -19,7 +19,7 @@ superseded_by: []
 
 ## 结论与版本
 
-前一候选 `26f15120` 的 Review 已因用户新增图集瀑布流范围而失效，`0a9b1e5` 在 Review 中发现共享照片卡片会把自然宽高带入时间轴，均仅保留为历史证据。修复后的最终产品候选为 `67e6e0bc5861bfea49ee6c1291daafa00fb43d32`，本报告绑定 v2 owned-scope 摘要 `488F7ACFC48F5DF14AA9885D101168D046533E5BA26A2616DF17DDA7617C2A42`。Review 结论为 passed，可进入独立 Regression。
+前一候选 `26f15120` 的 Review 已因用户新增图集瀑布流范围而失效，`0a9b1e5` 在 Review 中发现共享照片卡片会把自然宽高带入时间轴，`67e6e0b` 又被聚合格式门禁拒绝，均仅保留为历史证据。格式化只改变两个已审查文件的换行排版；修复后的最终产品候选为 `8fc539813c28d5f56e973f59eb6ff6eb11c86470`，本报告绑定 v2 owned-scope 摘要 `9C500B481CC4770DB5EF3E3E8ABE808E391ECDE4C5CF447625F4DC01E688EAB7`。Review 结论为 passed，可进入独立 Regression。
 
 ## 设计、实现与发现
 
@@ -36,6 +36,8 @@ superseded_by: []
 Review 期间发现新加的管理空／加载／错误浏览器断言需要再次运行。首次运行因共享 Redis 验证码一小时限流失败；用独立测试前缀重建本地 API 后，三视口均通过，未改变限流策略。随后独立回归发现旧家庭页截图仍要求邀请按钮折行，三视口全部失败；逐张检查新截图后，更新三张基线，加入日期遮罩以消除每日漂移，重新提交候选并复查。新版截图三视口 3 passed、0 failed，没有剩余阻断缺陷。
 
 图集新增范围的三视口首次运行使用 `127.0.0.1` 时因当前 Windows 主机名访问返回 404，未进入功能断言；改用已验证返回 200 的 `localhost` 后 3 passed。Review 发现自然宽高同时影响共享的时间轴卡片，修复为仅图集启用自然比例，并增加时间轴保持原比例的单测；修复后 Web 50 项、类型检查和三视口图集流程再次通过。不存在未解决的 Review 发现。
+
+聚合验证随后发现上述两个 Review 修复文件未满足 Prettier。格式化差异仅把多行 JSX 与断言收束为等价单行；格式化后的同一代码树重新执行聚合验证，终值 `PROJECT_VALIDATION=PASSED`。Review 因 blob 摘要变化重新绑定 `8fc5398`，不存在以旧摘要替代新候选的情况。
 
 ## 视口 × 状态覆盖
 

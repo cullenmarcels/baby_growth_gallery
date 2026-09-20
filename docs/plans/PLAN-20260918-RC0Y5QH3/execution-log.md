@@ -47,3 +47,4 @@ superseded_by: []
 - 本轮恢复本机浏览器和 Docker 权限后重建当前 Web。三视口 E2E 首次使用 `127.0.0.1` 时均在注册页前超时；直接请求确认该主机名在当前 Windows 环境返回 404，而 `localhost` 返回 200。改用 `STACK_BASE_URL=http://localhost:8080` 与 `E2E_API_BASE_URL=http://localhost:3000` 后，375／834／1440 的图集瀑布流流程 3 passed、0 failed。
 - 完整 `pnpm validate` 首次被系统 pnpm 11.19.0／Node 24.19.0 的嵌套调用阻止；复用不入库的临时 Corepack pnpm 11.21.0 转发后，照片依赖、Lint、Prettier、类型、分支流向 5 项、API 54 项、Web 50 项、构建和项目校验全部通过，终值 `PROJECT_VALIDATION=PASSED`。
 - 候选 Review 发现共享 `PhotoTile` 的自然宽高也作用于时间轴，会改变“时间轴保留原月份网格”的范围。实现改为仅图集传入自然比例，时间轴保持原固定 4:3，并在原时间轴单测中加入无内联比例断言。修复后 Web 50 项、类型检查通过；重建 Web 后三视口图集流程再次 3 passed、0 failed。前一提交 `0a9b1e5` 仅保留为 Review 中间证据，后续绑定修复后的候选。
+- 独立 Regression 前的聚合验证发现 Review 修复文件未通过 Prettier，故 `67e6e0b` 不作为最终验收候选。使用仓库 Prettier 格式化两个文件，差异仅为等价单行排版；完整 `pnpm validate` 随后通过。格式化提交形成最终产品候选 `8fc539813c28d5f56e973f59eb6ff6eb11c86470`，v2 owned-scope 摘要更新为 `9C500B481CC4770DB5EF3E3E8ABE808E391ECDE4C5CF447625F4DC01E688EAB7`，Review 重新绑定后再执行独立 Regression。
