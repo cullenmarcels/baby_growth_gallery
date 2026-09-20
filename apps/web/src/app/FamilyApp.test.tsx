@@ -222,4 +222,58 @@ describe('family application states', () => {
     expect(revoke).toHaveBeenCalledTimes(1);
     expect(revoke).toHaveBeenCalledWith(familyId, '00000000-0000-4000-8000-000000000012');
   });
+
+  it('keeps member role changes behind confirmation when using the shared dropdown', async () => {
+    const familyId = '00000000-0000-4000-8000-000000000010';
+    vi.spyOn(api, 'getFamily').mockResolvedValue({
+      id: familyId,
+      name: '合成家庭',
+      createdAt: '2026-09-11T00:00:00.000Z',
+      currentMembership: {
+        id: '00000000-0000-4000-8000-000000000011',
+        displayName: '创建者',
+        role: 'OWNER',
+      },
+    });
+    vi.spyOn(api, 'listFamilyMembers').mockResolvedValue({
+      items: [
+        {
+          id: '00000000-0000-4000-8000-000000000011',
+          displayName: '创建者',
+          role: 'OWNER',
+          status: 'ACTIVE',
+          joinedAt: '2026-09-11T00:00:00.000Z',
+          isCurrentAccount: true,
+        },
+        {
+          id: '00000000-0000-4000-8000-000000000012',
+          displayName: '合成成员',
+          role: 'MEMBER',
+          status: 'ACTIVE',
+          joinedAt: '2026-09-11T00:00:00.000Z',
+          isCurrentAccount: false,
+        },
+      ],
+    });
+    vi.spyOn(api, 'listFamilyInvitations').mockResolvedValue({ items: [] });
+    vi.spyOn(api, 'listFamilyActivities').mockResolvedValue({ items: [], nextCursor: null });
+    const changeRole = vi.spyOn(api, 'changeFamilyMemberRole').mockResolvedValue({
+      id: '00000000-0000-4000-8000-000000000012',
+      displayName: '合成成员',
+      role: 'ADMIN',
+      status: 'ACTIVE',
+      joinedAt: '2026-09-11T00:00:00.000Z',
+      isCurrentAccount: false,
+    });
+    renderRoute(<FamilyPage />, `/app/families/${familyId}`);
+
+    await userEvent.click(await screen.findByRole('button', { name: '调整 合成成员 的角色' }));
+    await userEvent.click(screen.getByRole('option', { name: '管理员' }));
+    expect(screen.getByRole('dialog', { name: '确认调整角色？' })).toBeInTheDocument();
+    expect(changeRole).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole('button', { name: '确认' }));
+    expect(changeRole).toHaveBeenCalledWith(familyId, '00000000-0000-4000-8000-000000000012', {
+      role: 'ADMIN',
+    });
+  });
 });

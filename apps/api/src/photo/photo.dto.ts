@@ -83,6 +83,22 @@ export class PhotoListResponseDto {
 export class PhotoManagementPageDto extends PhotoListResponseDto {
   @ApiProperty({ type: String, nullable: true }) nextCursor!: string | null;
 }
+export class PublishedPhotoPageDto extends PhotoManagementPageDto {}
+export class TimelinePhotoEntryDto {
+  @ApiProperty({ type: String, enum: ['PHOTO'] }) kind!: 'PHOTO';
+  @ApiProperty({ type: String, format: 'date' }) eventOn!: string;
+  @ApiProperty({ type: () => PhotoSummaryDto }) photo!: PhotoSummaryDto;
+}
+export class TimelinePageDto {
+  @ApiProperty({ type: () => [TimelinePhotoEntryDto] }) items!: TimelinePhotoEntryDto[];
+  @ApiProperty({ type: String, nullable: true }) nextCursor!: string | null;
+}
+export class PublishedPhotoDetailDto {
+  @ApiProperty({ type: () => PhotoSummaryDto }) photo!: PhotoSummaryDto;
+  @ApiProperty({ type: Boolean }) canManage!: boolean;
+  @ApiProperty({ type: String, nullable: true, format: 'uuid' }) previousPhotoId!: string | null;
+  @ApiProperty({ type: String, nullable: true, format: 'uuid' }) nextPhotoId!: string | null;
+}
 export class PhotoPreviewDto {
   @ApiProperty({ type: String }) url!: string;
   @ApiProperty({ type: String, format: 'date-time' }) expiresAt!: string;

@@ -25,6 +25,8 @@ export const updateBabySchema = z
   })
   .refine((value) => Object.keys(value).length > 0, 'At least one field is required');
 
+export const setBabyAvatarSchema = z.object({ photoId: z.uuid().nullable() });
+
 export const babyListQuerySchema = z.object({
   includeArchived: z
     .enum(['true', 'false'])
@@ -34,3 +36,4 @@ export const babyListQuerySchema = z.object({
 
 export type CreateBabyInput = z.infer<typeof createBabySchema>;
 export type UpdateBabyInput = z.infer<typeof updateBabySchema>;
+export type SetBabyAvatarInput = z.infer<typeof setBabyAvatarSchema>;

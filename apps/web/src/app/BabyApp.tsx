@@ -1,14 +1,16 @@
 import type { BabySummary, FamilySummary } from '@baby-growth-gallery/api-client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArchiveRestore, Baby, CalendarDays, Camera, Pencil, Plus, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { useAuth } from './AuthContext';
 import { api } from './api';
+import { BabyAvatar } from './BabyAvatar';
 import { babyKeys } from './baby-query';
 import { ConfirmDialog } from './FamilyApp';
+import { DropdownSelect } from './DropdownSelect';
 import styles from './FamilyApp.module.css';
 import { userFacingError } from './user-facing-error';
 
@@ -142,7 +144,12 @@ export function BabyHomePage(): React.JSX.Element {
     <div className={styles.babyPage}>
       <section className={styles.babyHero}>
         <div className={styles.babyAvatar} aria-hidden="true">
-          {baby.data.nickname.slice(0, 1)}
+          <BabyAvatar
+            familyId={familyId}
+            babyId={babyId}
+            nickname={baby.data.nickname}
+            photoId={baby.data.avatarPhotoId}
+          />
         </div>
         <div>
           <p className={styles.eyebrow}>宝宝档案</p>
@@ -158,8 +165,8 @@ export function BabyHomePage(): React.JSX.Element {
       <section className={styles.foundationGrid} aria-label="成长功能进度">
         <FeatureCard
           title="珍贵照片"
-          text="上传照片，安全处理后再发布给家人。"
-          to="/app/photos/upload"
+          text="浏览当前宝宝已发布的家庭照片。"
+          to="/app/gallery"
           icon="photo"
         />
         <FeatureCard title="成长里程碑" text="里程碑记录将在后续阶段开放。" />
@@ -211,6 +218,10 @@ export function BabyManagePage(): React.JSX.Element {
   const auth = useAuth();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const location = useLocation();
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const focusedAfterCancel = useRef(false);
+  const focusHeading = (location.state as { focusHeading?: boolean } | null)?.focusHeading === true;
   const { familyId, family, pending, error } = useCurrentFamily();
   const canManage = Boolean(family && ['OWNER', 'ADMIN'].includes(family.currentMembership.role));
   const babies = useQuery({
@@ -218,6 +229,18 @@ export function BabyManagePage(): React.JSX.Element {
     queryFn: () => api.listBabies(familyId, canManage),
     enabled: Boolean(familyId && family),
   });
+  useEffect(() => {
+    if (
+      !focusHeading ||
+      focusedAfterCancel.current ||
+      pending ||
+      babies.isPending ||
+      babies.isError
+    )
+      return;
+    headingRef.current?.focus();
+    focusedAfterCancel.current = true;
+  }, [focusHeading, pending, babies.isPending, babies.isError]);
   const [editing, setEditing] = useState<BabySummary>();
   const [confirmArchive, setConfirmArchive] = useState<BabySummary>();
   const [notice, setNotice] = useState<string>();
@@ -271,7 +294,9 @@ export function BabyManagePage(): React.JSX.Element {
       <div className={styles.manageHeading}>
         <div>
           <p className={styles.eyebrow}>当前家庭</p>
-          <h1>宝宝档案</h1>
+          <h1 ref={headingRef} tabIndex={-1}>
+            宝宝档案
+          </h1>
           <p>查看并切换家庭中的宝宝档案。</p>
         </div>
         {canManage ? (
@@ -300,7 +325,14 @@ export function BabyManagePage(): React.JSX.Element {
                 disabled={baby.status !== 'ACTIVE' || activate.isPending}
                 onClick={() => activate.mutate(baby)}
               >
-                <span className={styles.babyAvatar}>{baby.nickname.slice(0, 1)}</span>
+                <span className={styles.babyAvatar}>
+                  <BabyAvatar
+                    familyId={familyId}
+                    babyId={baby.id}
+                    nickname={baby.nickname}
+                    photoId={baby.avatarPhotoId}
+                  />
+                </span>
                 <span>
                   <strong>{baby.nickname}</strong>
                   <small>
@@ -323,6 +355,11 @@ export function BabyManagePage(): React.JSX.Element {
                         <Pencil size={16} />
                         编辑
                       </button>
+                      {baby.id === auth.account?.activeBabyId ? (
+                        <Link className={styles.avatarAction} to="/app/babies/avatar">
+                          选择头像
+                        </Link>
+                      ) : null}
                       <button type="button" onClick={() => setConfirmArchive(baby)}>
                         <Trash2 size={16} />
                         归档
@@ -376,6 +413,7 @@ function BabyForm({
   const navigate = useNavigate();
   const [serverError, setServerError] = useState<string>();
   const {
+    control,
     register,
     handleSubmit,
     setError,
@@ -444,20 +482,37 @@ function BabyForm({
       {errors.birthDate?.message ? (
         <span className={styles.fieldError}>{errors.birthDate.message}</span>
       ) : null}
-      <label>
-        性别（选填）
-        <select {...register('sex')}>
-          <option value="">暂不填写</option>
-          <option value="MALE">男宝宝</option>
-          <option value="FEMALE">女宝宝</option>
-        </select>
-      </label>
+      <div className={styles.formField}>
+        <span>性别（选填）</span>
+        <Controller
+          name="sex"
+          control={control}
+          render={({ field }) => (
+            <DropdownSelect
+              label="性别（选填）"
+              value={field.value}
+              onChange={field.onChange}
+              options={[
+                { value: '', label: '暂不填写' },
+                { value: 'MALE', label: '男宝宝' },
+                { value: 'FEMALE', label: '女宝宝' },
+              ]}
+            />
+          )}
+        />
+      </div>
       <div className={styles.formActions}>
-        {onComplete ? (
-          <button className={styles.secondaryButton} type="button" onClick={onComplete}>
-            取消
-          </button>
-        ) : null}
+        <button
+          className={styles.secondaryButton}
+          type="button"
+          disabled={isSubmitting}
+          onClick={() => {
+            if (onComplete) onComplete();
+            else void navigate('/app/babies/manage', { state: { focusHeading: true } });
+          }}
+        >
+          取消
+        </button>
         <button className={styles.primaryButton} type="submit" disabled={isSubmitting}>
           {isSubmitting ? '正在保存…' : baby ? '保存修改' : '创建宝宝档案'}
         </button>

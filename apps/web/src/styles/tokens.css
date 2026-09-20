@@ -13,6 +13,9 @@
   --color-error: #a34e43;
   --color-error-soft: #f9e8e4;
   --color-focus: #8f5a2e;
+  --color-menu-bg: #fffdf9;
+  --color-menu-hover: #fff3e8;
+  --color-menu-selected: #ffe9d6;
 
   /* 字体 */
   --font-family: 'Noto Sans SC', -apple-system, 'PingFang SC', sans-serif;
@@ -27,4 +30,5 @@
   /* 阴影 */
   --shadow-card: 0 8px 24px -8px rgba(233, 145, 74, 0.1);
   --shadow-focus: 0 0 0 4px color-mix(in srgb, var(--color-primary) 24%, transparent);
+  --shadow-menu: 0 16px 36px -12px rgba(74, 59, 47, 0.24);
 }

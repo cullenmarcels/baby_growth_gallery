@@ -60,6 +60,7 @@ export interface components {
     };
     "BabySummaryDto": {
       "archivedAt": string | null;
+      "avatarPhotoId": string | null;
       "birthDate": string;
       "createdAt": string;
       "familyId": string;
@@ -235,6 +236,16 @@ export interface components {
       "photoId": string;
       "url": string;
     };
+    "PublishedPhotoDetailDto": {
+      "canManage": boolean;
+      "nextPhotoId": string | null;
+      "photo": components['schemas']['PhotoSummaryDto'];
+      "previousPhotoId": string | null;
+    };
+    "PublishedPhotoPageDto": {
+      "items": Array<components['schemas']['PhotoSummaryDto']>;
+      "nextCursor": string | null;
+    };
     "PublishPhotosRequestDto": {
       "photoIds": Array<string>;
     };
@@ -245,6 +256,18 @@ export interface components {
       "phone": string;
       "privacyVersion": string;
       "termsVersion": string;
+    };
+    "SetBabyAvatarRequestDto": {
+      "photoId": string | null;
+    };
+    "TimelinePageDto": {
+      "items": Array<components['schemas']['TimelinePhotoEntryDto']>;
+      "nextCursor": string | null;
+    };
+    "TimelinePhotoEntryDto": {
+      "eventOn": string;
+      "kind": "PHOTO";
+      "photo": components['schemas']['PhotoSummaryDto'];
     };
     "TombstonedFamilyActivityItemDto": {
       "id": string;
@@ -897,6 +920,28 @@ export interface paths {
       };
     };
   };
+  "/api/v1/families/{familyId}/babies/{babyId}/avatar": {
+    patch: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+        };
+      };
+      requestBody: {
+        content: {
+          "application/json": components['schemas']['SetBabyAvatarRequestDto'];
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['BabySummaryDto'];
+          };
+        };
+      };
+    };
+  };
   "/api/v1/families/{familyId}/babies/{babyId}/photo-upload-batches": {
     post: {
       parameters: {
@@ -1034,6 +1079,22 @@ export interface paths {
         };
       };
     };
+    get: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+          "photoId": string;
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['PublishedPhotoDetailDto'];
+          };
+        };
+      };
+    };
     patch: {
       parameters: {
         "path": {
@@ -1136,6 +1197,27 @@ export interface paths {
       };
     };
   };
+  "/api/v1/families/{familyId}/babies/{babyId}/photos/published": {
+    get: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+        };
+        "query"?: {
+          "cursor"?: unknown;
+          "limit"?: unknown;
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['PublishedPhotoPageDto'];
+          };
+        };
+      };
+    };
+  };
   "/api/v1/families/{familyId}/babies/{babyId}/restore": {
     post: {
       parameters: {
@@ -1148,6 +1230,27 @@ export interface paths {
         "200": {
           content: {
             "application/json": components['schemas']['BabySummaryDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies/{babyId}/timeline": {
+    get: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+        };
+        "query"?: {
+          "cursor"?: unknown;
+          "limit"?: unknown;
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['TimelinePageDto'];
           };
         };
       };

@@ -18,6 +18,10 @@ export class UpdateBabyRequestDto {
   sex?: (typeof babySexes)[number] | null;
 }
 
+export class SetBabyAvatarRequestDto {
+  @ApiProperty({ nullable: true, type: String, format: 'uuid' }) photoId!: string | null;
+}
+
 export class BabySummaryDto {
   @ApiProperty({ type: String, format: 'uuid' }) id!: string;
   @ApiProperty({ type: String, format: 'uuid' }) familyId!: string;
@@ -25,6 +29,7 @@ export class BabySummaryDto {
   @ApiProperty({ type: String, format: 'date' }) birthDate!: string;
   @ApiProperty({ nullable: true, type: String, enum: babySexes })
   sex!: (typeof babySexes)[number] | null;
+  @ApiProperty({ nullable: true, type: String, format: 'uuid' }) avatarPhotoId!: string | null;
   @ApiProperty({ type: String, enum: babyStatuses }) status!: (typeof babyStatuses)[number];
   @ApiProperty({ nullable: true, type: String, format: 'date-time' }) archivedAt!: string | null;
   @ApiProperty({ nullable: true, type: String, format: 'date-time' }) purgeAfter!: string | null;

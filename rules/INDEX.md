@@ -31,7 +31,7 @@
 | `RULESET-GIT-COLLABORATION` | `1` | [git-collaboration.md](./modules/git-collaboration.md) | exploration, planning, development, review, regression, acceptance | `active` | `healthy` | `PLAN-20260908-001` |
 | `RULESET-IMPLEMENTATION-QUALITY` | `2` | [implementation-quality.md](./modules/implementation-quality.md) | planning, development, review, regression | `active` | `healthy` | `PLAN-20260911-JBANR2J8` |
 | `RULESET-REPOSITORY-SAFETY` | `2` | [repository-safety.md](./modules/repository-safety.md) | exploration, development, review | `active` | `healthy` | `PLAN-20260908-001` |
-| `RULESET-RESPONSIVE-UI` | `1` | [responsive-ui.md](./modules/responsive-ui.md) | planning, development, review, regression | `active` | `healthy` | `PLAN-20260907-001` |
+| `RULESET-RESPONSIVE-UI` | `2` | [responsive-ui.md](./modules/responsive-ui.md) | planning, development, review, regression | `active` | `healthy` | `PLAN-20260918-RC0Y5QH3` |
 | `RULESET-SECURITY-PRIVACY` | `2` | [security-and-privacy.md](./modules/security-and-privacy.md) | exploration, planning, development, review, regression | `active` | `healthy` | `PLAN-20260917-ABAHN8QT` |
 | `RULESET-SOURCE-EVIDENCE` | `2` | [source-and-evidence.md](./modules/source-and-evidence.md) | exploration, planning, development, review, regression, acceptance | `active` | `healthy` | `PLAN-20260908-001` |
 | `RULESET-TESTING-QUALITY` | `2` | [testing-quality.md](./modules/testing-quality.md) | planning, review, regression, acceptance | `active` | `healthy` | `PLAN-20260908-001` |

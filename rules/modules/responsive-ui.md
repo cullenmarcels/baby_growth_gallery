@@ -1,17 +1,17 @@
 ---
 ruleset_id: RULESET-RESPONSIVE-UI
 title: "响应式界面规则"
-version: 1
+version: 2
 status: active
 health: healthy
 scope: frontend-ui
 stages: [planning, development, review, regression]
 effective_at: 2026-09-07T16:49:15+08:00
-updated_at: 2026-09-07T17:18:08+08:00
+updated_at: 2026-09-18T14:37:52+08:00
 source_refs: [AGENTS.md]
-related_plan_ids: [PLAN-20260907-001]
+related_plan_ids: [PLAN-20260907-001, PLAN-20260918-RC0Y5QH3]
 related_achievement_ids: [ACH-20260907-001]
-supersedes_version: null
+supersedes_version: 1
 ---
 
 # 响应式界面规则
@@ -93,3 +93,16 @@ supersedes_version: null
 - Verification: Review 检查布局是否依赖脆弱固定尺寸或不必要设备分支。
 - Exceptions: Design/Spec 明确要求固定尺寸或特定设备行为。
 - Source: 用户确认对该操作化规则的整体实施计划。
+
+## RESP-007 — 操作按钮文案单行与长文案确认
+
+- Level: `MUST`
+- Status: `active`
+- Stages: `planning`, `development`, `review`, `regression`
+- Applies to: 网站中的操作按钮及视觉上作为按钮的操作链接。
+- Trigger: 新增或修改操作按钮、调整响应式布局与按钮文案。
+- Requirement: 按钮内文案始终单行展示，不得折行；需要新增或改动超过五个字符的按钮文案时，先由用户决定文案。同一场景同一级别的并排操作按钮应等高，图标按钮、筛选按钮等可保留不同尺寸层级。
+- Verification modes: `review`, `regression`, `human`
+- Verification: 三类视口检查文案换行、同级按钮边界高度与新增长文案的用户决定记录。
+- Exceptions: 已存在且未改动的较长文案不因本规则自动改写；非操作性质的标签与正文不适用。
+- Source: 用户要求记住所有操作按钮文案单行及超过五字符由其决定，并在 Plan E 界面修订中确认同场景同级等高。

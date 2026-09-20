@@ -20,6 +20,7 @@ import {
   BabyWaitingPage,
 } from './BabyApp';
 import { PhotoManagePage, PhotoUploadPage } from './PhotoApp';
+import { BabyAvatarPickerPage, GalleryPage, PhotoDetailPage, TimelinePage } from './PhotoBrowse';
 
 export const router = createBrowserRouter([
   { path: '/', element: <RootRedirect /> },
@@ -51,12 +52,14 @@ export const router = createBrowserRouter([
           { path: 'home', element: <BabyHomePage /> },
           { path: 'babies/new', element: <BabyCreatePage /> },
           { path: 'babies/manage', element: <BabyManagePage /> },
+          { path: 'babies/avatar', element: <BabyAvatarPickerPage /> },
           { path: 'babies/waiting', element: <BabyWaitingPage /> },
           { path: 'photos/manage', element: <PhotoManagePage /> },
+          { path: 'photos/:photoId', element: <PhotoDetailPage /> },
           { path: 'onboarding', element: <OnboardingPage /> },
           { path: 'families/:familyId', element: <FamilyPage /> },
-          { path: 'timeline', element: <ComingSoonPage title="时间轴" icon="timeline" /> },
-          { path: 'gallery', element: <ComingSoonPage title="图集" icon="gallery" /> },
+          { path: 'timeline', element: <TimelinePage /> },
+          { path: 'gallery', element: <GalleryPage /> },
           { path: 'milestones', element: <ComingSoonPage title="里程碑" icon="milestone" /> },
           { path: 'growth', element: <ComingSoonPage title="成长数据" icon="growth" /> },
         ],
