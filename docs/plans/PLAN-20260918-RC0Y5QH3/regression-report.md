@@ -9,7 +9,7 @@ plan_id: PLAN-20260918-RC0Y5QH3
 phase: candidate
 reviewed_commit: 8fc539813c28d5f56e973f59eb6ff6eb11c86470
 reviewed_scope_digest: 9C500B481CC4770DB5EF3E3E8ABE808E391ECDE4C5CF447625F4DC01E688EAB7
-ci_status: pending
+ci_status: passed
 related_ids: [PLAN-20260918-RC0Y5QH3, DES-20260918-Y2GFD47V]
 supersedes: []
 superseded_by: []
@@ -55,3 +55,4 @@ superseded_by: []
 - 当前自动化只证明 Windows Chromium 三视口，不证明其他浏览器、真实移动设备或人工视觉验收。预览不可用由浏览器 API 拦截模拟，未在真实存储故障中拍摄三视口截图。
 - 远端 feature PR／CI、用户对精确 SHA 与摘要的人工验收、集成到 `develop` 及集成提交复验尚未发生；`ci_status: pending` 不作为归档证据。既有签名链接自然到期边界保持原 Plan E 说明。
 - `67e6e0b` 的第一次聚合回归被 Prettier 正确拒绝；格式化后形成 `8fc5398` 并重新绑定 Review、重建运行栈及复跑独立 Regression，因此旧候选结果没有被沿用为最终候选证据。
+- [PR #25](https://github.com/cullenmarcels/baby_growth_gallery/pull/25) 首次远端 Head `e1dc0c96e5696557ed624eada57d57caadd4688a` 的 `branch-flow-develop`、`quality` 与 `e2e-auth` 全部通过；远端工作流包含依赖、格式、Lint、类型、单元测试、确定性客户端、构建、Alpine 图像编解码、项目知识库、迁移、MinIO 与 Playwright E2E。尚未执行合并及集成提交复验。

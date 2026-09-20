@@ -9,7 +9,7 @@ plan_id: PLAN-20260918-RC0Y5QH3
 repository_mode: git_remote
 reviewed_commit: 8fc539813c28d5f56e973f59eb6ff6eb11c86470
 reviewed_scope_digest: 9C500B481CC4770DB5EF3E3E8ABE808E391ECDE4C5CF447625F4DC01E688EAB7
-ci_status: pending
+ci_status: passed
 related_ids: [PLAN-20260918-RC0Y5QH3, DES-20260918-Y2GFD47V]
 supersedes: []
 superseded_by: []
@@ -57,6 +57,7 @@ Review 期间发现新加的管理空／加载／错误浏览器断言需要再�
 - `playwright test tests/e2e/photo.spec.ts --grep 'responsive flow'`：新增处理卡片 `PROCESSING` 和安全缩略图不可用两状态的四边 16px 断言，375／834／1440 合计 3 passed、0 failed；加入最终候选后独立 Regression 再验证。
 - `git diff --check`、`corepack pnpm format:check` 通过。远端 CI 未触发，记录为 `pending`，不充当本地 Review 的通过证据。
 - 图集补充后 `corepack pnpm validate` 使用临时 Corepack 转发执行，照片依赖、Lint、Prettier、类型、分支流向 5 项、API 54 项、Web 50 项、构建和项目校验全部通过，终值 `PROJECT_VALIDATION=PASSED`；修复后的三视口图集流程 3 passed、0 failed。
+- [PR #25](https://github.com/cullenmarcels/baby_growth_gallery/pull/25) 首次远端 Head `e1dc0c96e5696557ed624eada57d57caadd4688a` 的 `branch-flow-develop`、`quality` 与 `e2e-auth` 全部通过；该 Head 包含已验收产品候选和后续证据提交，产品作用范围摘要不变。
 
 ## 固定规则逐条结果
 

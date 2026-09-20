@@ -4,7 +4,7 @@
 
 - 最后协议更新：`2026-09-08T11:34:45+08:00`
 - 索引状态：`consistent`
-- 当前阶段：工程基础、分支治理与 Plan A–D 均已归档；原 Plan E 候选由 `PLAN-20260918-RC0Y5QH3` 取代，宝宝档案与照片管理界面修订在 `feature/photo-gallery-timeline` 完成本地 Review／Regression并已人工验收，现为 `integration_pending`，集成目标为 `develop`；尚未授权推送、PR 或合并。
+- 当前阶段：工程基础、分支治理与 Plan A–D 均已归档；原 Plan E 候选由 `PLAN-20260918-RC0Y5QH3` 取代，宝宝档案与照片管理界面修订已完成 Review／Regression和人工验收；[PR #25](https://github.com/cullenmarcels/baby_growth_gallery/pull/25) 目标为 `develop` 且首次远端检查通过，Plan 保持 `integration_pending`，尚未授权合并。
 - 仓库协作状态：不缓存；每次运行 [`repository-preflight.ps1`](../hooks/repository-preflight.ps1)。分支治理验收集成提交为 `origin/main@19590f9db9bc55c85e9beb3608bdaec684a6a8a3`；归档工作分支为 `feature/branch-governance-archive`。
 - 归档基线：[`ARCHIVE.sha256`](./ARCHIVE.sha256)
 - 生成命令：`hooks/update-indexes.ps1 -Write`；核对命令：`hooks/update-indexes.ps1 -Check`
