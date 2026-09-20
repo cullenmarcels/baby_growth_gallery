@@ -2,7 +2,7 @@
 id: PLAN-20260918-RC0Y5QH3-STATE
 type: plan_state
 plan_id: PLAN-20260918-RC0Y5QH3
-status: in_regression
+status: acceptance_pending
 repository_mode: git_remote
 remote_name: origin
 integration_target: origin/develop
@@ -23,4 +23,4 @@ integrated_scope_digest: null
 
 # Plan State
 
-本修订 Plan 已由用户确认，取代尚未人工验收的原 Plan E 候选。原 Plan 的状态转为 `superseded`，路径不再并行占有。用户后续明确要求将图集也改为瀑布流，故在同一修订 Plan 内补充图集界面范围，冻结的 `plan.md` 保持不变。提升权限后远端预检确认 `origin/develop@c0e2108`，且该提交是当前功能分支祖先；集成目标为 `origin/develop`。最终产品候选 `8fc539813c28d5f56e973f59eb6ff6eb11c86470` 已重新完成 Review，固定 v2 owned-scope 摘要 `9C500B481CC4770DB5EF3E3E8ABE808E391ECDE4C5CF447625F4DC01E688EAB7`，现进入独立 Regression；此前 `26f15120`、`0a9b1e5` 与 `67e6e0b` 仅保留为历史证据。`AGENTS.md`、`README.md`、`docs/INDEX.md` 与 Plan 状态、报告是随生命周期变化的导航或证据文件，照计划维护并由项目校验器检查，不纳入用户验收的产品作用范围摘要。
+本修订 Plan 已由用户确认，取代尚未人工验收的原 Plan E 候选。原 Plan 的状态转为 `superseded`，路径不再并行占有。用户后续明确要求将图集也改为瀑布流，故在同一修订 Plan 内补充图集界面范围，冻结的 `plan.md` 保持不变。提升权限后远端预检确认 `origin/develop@c0e2108`，且该提交是当前功能分支祖先；集成目标为 `origin/develop`。最终产品候选 `8fc539813c28d5f56e973f59eb6ff6eb11c86470` 已完成 Review 和独立 Regression，固定 v2 owned-scope 摘要 `9C500B481CC4770DB5EF3E3E8ABE808E391ECDE4C5CF447625F4DC01E688EAB7`，现待用户人工验收；此前 `26f15120`、`0a9b1e5` 与 `67e6e0b` 仅保留为历史证据。`AGENTS.md`、`README.md`、`docs/INDEX.md` 与 Plan 状态、报告是随生命周期变化的导航或证据文件，照计划维护并由项目校验器检查，不纳入用户验收的产品作用范围摘要。

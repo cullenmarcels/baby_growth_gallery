@@ -22,4 +22,4 @@ superseded_by: []
 
 # Acceptance Record
 
-用户授权实施本修订 Plan；前一候选 `26f15120` 已完成本地 Review／Regression，但因新增图集瀑布流范围而不再是当前验收候选。图集变更完成后将重新生成候选 SHA、作用范围摘要、Review 和 Regression；用户尚未对新候选给出验收结论，也未授权 PR、合并或证据推送。
+用户授权实施本修订 Plan；前一候选 `26f15120` 因新增图集瀑布流范围失效。当前待人工验收的精确产品候选为 `8fc539813c28d5f56e973f59eb6ff6eb11c86470`，v2 owned-scope 摘要为 `9C500B481CC4770DB5EF3E3E8ABE808E391ECDE4C5CF447625F4DC01E688EAB7`，本地 Review 与独立 Regression 均为 passed。用户尚未对该候选给出验收结论，也未授权 PR、合并或证据推送。

@@ -2,13 +2,13 @@
 id: PLAN-20260918-RC0Y5QH3-REGRESSION
 type: regression_report
 title: 'Plan E 界面修订 Regression'
-status: pending
+status: passed
 created_at: 2026-09-18T14:37:52+08:00
 updated_at: 2026-09-18T15:29:18+08:00
 plan_id: PLAN-20260918-RC0Y5QH3
 phase: candidate
-reviewed_commit: null
-reviewed_scope_digest: null
+reviewed_commit: 8fc539813c28d5f56e973f59eb6ff6eb11c86470
+reviewed_scope_digest: 9C500B481CC4770DB5EF3E3E8ABE808E391ECDE4C5CF447625F4DC01E688EAB7
 ci_status: pending
 related_ids: [PLAN-20260918-RC0Y5QH3, DES-20260918-Y2GFD47V]
 supersedes: []
@@ -19,7 +19,7 @@ superseded_by: []
 
 ## 候选结论与影响范围
 
-前一候选 `26f15120` 的独立 Regression 已因新增图集瀑布流范围而失效，正文保留其历史检查结果。新候选完成图集三视口浏览器验证、Review 重新绑定后，再生成新的独立 Regression；远端 CI 与集成提交复验仍为 pending。
+前一候选 `26f15120` 的独立 Regression 已因新增图集瀑布流范围而失效；`0a9b1e5`、`67e6e0b` 也未通过最终候选门禁，正文仅保留其历史检查结果。本次独立 Regression 精确绑定最终产品候选 `8fc539813c28d5f56e973f59eb6ff6eb11c86470` 与 v2 owned-scope 摘要 `9C500B481CC4770DB5EF3E3E8ABE808E391ECDE4C5CF447625F4DC01E688EAB7`，结论为 passed。远端 CI 与集成提交复验仍为 pending。
 
 | 既有能力／依赖                | 选择依据                                         | 检查和结果                                                                                                                                                                                                                    |
 | ----------------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -32,6 +32,9 @@ superseded_by: []
 上述 Chromium E2E 在同一生产代码树上共 36 passed、27 按现有配置 skipped、0 个剩余失败。最终提交相对全量回归时只增加了照片处理状态的浏览器断言；Review 重新绑定后单独复跑受影响宝宝／照片文件 8 passed、4 skipped。旧候选和失败运行不算作通过证据。
 
 ## 独立执行结果
+
+- Review 重新绑定 `8fc5398` 后，从该代码树重新构建 Web，并以新的 `bgg-plan-e-final-regression-20260920` Redis 前缀重建 API；`baby.spec.ts` 与 `photo.spec.ts` 在 Chromium 375／834／1440 合计 8 passed、4 按既有条件设计性 skipped、0 failed。真实 API 权限与并发检查按项目配置仅在 1440 执行，三个视口的响应式宝宝／照片流程均执行。
+- 最终候选代码树使用临时 Corepack pnpm 11.21.0 转发再次执行 `corepack pnpm validate`：照片依赖、ESLint、Prettier、API／客户端／Web TypeScript、分支流向 5 项、API 54 项、Web 50 项、构建及项目文档／规则检查全部通过，终值 `PROJECT_VALIDATION=PASSED`。
 
 - 最终候选再次执行 `corepack pnpm validate`（为仓库内嵌套 `pnpm` 使用临时 Corepack 转发，并设 `core.excludesFile` 到仓库 ignore，以绕开沙箱不可读的用户级 Git 配置）：照片依赖检查、ESLint、Prettier、API／客户端／Web TypeScript、分支流向 5 项、API 54 项、Web 49 项、构建及项目文档／规则检查全部通过，终值 `PROJECT_VALIDATION=PASSED`。临时转发文件位于系统 TEMP，未入库。
 - `update-indexes.ps1 -Write` 和 `validate-project.ps1 -Check` 在候选 Review 重新绑定后通过。第一次聚合校验末尾因生成索引过期而失败，更新索引后复跑通过；无 Git 环境替代配置的单次校验报告 `UNAVAILABLE`，未作为通过证据。
@@ -51,3 +54,4 @@ superseded_by: []
 - 首次连通性测试遗漏 `E2E_API_BASE_URL`，属于运行参数缺失；配置该测试要求的本地 API URL 后 3 passed。
 - 当前自动化只证明 Windows Chromium 三视口，不证明其他浏览器、真实移动设备或人工视觉验收。预览不可用由浏览器 API 拦截模拟，未在真实存储故障中拍摄三视口截图。
 - 远端 feature PR／CI、用户对精确 SHA 与摘要的人工验收、集成到 `develop` 及集成提交复验尚未发生；`ci_status: pending` 不作为归档证据。既有签名链接自然到期边界保持原 Plan E 说明。
+- `67e6e0b` 的第一次聚合回归被 Prettier 正确拒绝；格式化后形成 `8fc5398` 并重新绑定 Review、重建运行栈及复跑独立 Regression，因此旧候选结果没有被沿用为最终候选证据。
