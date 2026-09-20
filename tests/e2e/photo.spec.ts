@@ -711,8 +711,61 @@ test('uploads and publishes a synthetic photo in the responsive flow', async ({
   await page.screenshot({ path: testInfo.outputPath('manage-masonry.png'), fullPage: true });
   await page.unroute(manageApi);
   await page.unroute(previewApi);
+
+  const galleryApi = /\/api\/v1\/families\/[^/]+\/babies\/[^/]+\/photos\/published(?:\?.*)?$/;
+  await page.route(galleryApi, (route) =>
+    route.fulfill({ status: 200, json: { items: managedItems, nextCursor: null } }),
+  );
+  await page.route(previewApi, (route) =>
+    route.fulfill({
+      status: 200,
+      json: {
+        url: `data:image/png;base64,${syntheticPng.toString('base64')}`,
+        expiresAt: '2030-01-01T00:00:00.000Z',
+      },
+    }),
+  );
   await page.goto('/app/gallery');
   await expect(page.getByRole('heading', { name: '图集' })).toBeVisible();
+  const galleryCards = page.locator('[class*="galleryGridItem"]');
+  await expect(galleryCards).toHaveCount(managedNames.length);
+  expect(await galleryCards.locator('strong').allTextContents()).toEqual(managedNames);
+  await expect
+    .poll(() => galleryCards.first().evaluate((card) => getComputedStyle(card).gridRowEnd))
+    .toMatch(/^span \d+$/);
+  const galleryGeometry = await galleryCards.evaluateAll((cards) =>
+    cards.map((card) => {
+      const bounds = card.getBoundingClientRect();
+      return { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height };
+    }),
+  );
+  for (const [index, first] of galleryGeometry.entries()) {
+    for (const second of galleryGeometry.slice(index + 1)) {
+      const overlaps =
+        first.x < second.x + second.width &&
+        first.x + first.width > second.x &&
+        first.y < second.y + second.height &&
+        first.y + first.height > second.y;
+      expect(overlaps).toBe(false);
+    }
+  }
+  const galleryColumns = new Map<number, typeof galleryGeometry>();
+  for (const card of galleryGeometry) {
+    const key = Math.round(card.x);
+    galleryColumns.set(key, [...(galleryColumns.get(key) ?? []), card]);
+  }
+  for (const cards of galleryColumns.values()) {
+    cards.sort((first, second) => first.y - second.y);
+    for (let index = 1; index < cards.length; index += 1) {
+      const gap = cards[index]!.y - cards[index - 1]!.y - cards[index - 1]!.height;
+      expect(gap).toBeGreaterThanOrEqual(0);
+      expect(gap).toBeLessThanOrEqual(52);
+    }
+  }
+  await page.screenshot({ path: testInfo.outputPath('gallery-masonry.png'), fullPage: true });
+  await page.unroute(galleryApi);
+  await page.unroute(previewApi);
+  await page.goto('/app/gallery');
   const galleryTile = page.getByRole('link', { name: /查看照片：/ }).first();
   await expect(galleryTile).toBeVisible();
   await galleryTile.focus();

@@ -70,6 +70,17 @@ describe('published photo browsing', () => {
     expect(await screen.findByText(/还没有已发布照片/)).toBeInTheDocument();
   });
 
+  it('uses the published photo dimensions for the gallery tile ratio', async () => {
+    vi.spyOn(api, 'listPublishedPhotos').mockResolvedValue({ items: [photo], nextCursor: null });
+    vi.spyOn(api, 'getPhotoPreview').mockResolvedValue({
+      url: 'data:image/png;base64,AA==',
+      expiresAt: '2026-09-17T02:05:00.000Z',
+    });
+    renderAt('/app/gallery');
+    const imageFrame = await screen.findByRole('img', { name: '合成生日照' });
+    expect(imageFrame.parentElement).toHaveStyle({ aspectRatio: '20 / 20' });
+  });
+
   it('groups the real photo timeline by month without milestone placeholders', async () => {
     vi.spyOn(api, 'listTimeline').mockResolvedValue({
       items: [{ kind: 'PHOTO', eventOn: photo.capturedOn, photo }],

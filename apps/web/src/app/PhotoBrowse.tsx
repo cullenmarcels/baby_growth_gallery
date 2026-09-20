@@ -8,7 +8,7 @@ import {
   Trash2,
   Upload,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { api } from './api';
@@ -129,7 +129,14 @@ function PhotoTile({
       to={`/app/photos/${photo.id}`}
       aria-label={`查看照片：${photo.title || photo.capturedOn}`}
     >
-      <span className={styles.tileImage}>
+      <span
+        className={styles.tileImage}
+        style={
+          photo.width && photo.height
+            ? { aspectRatio: `${photo.width} / ${photo.height}` }
+            : undefined
+        }
+      >
         <SignedPhoto
           familyId={familyId}
           babyId={babyId}
@@ -143,6 +150,38 @@ function PhotoTile({
         <time dateTime={photo.capturedOn}>{photo.capturedOn}</time>
       </span>
     </Link>
+  );
+}
+
+function MasonryItem({ children }: { children: React.ReactNode }): React.JSX.Element {
+  const itemRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const item = itemRef.current;
+    const content = contentRef.current;
+    const grid = item?.parentElement;
+    if (!item || !content || !grid) return;
+    const measure = () => {
+      const gridStyle = getComputedStyle(grid);
+      const rowHeight = Number.parseFloat(gridStyle.gridAutoRows);
+      const gap = Number.parseFloat(gridStyle.rowGap);
+      if (!rowHeight || Number.isNaN(gap)) return;
+      const span = Math.max(
+        1,
+        Math.ceil((content.getBoundingClientRect().height + gap) / (rowHeight + gap)),
+      );
+      item.style.gridRowEnd = `span ${span}`;
+    };
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(content);
+    return () => observer.disconnect();
+  }, []);
+  return (
+    <div ref={itemRef} className={styles.galleryGridItem}>
+      <div ref={contentRef}>{children}</div>
+    </div>
   );
 }
 
@@ -195,9 +234,11 @@ export function GalleryPage(): React.JSX.Element {
         <BrowseState message="还没有已发布照片。上传并发布后就能在这里看到。" />
       ) : (
         <>
-          <div className={styles.grid}>
+          <div className={styles.galleryGrid}>
             {items.map((photo) => (
-              <PhotoTile key={photo.id} familyId={familyId} babyId={babyId} photo={photo} />
+              <MasonryItem key={photo.id}>
+                <PhotoTile familyId={familyId} babyId={babyId} photo={photo} />
+              </MasonryItem>
             ))}
           </div>
           {photos.isError ? (

@@ -1,7 +1,7 @@
 ---
 id: PLAN-20260918-RC0Y5QH3-EXEC
 type: execution_log
-title: "Plan E 界面修订执行记录"
+title: 'Plan E 界面修订执行记录'
 status: in_progress
 created_at: 2026-09-18T14:37:52+08:00
 updated_at: 2026-09-18T14:37:52+08:00
@@ -38,3 +38,9 @@ superseded_by: []
 
 - 最终本地候选 `26f15120e28edb4eec3179fe70512fa577f3a94d`，固定 v2 owned-scope 摘要 `150393DC7EC1C484BA91058AA4E922D4B56D704CC00B2F2C09D0D0A1689B682C`。逐条 66 条 Rule 的 Review 为 passed；独立 Regression 在 Review 重新绑定后，对最终候选再跑 `pnpm validate`，终值 `PROJECT_VALIDATION=PASSED`，并复跑受影响宝宝／照片 E2E 为 8 passed、4 设计性 skipped。全量分组 E2E 在相同产品代码树为 36 passed、27 设计性 skipped，环境参数与快照基线的首轮失败均已修复并记录。
 - 用户对精确候选的人工验收、远端 PR／CI、推送、集成到 `origin/develop` 和集成提交复验仍待后续分别完成；本阶段不做发布分支晋升或归档。
+
+## 图集瀑布流补充
+
+- 用户在前一候选待人工验收期间明确要求“将图集模块也改成瀑布流形式”。该要求作为本修订 Plan 的新增范围记录，不改写冻结 `plan.md`；同步补充 Design，明确图集三／二／一列、照片宽高自然比例、实测卡片行跨度和顺序保持规则。
+- `PhotoBrowse.tsx` 新增图集专用 `MasonryItem`，`PhotoBrowse.module.css` 新增图集三／二／一列网格；时间轴继续使用原有月份网格。图集单测新增照片宽高比例断言，浏览器测试新增横图／竖图／正方图、长内容、无重叠、列间距和键盘顺序断言。
+- Web 单测 50 项、Web 类型检查、构建、Lint、Prettier 通过。当前浏览器进程在受限环境返回 `spawn EPERM`，重建 Docker Web 的自动审批额度也已耗尽，因此图集新增三视口 E2E 尚未运行；不把该项写成通过。图集变更提交后需重新执行三视口 E2E、Review、Regression 和项目校验。
