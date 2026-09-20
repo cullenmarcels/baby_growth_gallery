@@ -2,13 +2,13 @@
 id: PLAN-20260918-RC0Y5QH3-REVIEW
 type: review_report
 title: 'Plan E 界面修订 Review'
-status: pending
+status: passed
 created_at: 2026-09-18T14:37:52+08:00
 updated_at: 2026-09-18T15:27:46+08:00
 plan_id: PLAN-20260918-RC0Y5QH3
 repository_mode: git_remote
-reviewed_commit: null
-reviewed_scope_digest: null
+reviewed_commit: 67e6e0bc5861bfea49ee6c1291daafa00fb43d32
+reviewed_scope_digest: 488F7ACFC48F5DF14AA9885D101168D046533E5BA26A2616DF17DDA7617C2A42
 ci_status: pending
 related_ids: [PLAN-20260918-RC0Y5QH3, DES-20260918-Y2GFD47V]
 supersedes: []
@@ -19,7 +19,7 @@ superseded_by: []
 
 ## 结论与版本
 
-前一候选 `26f15120` 的 Review 已因用户新增图集瀑布流范围而失效，保留在本报告正文作为历史证据。图集变更提交并完成三视口浏览器验证后，重新绑定新的 `reviewed_commit` 与 v2 owned-scope 摘要；当前不以旧结论替代新 Review。
+前一候选 `26f15120` 的 Review 已因用户新增图集瀑布流范围而失效，`0a9b1e5` 在 Review 中发现共享照片卡片会把自然宽高带入时间轴，均仅保留为历史证据。修复后的最终产品候选为 `67e6e0bc5861bfea49ee6c1291daafa00fb43d32`，本报告绑定 v2 owned-scope 摘要 `488F7ACFC48F5DF14AA9885D101168D046533E5BA26A2616DF17DDA7617C2A42`。Review 结论为 passed，可进入独立 Regression。
 
 ## 设计、实现与发现
 
@@ -28,11 +28,14 @@ superseded_by: []
 | 宝宝档案       | PASS | `BabyApp.tsx` 新建取消路由到 `/app/babies/manage` 并在加载后聚焦标题；单测验证未发创建请求和空档案页；浏览器三视口验证取消路径、焦点与编辑操作组同为 44px。`FamilyApp.module.css` 仅保留独立表单主按钮上间距。   |
 | 照片处理卡片   | PASS | `PhotoApp.module.css` 的标题独占首行、日期与地点第二行，窄屏单列；四边 16px，顶部“我的上传”与“保存信息”主操作规格一致。浏览器三视口读取草稿字段边界、正常／处理中／缩略图不可用的 padding、背景与按钮边界。      |
 | 我的上传瀑布流 | PASS | `MasonryItem` 按内容实测高度和 `ResizeObserver` 设置网格跨度；`ManageCard` 使用照片宽高或 4:3 回退。DOM 与 API 顺序一致，不启用填洞重排。横竖照片、长标题、长地点、分页追加在三视口无重叠，同列间距不超过 52px。 |
+| 图集瀑布流     | PASS | 图集使用独立三／二／一列瀑布流和照片自然宽高；实测行跨度、无重叠、顺序和键盘进入详情在三视口通过。Review 将自然比例限制在图集，时间轴继续保持固定 4:3 月份网格。 |
 | 文案与旧修改   | PASS | `RESP-007` v2 已归档 v1 后生效；保留此前头像、下拉框和单行按钮修改。本次新按钮文案只有“取消”。家庭页三视口截图基线同步为单行邀请按钮，并遮罩每日变化的加入日期；浏览器检查无水平溢出。                           |
 | 权限与安全     | PASS | 本次无 API、迁移或权限实现变动；原 Plan E API E2E 复核草稿隔离、跨宝宝、角色变化、回收与头像并发清除。详情只读状态浏览器检查存在。                                                                               |
 | 文档与作用范围 | PASS | 新 Design 与修订 Plan 已登记；原 Plan E 冻结 `plan.md` 与 Plan D 归档不改。`owned_paths` 固定产品、设计与规则范围；可变索引、状态和报告由项目校验器单独核对。                                                    |
 
 Review 期间发现新加的管理空／加载／错误浏览器断言需要再次运行。首次运行因共享 Redis 验证码一小时限流失败；用独立测试前缀重建本地 API 后，三视口均通过，未改变限流策略。随后独立回归发现旧家庭页截图仍要求邀请按钮折行，三视口全部失败；逐张检查新截图后，更新三张基线，加入日期遮罩以消除每日漂移，重新提交候选并复查。新版截图三视口 3 passed、0 failed，没有剩余阻断缺陷。
+
+图集新增范围的三视口首次运行使用 `127.0.0.1` 时因当前 Windows 主机名访问返回 404，未进入功能断言；改用已验证返回 200 的 `localhost` 后 3 passed。Review 发现自然宽高同时影响共享的时间轴卡片，修复为仅图集启用自然比例，并增加时间轴保持原比例的单测；修复后 Web 50 项、类型检查和三视口图集流程再次通过。不存在未解决的 Review 发现。
 
 ## 视口 × 状态覆盖
 
@@ -51,6 +54,7 @@ Review 期间发现新加的管理空／加载／错误浏览器断言需要再�
 - `playwright test tests/e2e/family.spec.ts --grep 'creates a real family from onboarding' --update-snapshots`：逐张检查新图后，375／834／1440 合计 3 passed、0 failed；变更仅在测试和截图，产品代码与此前浏览器检查一致。独立 Regression 将不带更新标志复跑。
 - `playwright test tests/e2e/photo.spec.ts --grep 'responsive flow'`：新增处理卡片 `PROCESSING` 和安全缩略图不可用两状态的四边 16px 断言，375／834／1440 合计 3 passed、0 failed；加入最终候选后独立 Regression 再验证。
 - `git diff --check`、`corepack pnpm format:check` 通过。远端 CI 未触发，记录为 `pending`，不充当本地 Review 的通过证据。
+- 图集补充后 `corepack pnpm validate` 使用临时 Corepack 转发执行，照片依赖、Lint、Prettier、类型、分支流向 5 项、API 54 项、Web 50 项、构建和项目校验全部通过，终值 `PROJECT_VALIDATION=PASSED`；修复后的三视口图集流程 3 passed、0 failed。
 
 ## 固定规则逐条结果
 
