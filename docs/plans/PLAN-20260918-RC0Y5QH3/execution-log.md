@@ -44,3 +44,6 @@ superseded_by: []
 - 用户在前一候选待人工验收期间明确要求“将图集模块也改成瀑布流形式”。该要求作为本修订 Plan 的新增范围记录，不改写冻结 `plan.md`；同步补充 Design，明确图集三／二／一列、照片宽高自然比例、实测卡片行跨度和顺序保持规则。
 - `PhotoBrowse.tsx` 新增图集专用 `MasonryItem`，`PhotoBrowse.module.css` 新增图集三／二／一列网格；时间轴继续使用原有月份网格。图集单测新增照片宽高比例断言，浏览器测试新增横图／竖图／正方图、长内容、无重叠、列间距和键盘顺序断言。
 - Web 单测 50 项、Web 类型检查、构建、Lint、Prettier 通过。当前浏览器进程在受限环境返回 `spawn EPERM`，重建 Docker Web 的自动审批额度也已耗尽，因此图集新增三视口 E2E 尚未运行；不把该项写成通过。图集变更提交后需重新执行三视口 E2E、Review、Regression 和项目校验。
+- 本轮恢复本机浏览器和 Docker 权限后重建当前 Web。三视口 E2E 首次使用 `127.0.0.1` 时均在注册页前超时；直接请求确认该主机名在当前 Windows 环境返回 404，而 `localhost` 返回 200。改用 `STACK_BASE_URL=http://localhost:8080` 与 `E2E_API_BASE_URL=http://localhost:3000` 后，375／834／1440 的图集瀑布流流程 3 passed、0 failed。
+- 完整 `pnpm validate` 首次被系统 pnpm 11.19.0／Node 24.19.0 的嵌套调用阻止；复用不入库的临时 Corepack pnpm 11.21.0 转发后，照片依赖、Lint、Prettier、类型、分支流向 5 项、API 54 项、Web 50 项、构建和项目校验全部通过，终值 `PROJECT_VALIDATION=PASSED`。
+- 候选 Review 发现共享 `PhotoTile` 的自然宽高也作用于时间轴，会改变“时间轴保留原月份网格”的范围。实现改为仅图集传入自然比例，时间轴保持原固定 4:3，并在原时间轴单测中加入无内联比例断言。修复后 Web 50 项、类型检查通过；重建 Web 后三视口图集流程再次 3 passed、0 failed。前一提交 `0a9b1e5` 仅保留为 Review 中间证据，后续绑定修复后的候选。

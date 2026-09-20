@@ -118,10 +118,12 @@ function PhotoTile({
   familyId,
   babyId,
   photo,
+  naturalAspectRatio = false,
 }: {
   familyId: string;
   babyId: string;
   photo: PhotoSummary;
+  naturalAspectRatio?: boolean;
 }): React.JSX.Element {
   return (
     <Link
@@ -132,7 +134,7 @@ function PhotoTile({
       <span
         className={styles.tileImage}
         style={
-          photo.width && photo.height
+          naturalAspectRatio && photo.width && photo.height
             ? { aspectRatio: `${photo.width} / ${photo.height}` }
             : undefined
         }
@@ -237,7 +239,12 @@ export function GalleryPage(): React.JSX.Element {
           <div className={styles.galleryGrid}>
             {items.map((photo) => (
               <MasonryItem key={photo.id}>
-                <PhotoTile familyId={familyId} babyId={babyId} photo={photo} />
+                <PhotoTile
+                  familyId={familyId}
+                  babyId={babyId}
+                  photo={photo}
+                  naturalAspectRatio
+                />
               </MasonryItem>
             ))}
           </div>

@@ -11,22 +11,7 @@ base_commit: d401a2d0d29fd9e3b0f71ffae815c3a307a72242
 remote_freshness: verified
 working_tree_state: dirty_nonoverlap
 scope_digest_version: 2
-owned_paths:
-  [
-    apps/api,
-    apps/web,
-    packages/api-client,
-    tests/e2e,
-    docs/specs/SPEC-20260917-KSVSF8BN-photo-gallery-timeline,
-    docs/designs/DES-20260917-YQWSZG09-photo-gallery-timeline-ui,
-    docs/designs/DES-20260918-Y2GFD47V-baby-photo-ui-revision,
-    docs/plans/PLAN-20260918-RC0Y5QH3/plan.md,
-    rules/modules/responsive-ui.md,
-    rules/archive/RULESET-RESPONSIVE-UI,
-    rules/archive/MANIFEST.sha256,
-    rules/archive/INDEX.md,
-    rules/INDEX.md,
-  ]
+owned_paths: [apps/api, apps/web, packages/api-client, tests/e2e, docs/specs/SPEC-20260917-KSVSF8BN-photo-gallery-timeline, docs/designs/DES-20260917-YQWSZG09-photo-gallery-timeline-ui, docs/designs/DES-20260918-Y2GFD47V-baby-photo-ui-revision, docs/plans/PLAN-20260918-RC0Y5QH3/plan.md, rules/modules/responsive-ui.md, rules/archive/RULESET-RESPONSIVE-UI, rules/archive/MANIFEST.sha256, rules/archive/INDEX.md, rules/INDEX.md]
 overlapping_plan_ids: []
 reviewed_commit: null
 reviewed_scope_digest: null
