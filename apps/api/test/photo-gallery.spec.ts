@@ -273,6 +273,7 @@ describe('published gallery and avatar boundaries', () => {
       $queryRaw: jest
         .fn()
         .mockResolvedValueOnce([{ role: 'OWNER', status: 'ACTIVE' }])
+        .mockResolvedValueOnce([{ id: babyId }])
         .mockResolvedValueOnce([{ status: 'PUBLISHED' }]),
       babyProfile: {
         updateMany: jest.fn().mockResolvedValue({ count: 1 }),
@@ -298,7 +299,7 @@ describe('published gallery and avatar boundaries', () => {
     expect((await service.setAvatar(accountId, familyId, babyId, photoId)).avatarPhotoId).toBe(
       photoId,
     );
-    expect(transaction.$queryRaw).toHaveBeenCalledTimes(2);
+    expect(transaction.$queryRaw).toHaveBeenCalledTimes(3);
     expect(transaction.babyProfile.updateMany).toHaveBeenCalledWith({
       where: { id: babyId, familyId, status: 'ACTIVE' },
       data: { avatarPhotoId: photoId },
