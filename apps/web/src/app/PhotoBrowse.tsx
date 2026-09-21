@@ -1,10 +1,15 @@
-import type { PhotoSummary, PublishedPhotoDetail } from '@baby-growth-gallery/api-client';
+import type {
+  PhotoSummary,
+  PublishedPhotoDetail,
+  TimelinePage as TimelineData,
+} from '@baby-growth-gallery/api-client';
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
   Image as ImageIcon,
+  Sparkles,
   Trash2,
   Upload,
 } from 'lucide-react';
@@ -155,6 +160,31 @@ function PhotoTile({
   );
 }
 
+type TimelineEntry = TimelineData['items'][number];
+
+function MilestoneTile({
+  entry,
+}: {
+  entry: Extract<TimelineEntry, { kind: 'MILESTONE' }>;
+}): React.JSX.Element {
+  return (
+    <Link
+      className={styles.milestoneTile}
+      to={`/app/milestones/${entry.milestone.id}`}
+      aria-label={`查看里程碑：${entry.milestone.title}`}
+    >
+      <span className={styles.milestoneIcon}>
+        <Sparkles size={22} aria-hidden="true" />
+      </span>
+      <span className={styles.tileMeta}>
+        <strong>{entry.milestone.title}</strong>
+        <time dateTime={entry.eventOn}>{entry.eventOn}</time>
+        {entry.milestone.completionNote ? <span>{entry.milestone.completionNote}</span> : null}
+      </span>
+    </Link>
+  );
+}
+
 function MasonryItem({ children }: { children: React.ReactNode }): React.JSX.Element {
   const itemRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -269,10 +299,10 @@ export function TimelinePage(): React.JSX.Element {
   const { familyId, babyId } = useScope();
   const timeline = useTimeline(familyId, babyId);
   const entries = timeline.data?.pages.flatMap((page) => page.items) ?? [];
-  const months = new Map<string, PhotoSummary[]>();
+  const months = new Map<string, TimelineEntry[]>();
   for (const entry of entries) {
     const month = entry.eventOn.slice(0, 7);
-    months.set(month, [...(months.get(month) ?? []), entry.photo]);
+    months.set(month, [...(months.get(month) ?? []), entry]);
   }
   if (!familyId || !babyId) return <Navigate replace to="/app" />;
   return (
@@ -281,7 +311,7 @@ export function TimelinePage(): React.JSX.Element {
         <div>
           <p className={styles.eyebrow}>成长足迹</p>
           <h1>时间轴</h1>
-          <p>沿着拍摄日期，重温真实的成长照片。</p>
+          <p>沿着日历日期，重温成长照片与里程碑。</p>
         </div>
       </header>
       {timeline.isPending ? (
@@ -292,22 +322,31 @@ export function TimelinePage(): React.JSX.Element {
           onRetry={() => void timeline.refetch()}
         />
       ) : entries.length === 0 ? (
-        <BrowseState message="时间轴里还没有已发布照片。" />
+        <BrowseState message="时间轴里还没有照片或已完成里程碑。" />
       ) : (
         <>
-          {[...months].map(([month, photos]) => (
-            <section className={styles.month} key={month} aria-label={`${month} 的照片`}>
+          {[...months].map(([month, monthEntries]) => (
+            <section className={styles.month} key={month} aria-label={`${month} 的成长记录`}>
               <h2>{month.replace('-', ' 年 ')} 月</h2>
               <div className={styles.grid}>
-                {photos.map((photo) => (
-                  <PhotoTile key={photo.id} familyId={familyId} babyId={babyId} photo={photo} />
-                ))}
+                {monthEntries.map((entry) =>
+                  entry.kind === 'PHOTO' ? (
+                    <PhotoTile
+                      key={`PHOTO-${entry.photo.id}`}
+                      familyId={familyId}
+                      babyId={babyId}
+                      photo={entry.photo}
+                    />
+                  ) : (
+                    <MilestoneTile key={`MILESTONE-${entry.milestone.id}`} entry={entry} />
+                  ),
+                )}
               </div>
             </section>
           ))}
           {timeline.isError ? (
             <BrowseState
-              message="更多时间轴照片加载失败，请重试。"
+              message="更多成长记录加载失败，请重试。"
               onRetry={() => void timeline.fetchNextPage()}
             />
           ) : null}

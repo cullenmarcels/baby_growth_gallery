@@ -920,7 +920,9 @@ function ActivitiesPanel({ familyId }: { familyId: string }): React.JSX.Element 
                   ? `${String(summary.displayName)}离开了家庭`
                   : item.type === 'PHOTO_UPLOADED'
                     ? '上传了照片'
-                    : '记录了一条家庭动态';
+                    : item.type === 'MILESTONE_RECORDED'
+                      ? '记录了里程碑'
+                      : '记录了一条家庭动态';
         return (
           <article key={item.id}>
             <span className={styles.activityDot} />

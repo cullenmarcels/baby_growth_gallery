@@ -105,6 +105,9 @@
               },
               {
                 "$ref": "#/components/schemas/PhotoUploadedActivitySummaryV1Dto"
+              },
+              {
+                "$ref": "#/components/schemas/MilestoneRecordedActivitySummaryV1Dto"
               }
             ]
           },
@@ -410,6 +413,37 @@
         ],
         "type": "object"
       },
+      "CompleteMilestoneRequestDto": {
+        "properties": {
+          "completedOn": {
+            "format": "date",
+            "type": "string"
+          },
+          "completionNote": {
+            "maxLength": 1000,
+            "nullable": true,
+            "type": "string"
+          },
+          "expectedVersion": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "photoIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 10,
+            "type": "array"
+          }
+        },
+        "required": [
+          "expectedVersion",
+          "completedOn",
+          "photoIds"
+        ],
+        "type": "object"
+      },
       "CreateBabyRequestDto": {
         "properties": {
           "birthDate": {
@@ -433,6 +467,31 @@
         "required": [
           "nickname",
           "birthDate"
+        ],
+        "type": "object"
+      },
+      "CreateCustomMilestoneRequestDto": {
+        "properties": {
+          "reminderOn": {
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "source": {
+            "enum": [
+              "CUSTOM"
+            ],
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 40,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "source",
+          "title"
         ],
         "type": "object"
       },
@@ -484,6 +543,29 @@
         },
         "required": [
           "files"
+        ],
+        "type": "object"
+      },
+      "CreateTemplateMilestoneRequestDto": {
+        "properties": {
+          "reminderOn": {
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "source": {
+            "enum": [
+              "TEMPLATE"
+            ],
+            "type": "string"
+          },
+          "templateKey": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "source",
+          "templateKey"
         ],
         "type": "object"
       },
@@ -841,6 +923,345 @@
           "displayName",
           "fromRole",
           "toRole"
+        ],
+        "type": "object"
+      },
+      "MilestoneAuthorDto": {
+        "properties": {
+          "displayName": {
+            "type": "string"
+          },
+          "membershipId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "membershipId",
+          "displayName"
+        ],
+        "type": "object"
+      },
+      "MilestoneDetailDto": {
+        "properties": {
+          "babyId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "canManage": {
+            "type": "boolean"
+          },
+          "completedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "completedOn": {
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "completionNote": {
+            "nullable": true,
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/MilestoneAuthorDto"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "photoCount": {
+            "type": "number"
+          },
+          "photos": {
+            "items": {
+              "$ref": "#/components/schemas/MilestonePhotoDto"
+            },
+            "type": "array"
+          },
+          "reminderOn": {
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "source": {
+            "enum": [
+              "TEMPLATE",
+              "CUSTOM"
+            ],
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "PENDING",
+              "COMPLETED"
+            ],
+            "type": "string"
+          },
+          "templateKey": {
+            "nullable": true,
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "version": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "babyId",
+          "source",
+          "templateKey",
+          "title",
+          "state",
+          "reminderOn",
+          "completedOn",
+          "completionNote",
+          "completedAt",
+          "photoCount",
+          "createdBy",
+          "canManage",
+          "version",
+          "createdAt",
+          "updatedAt",
+          "photos"
+        ],
+        "type": "object"
+      },
+      "MilestoneOverviewDto": {
+        "properties": {
+          "nextCursor": {
+            "nullable": true,
+            "type": "string"
+          },
+          "progress": {
+            "$ref": "#/components/schemas/MilestoneProgressDto"
+          },
+          "reminders": {
+            "items": {
+              "$ref": "#/components/schemas/MilestoneSummaryDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "progress",
+          "reminders",
+          "nextCursor"
+        ],
+        "type": "object"
+      },
+      "MilestonePageDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/MilestoneSummaryDto"
+            },
+            "type": "array"
+          },
+          "nextCursor": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "type": "object"
+      },
+      "MilestonePhotoDto": {
+        "properties": {
+          "capturedOn": {
+            "format": "date",
+            "type": "string"
+          },
+          "height": {
+            "nullable": true,
+            "type": "number"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "title": {
+            "nullable": true,
+            "type": "string"
+          },
+          "width": {
+            "nullable": true,
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "capturedOn",
+          "width",
+          "height"
+        ],
+        "type": "object"
+      },
+      "MilestoneProgressDto": {
+        "properties": {
+          "completed": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "completed",
+          "total"
+        ],
+        "type": "object"
+      },
+      "MilestoneRecordedActivitySummaryV1Dto": {
+        "properties": {
+          "babyId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "babyId"
+        ],
+        "type": "object"
+      },
+      "MilestoneSummaryDto": {
+        "properties": {
+          "babyId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "canManage": {
+            "type": "boolean"
+          },
+          "completedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "completedOn": {
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "completionNote": {
+            "nullable": true,
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/MilestoneAuthorDto"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "photoCount": {
+            "type": "number"
+          },
+          "reminderOn": {
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "source": {
+            "enum": [
+              "TEMPLATE",
+              "CUSTOM"
+            ],
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "PENDING",
+              "COMPLETED"
+            ],
+            "type": "string"
+          },
+          "templateKey": {
+            "nullable": true,
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "version": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "babyId",
+          "source",
+          "templateKey",
+          "title",
+          "state",
+          "reminderOn",
+          "completedOn",
+          "completionNote",
+          "completedAt",
+          "photoCount",
+          "createdBy",
+          "canManage",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "MilestoneTemplateDto": {
+        "properties": {
+          "isAdded": {
+            "type": "boolean"
+          },
+          "key": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "title",
+          "isAdded"
+        ],
+        "type": "object"
+      },
+      "MilestoneTemplateListDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/MilestoneTemplateDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
         ],
         "type": "object"
       },
@@ -1257,6 +1678,18 @@
         ],
         "type": "object"
       },
+      "ReopenMilestoneRequestDto": {
+        "properties": {
+          "expectedVersion": {
+            "minimum": 1,
+            "type": "number"
+          }
+        },
+        "required": [
+          "expectedVersion"
+        ],
+        "type": "object"
+      },
       "SetBabyAvatarRequestDto": {
         "properties": {
           "photoId": {
@@ -1270,11 +1703,44 @@
         ],
         "type": "object"
       },
+      "TimelineMilestoneEntryDto": {
+        "properties": {
+          "eventOn": {
+            "format": "date",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "MILESTONE"
+            ],
+            "type": "string"
+          },
+          "milestone": {
+            "$ref": "#/components/schemas/MilestoneSummaryDto"
+          }
+        },
+        "required": [
+          "kind",
+          "eventOn",
+          "milestone"
+        ],
+        "type": "object"
+      },
       "TimelinePageDto": {
         "properties": {
           "items": {
             "items": {
-              "$ref": "#/components/schemas/TimelinePhotoEntryDto"
+              "discriminator": {
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/TimelinePhotoEntryDto"
+                },
+                {
+                  "$ref": "#/components/schemas/TimelineMilestoneEntryDto"
+                }
+              ]
             },
             "type": "array"
           },
@@ -1368,6 +1834,28 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "UpdateMilestoneRequestDto": {
+        "properties": {
+          "expectedVersion": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "reminderOn": {
+            "format": "date",
+            "nullable": true,
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 40,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "expectedVersion"
+        ],
         "type": "object"
       },
       "UpdatePhotoRequestDto": {
@@ -2827,6 +3315,607 @@
         ],
         "tags": [
           "babies"
+        ]
+      }
+    },
+    "/api/v1/families/{familyId}/babies/{babyId}/milestone-templates": {
+      "get": {
+        "operationId": "MilestoneController_templates",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MilestoneTemplateListDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "milestones"
+        ]
+      }
+    },
+    "/api/v1/families/{familyId}/babies/{babyId}/milestones": {
+      "get": {
+        "operationId": "MilestoneController_list",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {}
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {}
+          },
+          {
+            "in": "query",
+            "name": "state",
+            "required": true,
+            "schema": {
+              "enum": [
+                "PENDING",
+                "COMPLETED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MilestonePageDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "milestones"
+        ]
+      },
+      "post": {
+        "operationId": "MilestoneController_create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/CreateTemplateMilestoneRequestDto"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CreateCustomMilestoneRequestDto"
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MilestoneDetailDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "milestones"
+        ]
+      }
+    },
+    "/api/v1/families/{familyId}/babies/{babyId}/milestones/{milestoneId}": {
+      "delete": {
+        "operationId": "MilestoneController_remove",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "expectedVersion",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "milestoneId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "milestones"
+        ]
+      },
+      "get": {
+        "operationId": "MilestoneController_detail",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "milestoneId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MilestoneDetailDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "milestones"
+        ]
+      },
+      "patch": {
+        "operationId": "MilestoneController_update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "milestoneId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMilestoneRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MilestoneDetailDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "milestones"
+        ]
+      }
+    },
+    "/api/v1/families/{familyId}/babies/{babyId}/milestones/{milestoneId}/complete": {
+      "post": {
+        "operationId": "MilestoneController_complete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "milestoneId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteMilestoneRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MilestoneDetailDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "milestones"
+        ]
+      }
+    },
+    "/api/v1/families/{familyId}/babies/{babyId}/milestones/{milestoneId}/completion": {
+      "patch": {
+        "operationId": "MilestoneController_updateCompletion",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "milestoneId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteMilestoneRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MilestoneDetailDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "milestones"
+        ]
+      }
+    },
+    "/api/v1/families/{familyId}/babies/{babyId}/milestones/{milestoneId}/reopen": {
+      "post": {
+        "operationId": "MilestoneController_reopen",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "milestoneId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReopenMilestoneRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MilestoneDetailDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "milestones"
+        ]
+      }
+    },
+    "/api/v1/families/{familyId}/babies/{babyId}/milestones/overview": {
+      "get": {
+        "operationId": "MilestoneController_overview",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {}
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {}
+          },
+          {
+            "in": "query",
+            "name": "fromOn",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MilestoneOverviewDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "milestones"
         ]
       }
     },

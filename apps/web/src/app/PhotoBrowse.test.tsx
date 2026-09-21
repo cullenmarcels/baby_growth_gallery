@@ -1,4 +1,8 @@
-import { ApiClientError, type PhotoSummary } from '@baby-growth-gallery/api-client';
+import {
+  ApiClientError,
+  type MilestoneSummary,
+  type PhotoSummary,
+} from '@baby-growth-gallery/api-client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -81,9 +85,30 @@ describe('published photo browsing', () => {
     expect(imageFrame.parentElement).toHaveStyle({ aspectRatio: '20 / 20' });
   });
 
-  it('groups the real photo timeline by month without milestone placeholders', async () => {
+  it('groups real photos and completed milestones in the same monthly timeline', async () => {
+    const milestone: MilestoneSummary = {
+      id: '00000000-0000-4000-8000-000000000060',
+      babyId,
+      source: 'CUSTOM',
+      templateKey: null,
+      title: '第一次看海',
+      state: 'COMPLETED',
+      reminderOn: null,
+      completedOn: '2026-09-16',
+      completionNote: '合成里程碑说明',
+      completedAt: '2026-09-17T03:00:00.000Z',
+      photoCount: 0,
+      createdBy: { membershipId: '00000000-0000-4000-8000-000000000050', displayName: '合成成员' },
+      canManage: true,
+      version: 2,
+      createdAt: '2026-09-16T00:00:00.000Z',
+      updatedAt: '2026-09-17T03:00:00.000Z',
+    };
     vi.spyOn(api, 'listTimeline').mockResolvedValue({
-      items: [{ kind: 'PHOTO', eventOn: photo.capturedOn, photo }],
+      items: [
+        { kind: 'MILESTONE', eventOn: milestone.completedOn!, milestone },
+        { kind: 'PHOTO', eventOn: photo.capturedOn, photo },
+      ],
       nextCursor: null,
     });
     vi.spyOn(api, 'getPhotoPreview').mockResolvedValue({
@@ -95,7 +120,11 @@ describe('published photo browsing', () => {
     const timelineTile = screen.getByRole('link', { name: /合成生日照/ });
     expect(timelineTile).toHaveAttribute('href', `/app/photos/${photoId}`);
     expect(timelineTile.firstElementChild).not.toHaveAttribute('style');
-    expect(screen.queryByText(/里程碑/)).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '查看里程碑：第一次看海' })).toHaveAttribute(
+      'href',
+      `/app/milestones/${milestone.id}`,
+    );
+    expect(screen.getByText('合成里程碑说明')).toBeInTheDocument();
   });
 
   it('keeps a Chinese recovery state when the list request fails', async () => {

@@ -25,6 +25,9 @@ import { PhotoPolicyService } from './photo/photo-policy.service.js';
 import { PhotoProcessingService } from './photo/photo-processing.service.js';
 import { PhotoRateLimitService } from './photo/photo-rate-limit.service.js';
 import { PhotoService } from './photo/photo.service.js';
+import { MilestoneController } from './milestone/milestone.controller.js';
+import { MilestonePolicyService } from './milestone/milestone-policy.service.js';
+import { MilestoneService } from './milestone/milestone.service.js';
 
 @Module({
   controllers: [
@@ -34,6 +37,7 @@ import { PhotoService } from './photo/photo.service.js';
     FamilyInvitationController,
     BabyController,
     PhotoController,
+    MilestoneController,
   ],
   providers: [
     { provide: APP_CONFIG, useFactory: () => loadAppConfig() },
@@ -57,6 +61,8 @@ import { PhotoService } from './photo/photo.service.js';
     PhotoService,
     PhotoProcessingService,
     PhotoMaintenanceService,
+    MilestonePolicyService,
+    MilestoneService,
   ],
 })
 export class AppModule {}

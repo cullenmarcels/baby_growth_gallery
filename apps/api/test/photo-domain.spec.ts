@@ -222,6 +222,7 @@ describe('photo upload domain boundaries', () => {
         findUniqueOrThrow: jest.fn().mockResolvedValue(trashed),
       },
       babyProfile: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
+      milestonePhoto: { deleteMany: jest.fn().mockResolvedValue({ count: 0 }) },
       $transaction: jest.fn(),
     };
     prisma.$transaction.mockImplementation((run: (client: typeof prisma) => Promise<unknown>) =>

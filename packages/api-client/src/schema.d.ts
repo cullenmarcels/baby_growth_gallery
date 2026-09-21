@@ -24,7 +24,7 @@ export interface components {
       "occurredAt": string;
       "schemaVersion": number;
       "subject"?: components['schemas']['ActivitySubjectDto'];
-      "summary": (components['schemas']['FamilyCreatedSummaryDto'] | components['schemas']['MemberJoinedSummaryDto'] | components['schemas']['MemberRoleChangedSummaryDto'] | components['schemas']['MemberLeftSummaryDto'] | components['schemas']['PhotoUploadedActivitySummaryV1Dto']);
+      "summary": (components['schemas']['FamilyCreatedSummaryDto'] | components['schemas']['MemberJoinedSummaryDto'] | components['schemas']['MemberRoleChangedSummaryDto'] | components['schemas']['MemberLeftSummaryDto'] | components['schemas']['PhotoUploadedActivitySummaryV1Dto'] | components['schemas']['MilestoneRecordedActivitySummaryV1Dto']);
       "type": "FAMILY_CREATED" | "MEMBER_JOINED" | "MEMBER_ROLE_CHANGED" | "MEMBER_LEFT" | "PHOTO_UPLOADED" | "COMMENT_ADDED" | "REACTION_ADDED" | "MILESTONE_RECORDED" | "GROWTH_RECORDED";
       "visibility": "ACTIVE";
     };
@@ -86,10 +86,21 @@ export interface components {
       "phone": string;
       "remember": boolean;
     };
+    "CompleteMilestoneRequestDto": {
+      "completedOn": string;
+      "completionNote"?: string | null;
+      "expectedVersion": number;
+      "photoIds": Array<string>;
+    };
     "CreateBabyRequestDto": {
       "birthDate": string;
       "nickname": string;
       "sex"?: "MALE" | "FEMALE" | null;
+    };
+    "CreateCustomMilestoneRequestDto": {
+      "reminderOn"?: string | null;
+      "source": "CUSTOM";
+      "title": string;
     };
     "CreatedInvitationDto": {
       "invitation": components['schemas']['ActiveInvitationDto'];
@@ -101,6 +112,11 @@ export interface components {
     };
     "CreatePhotoBatchRequestDto": {
       "files": Array<components['schemas']['PhotoFileDescriptorDto']>;
+    };
+    "CreateTemplateMilestoneRequestDto": {
+      "reminderOn"?: string | null;
+      "source": "TEMPLATE";
+      "templateKey": string;
     };
     "CsrfTokenResponseDto": {
       "csrfToken": string;
@@ -172,6 +188,78 @@ export interface components {
       "fromRole": "OWNER" | "ADMIN" | "MEMBER";
       "membershipId": string;
       "toRole": "OWNER" | "ADMIN" | "MEMBER";
+    };
+    "MilestoneAuthorDto": {
+      "displayName": string;
+      "membershipId": string;
+    };
+    "MilestoneDetailDto": {
+      "babyId": string;
+      "canManage": boolean;
+      "completedAt": string | null;
+      "completedOn": string | null;
+      "completionNote": string | null;
+      "createdAt": string;
+      "createdBy": components['schemas']['MilestoneAuthorDto'];
+      "id": string;
+      "photoCount": number;
+      "photos": Array<components['schemas']['MilestonePhotoDto']>;
+      "reminderOn": string | null;
+      "source": "TEMPLATE" | "CUSTOM";
+      "state": "PENDING" | "COMPLETED";
+      "templateKey": string | null;
+      "title": string;
+      "updatedAt": string;
+      "version": number;
+    };
+    "MilestoneOverviewDto": {
+      "nextCursor": string | null;
+      "progress": components['schemas']['MilestoneProgressDto'];
+      "reminders": Array<components['schemas']['MilestoneSummaryDto']>;
+    };
+    "MilestonePageDto": {
+      "items": Array<components['schemas']['MilestoneSummaryDto']>;
+      "nextCursor": string | null;
+    };
+    "MilestonePhotoDto": {
+      "capturedOn": string;
+      "height": number | null;
+      "id": string;
+      "title": string | null;
+      "width": number | null;
+    };
+    "MilestoneProgressDto": {
+      "completed": number;
+      "total": number;
+    };
+    "MilestoneRecordedActivitySummaryV1Dto": {
+      "babyId": string;
+    };
+    "MilestoneSummaryDto": {
+      "babyId": string;
+      "canManage": boolean;
+      "completedAt": string | null;
+      "completedOn": string | null;
+      "completionNote": string | null;
+      "createdAt": string;
+      "createdBy": components['schemas']['MilestoneAuthorDto'];
+      "id": string;
+      "photoCount": number;
+      "reminderOn": string | null;
+      "source": "TEMPLATE" | "CUSTOM";
+      "state": "PENDING" | "COMPLETED";
+      "templateKey": string | null;
+      "title": string;
+      "updatedAt": string;
+      "version": number;
+    };
+    "MilestoneTemplateDto": {
+      "isAdded": boolean;
+      "key": string;
+      "title": string;
+    };
+    "MilestoneTemplateListDto": {
+      "items": Array<components['schemas']['MilestoneTemplateDto']>;
     };
     "PasswordLoginRequestDto": {
       "password": string;
@@ -257,11 +345,19 @@ export interface components {
       "privacyVersion": string;
       "termsVersion": string;
     };
+    "ReopenMilestoneRequestDto": {
+      "expectedVersion": number;
+    };
     "SetBabyAvatarRequestDto": {
       "photoId": string | null;
     };
+    "TimelineMilestoneEntryDto": {
+      "eventOn": string;
+      "kind": "MILESTONE";
+      "milestone": components['schemas']['MilestoneSummaryDto'];
+    };
     "TimelinePageDto": {
-      "items": Array<components['schemas']['TimelinePhotoEntryDto']>;
+      "items": Array<(components['schemas']['TimelinePhotoEntryDto'] | components['schemas']['TimelineMilestoneEntryDto'])>;
       "nextCursor": string | null;
     };
     "TimelinePhotoEntryDto": {
@@ -280,6 +376,11 @@ export interface components {
       "birthDate"?: string;
       "nickname"?: string;
       "sex"?: "MALE" | "FEMALE" | null;
+    };
+    "UpdateMilestoneRequestDto": {
+      "expectedVersion": number;
+      "reminderOn"?: string | null;
+      "title"?: string;
     };
     "UpdatePhotoRequestDto": {
       "capturedOn"?: string;
@@ -937,6 +1038,212 @@ export interface paths {
         "200": {
           content: {
             "application/json": components['schemas']['BabySummaryDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies/{babyId}/milestone-templates": {
+    get: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['MilestoneTemplateListDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies/{babyId}/milestones": {
+    get: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+        };
+        "query": {
+          "cursor"?: unknown;
+          "limit"?: unknown;
+          "state": "PENDING" | "COMPLETED";
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['MilestonePageDto'];
+          };
+        };
+      };
+    };
+    post: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+        };
+      };
+      requestBody: {
+        content: {
+          "application/json": (components['schemas']['CreateTemplateMilestoneRequestDto'] | components['schemas']['CreateCustomMilestoneRequestDto']);
+        };
+      };
+      responses: {
+        "201": {
+          content: {
+            "application/json": components['schemas']['MilestoneDetailDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies/{babyId}/milestones/{milestoneId}": {
+    delete: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+          "milestoneId": string;
+        };
+        "query": {
+          "expectedVersion": number;
+        };
+      };
+      responses: {
+        "204": {
+          content: Record<string, never>;
+        };
+      };
+    };
+    get: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+          "milestoneId": string;
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['MilestoneDetailDto'];
+          };
+        };
+      };
+    };
+    patch: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+          "milestoneId": string;
+        };
+      };
+      requestBody: {
+        content: {
+          "application/json": components['schemas']['UpdateMilestoneRequestDto'];
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['MilestoneDetailDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies/{babyId}/milestones/{milestoneId}/complete": {
+    post: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+          "milestoneId": string;
+        };
+      };
+      requestBody: {
+        content: {
+          "application/json": components['schemas']['CompleteMilestoneRequestDto'];
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['MilestoneDetailDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies/{babyId}/milestones/{milestoneId}/completion": {
+    patch: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+          "milestoneId": string;
+        };
+      };
+      requestBody: {
+        content: {
+          "application/json": components['schemas']['CompleteMilestoneRequestDto'];
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['MilestoneDetailDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies/{babyId}/milestones/{milestoneId}/reopen": {
+    post: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+          "milestoneId": string;
+        };
+      };
+      requestBody: {
+        content: {
+          "application/json": components['schemas']['ReopenMilestoneRequestDto'];
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['MilestoneDetailDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies/{babyId}/milestones/overview": {
+    get: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+        };
+        "query": {
+          "cursor"?: unknown;
+          "fromOn": string;
+          "limit"?: unknown;
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['MilestoneOverviewDto'];
           };
         };
       };

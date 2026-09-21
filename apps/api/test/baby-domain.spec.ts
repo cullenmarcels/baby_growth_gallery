@@ -110,7 +110,12 @@ describe('baby profile domain boundaries', () => {
       .fn()
       .mockResolvedValueOnce([{ acquired: true }])
       .mockResolvedValueOnce([{ id: babyId }]);
-    const transaction = { $queryRawUnsafe: query, babyProfile: { updateMany, deleteMany } };
+    const transaction = {
+      $queryRawUnsafe: query,
+      babyProfile: { updateMany, deleteMany },
+      milestone: { findMany: jest.fn().mockResolvedValue([]) },
+      familyActivity: { updateMany: jest.fn().mockResolvedValue({ count: 0 }) },
+    };
     const prisma = {
       $transaction: jest.fn(async (run: (client: typeof transaction) => Promise<number>) =>
         run(transaction),

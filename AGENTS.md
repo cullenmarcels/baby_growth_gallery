@@ -89,10 +89,10 @@
 | 照片上传与回收权限 Plan / Achievement | `docs/plans/PLAN-20260917-ABAHN8QT/plan.md` / `docs/achievements/ACH-20260917-ABAHN8QT-photo-upload-foundation.md` | 已归档 | 私有直传、安全变体、草稿、发布、30 天回收及管理员回收优先；关联 `SPEC-20260917-NHHC01TR`、`DES-20260917-8EVTR3RJ` |
 | 图集、时间轴与头像原 Plan E | `docs/specs/SPEC-20260917-KSVSF8BN-photo-gallery-timeline/spec.md` / `docs/designs/DES-20260917-YQWSZG09-photo-gallery-timeline-ui/design.md` / `docs/plans/PLAN-20260917-K0AH0D6T/plan.md` | 已由修订 Plan 取代 | 已发布照片浏览、详情管理与宝宝头像的原候选及历史 Review/Regression 证据 |
 | Plan E 照片浏览与界面修订 | `docs/plans/PLAN-20260918-RC0Y5QH3/plan.md` / `docs/achievements/ACH-20260918-RC0Y5QH3-photo-gallery-timeline-ui.md` | 已归档 | 图集、时间轴、照片详情、宝宝头像、档案操作、处理卡片及照片瀑布流；关联 `DES-20260918-Y2GFD47V` 与按钮单行规则 v2 |
+| Plan F 成长里程碑 | `docs/specs/SPEC-20260920-QQ9SQ9VT-baby-milestones/spec.md` / `docs/designs/DES-20260920-SAX3DM0H-baby-milestones-ui/design.md` / `docs/plans/PLAN-20260920-BR79695D/plan.md` | 开发中 | 共享清单、12 项模板、自定义里程碑、应用内提醒、照片关联与混合时间轴 |
 
 执行任务时先用 `rules/INDEX.md` 定位阶段；进入 `docs/` 后读取 `docs/README.md` 和 `docs/INDEX.md`。不得仅按文件日期推断当前有效资料。
 ## 8. 完成前核对
-
 - 是否先读取了 `AGENTS.md` 及任务涉及的专项资料？
 - 是否验证了引用路径、关键事实与当前实现？
 - 是否覆盖正常状态、空状态、加载状态、错误状态及必要边界条件？

@@ -11,7 +11,12 @@ import type {
 import type { ActivityQuery } from './family.schemas.js';
 
 export type CurrentActivityType =
-  'FAMILY_CREATED' | 'MEMBER_JOINED' | 'MEMBER_ROLE_CHANGED' | 'MEMBER_LEFT' | 'PHOTO_UPLOADED';
+  | 'FAMILY_CREATED'
+  | 'MEMBER_JOINED'
+  | 'MEMBER_ROLE_CHANGED'
+  | 'MEMBER_LEFT'
+  | 'PHOTO_UPLOADED'
+  | 'MILESTONE_RECORDED';
 
 interface RecordActivityInput {
   familyId: string;

@@ -42,6 +42,14 @@ const errorCopyByCode: Readonly<Record<string, string>> = {
   PHOTO_RESTORE_ADMIN_REQUIRED: '需要家庭管理员恢复此照片。',
   PHOTO_STORAGE_UNAVAILABLE: '照片存储暂时不可用，请稍后再试。',
   PHOTO_DEPENDENCY_UNAVAILABLE: '照片服务依赖暂时不可用，请稍后再试。',
+  MILESTONE_NOT_FOUND: '找不到这个里程碑，或你无权访问。',
+  MILESTONE_PERMISSION_DENIED: '你没有权限管理这个里程碑。',
+  MILESTONE_STATE_CONFLICT: '里程碑内容已经变化，请刷新后重试。',
+  MILESTONE_TEMPLATE_ALREADY_ADDED: '这个模板已经加入清单。',
+  MILESTONE_PHOTO_NOT_FOUND: '部分照片已不可用，请重新选择。',
+  MILESTONE_PHOTO_LIMIT_EXCEEDED: '最多只能关联 10 张照片。',
+  MILESTONE_PHOTO_DUPLICATED: '照片不能重复选择。',
+  MILESTONE_DATE_INVALID: '请选择有效的日期。',
 };
 
 export function userFacingError(error: unknown, fallback = '操作失败，请稍后重试。'): string {

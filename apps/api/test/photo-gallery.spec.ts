@@ -68,6 +68,7 @@ function published(
 function serviceWith(rows: Photo[], role: FamilyMembership['role'] = 'MEMBER') {
   const findMany = jest.fn().mockResolvedValue(rows);
   const findFirst = jest.fn().mockResolvedValue(null);
+  const milestoneFindMany = jest.fn().mockResolvedValue([]);
   const transaction = {
     $queryRaw: jest.fn().mockResolvedValue([{ role, status: 'ACTIVE' }]),
     photo: {
@@ -75,9 +76,11 @@ function serviceWith(rows: Photo[], role: FamilyMembership['role'] = 'MEMBER') {
       findUniqueOrThrow: jest.fn().mockResolvedValue(published()),
     },
     babyProfile: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
+    milestonePhoto: { deleteMany: jest.fn().mockResolvedValue({ count: 0 }) },
   };
   const prisma = {
     photo: { findMany, findFirst },
+    milestone: { findMany: milestoneFindMany },
     $transaction: jest.fn(async (run: (client: typeof transaction) => Promise<unknown>) =>
       run(transaction),
     ),
@@ -108,7 +111,7 @@ function serviceWith(rows: Photo[], role: FamilyMembership['role'] = 'MEMBER') {
     {} as never,
     {} as never,
   );
-  return { service, prisma, policy, transaction, findMany, findFirst };
+  return { service, prisma, policy, transaction, findMany, findFirst, milestoneFindMany };
 }
 
 describe('published gallery and avatar boundaries', () => {
@@ -154,6 +157,46 @@ describe('published gallery and avatar boundaries', () => {
     });
   });
 
+  it('accepts legacy photo cursors and puts a milestone before a photo at an exact timestamp tie', async () => {
+    const tiedPhoto = published(photoId, '2026-09-16', '2026-09-17T02:00:00.000Z');
+    const { service, milestoneFindMany } = serviceWith([tiedPhoto]);
+    milestoneFindMany.mockResolvedValue([
+      {
+        id: '00000000-0000-4000-8000-000000000077',
+        familyId,
+        babyId,
+        createdByMembershipId: membershipId,
+        source: 'CUSTOM',
+        templateKey: null,
+        title: '第一次看海',
+        state: 'COMPLETED',
+        reminderOn: null,
+        completedOn: new Date('2026-09-16T00:00:00.000Z'),
+        completionNote: null,
+        completedAt: new Date('2026-09-17T02:00:00.000Z'),
+        version: 1,
+        createdAt: new Date(0),
+        updatedAt: new Date(0),
+        createdBy: { id: membershipId, displayName: '合成成员' },
+        _count: { photos: 0 },
+      },
+    ]);
+    const page = await service.timeline(accountId, familyId, babyId, { limit: 1 });
+    expect(page.items[0]?.kind).toBe('MILESTONE');
+    expect(page.nextCursor).toBeTruthy();
+    const legacy = Buffer.from(
+      JSON.stringify({
+        v: 1,
+        capturedOn: tiedPhoto.capturedOn.toISOString().slice(0, 10),
+        publishedAt: tiedPhoto.publishedAt!.toISOString(),
+        id: tiedPhoto.id,
+      }),
+    ).toString('base64url');
+    await expect(
+      service.timeline(accountId, familyId, babyId, { limit: 20, cursor: legacy }),
+    ).resolves.toBeDefined();
+  });
+
   it('calculates adjacent IDs in the same order and returns server-side manage permission', async () => {
     const { service, findFirst } = serviceWith([], 'ADMIN');
     findFirst
@@ -191,6 +234,9 @@ describe('published gallery and avatar boundaries', () => {
     expect(transaction.babyProfile.updateMany).toHaveBeenCalledWith({
       where: { id: babyId, familyId, avatarPhotoId: photoId },
       data: { avatarPhotoId: null },
+    });
+    expect(transaction.milestonePhoto.deleteMany).toHaveBeenCalledWith({
+      where: { photoId },
     });
   });
 

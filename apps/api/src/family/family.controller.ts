@@ -50,6 +50,7 @@ import {
   MemberLeftSummaryDto,
   MemberRoleChangedSummaryDto,
   PhotoUploadedActivitySummaryV1Dto,
+  MilestoneRecordedActivitySummaryV1Dto,
   TombstonedFamilyActivityItemDto,
 } from './family.dto.js';
 import { FamilyRateLimitService } from './family-rate-limit.service.js';
@@ -75,6 +76,7 @@ const extraModels = [
   MemberRoleChangedSummaryDto,
   MemberLeftSummaryDto,
   PhotoUploadedActivitySummaryV1Dto,
+  MilestoneRecordedActivitySummaryV1Dto,
   ActivityActorDto,
   ActivitySubjectDto,
   ActiveFamilyActivityItemDto,

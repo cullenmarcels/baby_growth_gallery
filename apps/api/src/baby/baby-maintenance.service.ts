@@ -56,6 +56,26 @@ export class BabyMaintenanceService implements OnModuleInit, OnModuleDestroy {
         where: { id: { in: ids }, status: 'ARCHIVED', purgeAfter: { lte: now } },
         data: { status: 'PURGING' },
       });
+      const milestones = await transaction.milestone.findMany({
+        where: { babyId: { in: ids } },
+        select: { id: true, familyId: true },
+      });
+      for (const milestone of milestones) {
+        await transaction.familyActivity.updateMany({
+          where: {
+            familyId: milestone.familyId,
+            subjectType: 'MILESTONE',
+            subjectId: milestone.id,
+            visibility: 'ACTIVE',
+          },
+          data: {
+            visibility: 'TOMBSTONED',
+            subjectId: null,
+            summaryPayload: {},
+            tombstonedAt: now,
+          },
+        });
+      }
       const deleted = await transaction.babyProfile.deleteMany({
         where: { id: { in: ids }, status: 'PURGING' },
       });
