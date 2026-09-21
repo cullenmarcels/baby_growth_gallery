@@ -48,3 +48,8 @@
 - 精确候选上的最终 `pnpm validate` 通过：照片依赖、ESLint、Prettier、类型、branch-flow 5 项、API 7 suites / 62 tests、Web 9 files / 55 tests、构建和项目校验全部通过，终值 `PROJECT_VALIDATION=PASSED`。Vite 大 chunk 与 libphonenumber JSON 导入仅为既有 warning。
 - `git fetch --prune origin` 后，精确集成目标仍为 `origin/develop@77c602c58f7f266e4fbee979b21e82b5de7b8085`。功能分支未配置 upstream，通用远端 preflight 因此报告 `upstream_not_configured`；没有设置错误 upstream，也没有推送或创建 PR。
 - Review 和独立 Regression 重新绑定最终候选，v2 owned-scope 摘要为 `94EFC4E2AB98BD53E53719F9A72380D9FB019DEA4D76C9A109849E974872FE13`。Plan 状态进入 `acceptance_pending`，人工验收、推送、PR、合并和归档仍未发生。
+
+## 2026-09-21T18:05:31+08:00 — 人工验收与功能分支推送授权
+
+- 用户明确回复“验收通过，开始推分支”。验收记录绑定最终产品候选 `aacf33644f5b487f7c5971618c478ba1da3d2bab` 与 v2 owned-scope 摘要 `94EFC4E2AB98BD53E53719F9A72380D9FB019DEA4D76C9A109849E974872FE13`，Plan 状态由 `acceptance_pending` 转为 `integration_pending`。
+- 本次授权仅覆盖推送 `feature/baby-milestones` 功能分支；未授权创建 PR、合并 `develop`、推送归档证据、受保护分支晋升或生成 Achievement。`accepted_*` 已写入，`integrated_*` 与 `pr_url` 继续保持 `null`。
