@@ -2,27 +2,27 @@
 id: PLAN-20260920-BR79695D-STATE
 type: plan_state
 plan_id: PLAN-20260920-BR79695D
-status: in_progress
+status: integration_pending
 repository_mode: git_remote
 remote_name: origin
 integration_target: origin/develop
 work_branch: feature/baby-milestones
 base_commit: 77c602c58f7f266e4fbee979b21e82b5de7b8085
 remote_freshness: unverified
-working_tree_state: dirty_overlap
+working_tree_state: clean
 scope_digest_version: 2
 owned_paths: [apps/api/prisma/schema.prisma, apps/api/prisma/migrations, apps/api/src, apps/api/test, apps/web/src/app, packages/api-client, tests/e2e, docs/specs/SPEC-20260920-QQ9SQ9VT-baby-milestones, docs/designs/DES-20260920-SAX3DM0H-baby-milestones-ui, docs/plans/PLAN-20260920-BR79695D/plan.md]
 overlapping_plan_ids: []
-reviewed_commit: aacf33644f5b487f7c5971618c478ba1da3d2bab
-reviewed_scope_digest: 94EFC4E2AB98BD53E53719F9A72380D9FB019DEA4D76C9A109849E974872FE13
-accepted_commit: null
-accepted_scope_digest: null
+reviewed_commit: dfd2aebe667eea19b8ece3e0d00c53c5affc7086
+reviewed_scope_digest: D78C899B2248B4887DF0AB98717441E1A94DA9AD87795BED6C96B46418F006CB
+accepted_commit: dfd2aebe667eea19b8ece3e0d00c53c5affc7086
+accepted_scope_digest: D78C899B2248B4887DF0AB98717441E1A94DA9AD87795BED6C96B46418F006CB
 integrated_commit: null
 integrated_scope_digest: null
 ---
 
 # Plan State
 
-用户在功能分支推送后反馈首页“成长里程碑”仍显示旧的后续阶段占位文案。该文案与已实现的里程碑清单、提醒、完成记录和主导航入口冲突，因此按用户最新指令进入修订；这次代码变更会改变 v2 owned-scope 摘要，原人工验收只保留为历史记录并已失效。当前状态为 `in_progress`，待重新形成候选、Review、Regression 和人工验收；`accepted_*` 与 `integrated_*` 均为 null。
+首页“成长里程碑”卡片修订已形成候选 `dfd2aebe667eea19b8ece3e0d00c53c5affc7086`，绑定 v2 owned-scope 摘要 `D78C899B2248B4887DF0AB98717441E1A94DA9AD87795BED6C96B46418F006CB`。该候选把过期占位文案替换为真实能力说明，并将整张卡片链接到已存在的 `/app/milestones`；未增加首页聚合、统计或提醒数据。针对性 Web 测试、完整候选 Review、独立 Regression、项目校验和用户人工验收均已完成。用户的“确认通过人工验收”及后续“授权继续”只确认该候选，不授权推送、PR、合并或归档，因此当前为 `integration_pending`；`integrated_*` 继续为 null。
 
-原集成目标固定为 `origin/develop@77c602c58f7f266e4fbee979b21e82b5de7b8085`。本次没有刷新远端引用，故 State 记录 `remote_freshness=unverified`；首页修订在 `apps/web/src/app` 内，工作树状态为 `dirty_overlap`。`AGENTS.md`、`docs/INDEX.md`、State、Review、Regression、Acceptance 和 execution log 属于生命周期导航或证据文件，由校验器检查，不纳入本 Plan 的产品作用范围摘要。
+原集成目标固定为 `origin/develop@77c602c58f7f266e4fbee979b21e82b5de7b8085`。本次没有刷新远端引用，故 State 记录 `remote_freshness=unverified`；本地工作树在候选与证据更新后为 clean。`AGENTS.md`、`docs/INDEX.md`、State、Review、Regression、Acceptance 和 execution log 属于生命周期导航或证据文件，由校验器检查，不纳入本 Plan 的产品作用范围摘要。

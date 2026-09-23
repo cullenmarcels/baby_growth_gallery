@@ -4,11 +4,11 @@ type: regression_report
 title: "Plan F Regression"
 status: passed
 created_at: 2026-09-20T15:37:48+08:00
-updated_at: 2026-09-21T15:30:00+08:00
+updated_at: 2026-09-23T10:53:05+08:00
 plan_id: PLAN-20260920-BR79695D
 phase: candidate
-reviewed_commit: aacf33644f5b487f7c5971618c478ba1da3d2bab
-reviewed_scope_digest: 94EFC4E2AB98BD53E53719F9A72380D9FB019DEA4D76C9A109849E974872FE13
+reviewed_commit: dfd2aebe667eea19b8ece3e0d00c53c5affc7086
+reviewed_scope_digest: D78C899B2248B4887DF0AB98717441E1A94DA9AD87795BED6C96B46418F006CB
 ci_status: pending
 related_ids: [PLAN-20260920-BR79695D, SPEC-20260920-QQ9SQ9VT, DES-20260920-SAX3DM0H]
 supersedes: []
@@ -19,7 +19,7 @@ superseded_by: []
 
 ## 候选结论与影响范围
 
-独立 Regression 绑定最终产品候选 `aacf33644f5b487f7c5971618c478ba1da3d2bab` 与 v2 owned-scope 摘要 `94EFC4E2AB98BD53E53719F9A72380D9FB019DEA4D76C9A109849E974872FE13`。该候选以 `origin/develop@77c602c58f7f266e4fbee979b21e82b5de7b8085` 为基线，未推送，远端 CI 保持 `pending`。
+独立 Regression 绑定最终产品候选 `dfd2aebe667eea19b8ece3e0d00c53c5affc7086` 与 v2 owned-scope 摘要 `D78C899B2248B4887DF0AB98717441E1A94DA9AD87795BED6C96B46418F006CB`。该候选以 `origin/develop@77c602c58f7f266e4fbee979b21e82b5de7b8085` 为基线，未推送，远端 CI 保持 `pending`；本轮远端引用未刷新，故 State 记录 `remote_freshness=unverified`。
 
 最终完整 Playwright 共 69 项：`38 passed`、`31 skipped`（按项目条件跳过）、`0 failed`。Plan F 的两个 API 故事只在 `chromium-1440` 执行，因为接口契约与视口无关；照片、宝宝和认证的三视口响应式故事仍按 375／834／1440 执行。下表按实际影响范围选择回归对象。
 
@@ -30,16 +30,16 @@ superseded_by: []
 | OpenAPI 与生成客户端 | DTO 判别联合、错误码、游标和接口签名被扩展。 | OpenAPI 导出和生成客户端通过；`packages/api-client` typecheck 通过，客户端类型来自生成产物。 |
 | 混合时间轴与家庭动态 | 照片与已完成里程碑共用分页排序，撤销／删除会退出时间轴，动态需墓碑化。 | 时间轴 v1/v2 游标、同日排序、分页无重复／遗漏、完成／撤销和照片拍摄日重排场景通过。 |
 | 照片关联与生命周期 | 里程碑选择已发布照片，照片回收同步清理头像和关联；恢复不自动关联。 | 照片回收、恢复、头像和里程碑关联场景通过；并发锁顺序问题修复后定向场景 1 次加串行重复 3 次通过。 |
-| Web 里程碑流程 | 新增列表、概览、提醒、模板／自定义创建、详情、完成、编辑、撤销、删除和照片选择。 | Web 9 files / 55 tests 通过；错误中文映射、分页失败保留已加载内容、签名失效恢复、焦点和 aria-live 场景通过。 |
+| Web 里程碑流程与首页入口 | 新增列表、概览、提醒、模板／自定义创建、详情、完成、编辑、撤销、删除和照片选择；本候选修正首页入口。 | Web 9 files / 56 tests 通过；新增断言确认首页“成长里程碑”整卡显示真实能力说明并链接 `/app/milestones`；错误中文映射、分页失败保留已加载内容、签名失效恢复、焦点和 aria-live 场景继续通过。 |
 | 既有认证、宝宝与照片能力 | 应用路由、当前宝宝、发布照片、图集、详情、头像、回收和家庭权限被共享。 | 完整 Playwright 69 项中既有认证、宝宝、照片和响应式故事按项目条件执行；最终 38 passed、31 skipped、0 failed。 |
 | 响应式与可访问性 | 新页面使用应用壳、移动底栏、卡片网格、对话框和所有操作按钮约束。 | Windows Chromium 375／834／1440 覆盖正常、空、加载、错误、只读、冲突、键盘、焦点恢复、无横向溢出和按钮单行。 |
 
 ## 独立执行结果
 
 - 最终候选完整 Playwright：69 项中 38 passed、31 按项目条件跳过、0 failed。Plan F 两个 API 故事只运行 chromium-1440；三视口照片／宝宝／认证故事仍运行并通过。
-- `pnpm validate`：照片依赖、ESLint、Prettier、类型检查、branch-flow 5 项、API 7 suites / 62 tests、Web 9 files / 55 tests、build 和项目校验全部通过，终值为 `PROJECT_VALIDATION=PASSED`。
+- 照片依赖、ESLint、Prettier、全工作区类型检查、branch-flow 5 项、API 7 suites / 62 tests、Web 9 files / 56 tests、全工作区 build、索引校验和项目校验均通过，终值为 `PROJECT_VALIDATION=PASSED`。默认主机 `pnpm validate` 的嵌套 `pnpm` 会解析到系统 Node 24.19 / pnpm 11.19 并触发 engine 门禁；全部等价检查改用 Corepack Node 24.20 / pnpm 11.21 明确执行，不把该主机 shim 问题写为候选代码失败。
 - OpenAPI 导出、生成客户端和客户端类型检查通过；现有库 migration up to date，临时空库的 7 个 migration 全部应用成功后删除。
-- 独立回归首轮复用 Redis 前缀，触发 `429`，随后注册页面连锁失败；改用独立 Redis 前缀后仍观察到并发请求 `500`。复核确定根因为头像设置和照片回收的锁顺序反转：头像设置按照片→宝宝，照片回收按宝宝→照片。Development 在 `aacf336` 将头像设置统一到 `Membership→宝宝→照片`，并更新单元测试；定向场景 1 次及串行重复 3 次均通过，最终全量回归全绿。
+- 本轮首次 Docker 栈 E2E 受受控环境 Chromium `spawn EPERM` 与共享 Redis 注册限流 `429` 影响，不作为通过结论。随后 API 以隔离 Redis 前缀和 `TRUST_PROXY=1` 本地重建，单 worker 完整 Playwright 38 passed / 31 skipped / 0 failed；未清空数据库、Redis 或对象存储以隐藏失败。
 - Docker Desktop 的 broken `sailor-ingest` socket 通过保留运行时备份并重建 `run` 目录恢复；备份位于 `C:\Users\Marce\AppData\Local\Docker\run.codex-backup-20260921-100037`，不属于仓库交付物。
 - 一次聚合 `validate` 因系统嵌套 pnpm 11.19 与 Node 24.19 engine 不符失败；首次临时 shim 写入字面换行，未真正执行子命令，该结果作废；修正 shim 后真实 `pnpm validate` 通过。两次失败均保留在 Execution Log，不计入最终通过结果。
 

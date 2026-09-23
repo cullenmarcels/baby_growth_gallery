@@ -4,11 +4,11 @@ type: review_report
 title: "Plan F Review"
 status: passed
 created_at: 2026-09-20T15:37:48+08:00
-updated_at: 2026-09-21T15:30:00+08:00
+updated_at: 2026-09-23T10:53:05+08:00
 plan_id: PLAN-20260920-BR79695D
 repository_mode: git_remote
-reviewed_commit: aacf33644f5b487f7c5971618c478ba1da3d2bab
-reviewed_scope_digest: 94EFC4E2AB98BD53E53719F9A72380D9FB019DEA4D76C9A109849E974872FE13
+reviewed_commit: dfd2aebe667eea19b8ece3e0d00c53c5affc7086
+reviewed_scope_digest: D78C899B2248B4887DF0AB98717441E1A94DA9AD87795BED6C96B46418F006CB
 ci_status: pending
 related_ids: [PLAN-20260920-BR79695D, SPEC-20260920-QQ9SQ9VT, DES-20260920-SAX3DM0H]
 supersedes: []
@@ -19,7 +19,7 @@ superseded_by: []
 
 ## 结论与版本
 
-最终产品候选为 `aacf33644f5b487f7c5971618c478ba1da3d2bab`，本报告绑定 v2 owned-scope 摘要 `94EFC4E2AB98BD53E53719F9A72380D9FB019DEA4D76C9A109849E974872FE13`。候选从已核验的 `origin/develop@77c602c58f7f266e4fbee979b21e82b5de7b8085` 建立，目标分支保持 `origin/develop`。
+最终产品候选为 `dfd2aebe667eea19b8ece3e0d00c53c5affc7086`，本报告绑定 v2 owned-scope 摘要 `D78C899B2248B4887DF0AB98717441E1A94DA9AD87795BED6C96B46418F006CB`。该候选在此前通过的 `aacf336` 基础上仅修改首页里程碑卡片和其自动化断言；候选仍以 `origin/develop@77c602c58f7f266e4fbee979b21e82b5de7b8085` 为基线，目标分支保持 `origin/develop`，但本轮未刷新远端引用。
 
 本地 Review 结论为 `passed`。66 个适用 Rule 全部为 `PASS` 或有明确理由的 `NOT_APPLICABLE`，没有 `FAIL` 或 `UNVERIFIED`。功能分支尚未推送，因此远端 CI 为 `pending`，不作为本地 Review 通过证据。
 
@@ -33,7 +33,7 @@ superseded_by: []
 | 照片生命周期 | PASS | 关联仅接受同家庭、同宝宝、已发布照片，按选择顺序去重且最多 10 张；照片回收同事务解除头像与里程碑关联，恢复不自动重建；宝宝永久清理将动态转墓碑并级联数据。 |
 | 混合时间轴 | PASS | `PHOTO` 与 `MILESTONE` 判别联合按日历日期、记录时间、类型优先级和 ID 稳定排序；游标 v2 保存完整排序键并兼容照片 v1；撤销或删除的里程碑立即退出时间轴。 |
 | OpenAPI 与生成客户端 | PASS | 时间轴联合 DTO 已加入 discriminator，接口、错误码和游标契约已重新导出，`packages/api-client` 由生成流程更新并通过 typecheck；客户端未手写重复接口类型。 |
-| Web、响应式与可访问性 | PASS | `/app/milestones`、`/new`、`/:milestoneId` 覆盖列表、概览、编辑、完成、撤销、删除和照片选择；375／834／1440 分别使用单列、双列、桌面布局；按钮单行且同级 44px，弹层支持 Escape、焦点恢复、可见焦点和 `aria-live`。 |
+| Web、响应式与可访问性 | PASS | `/app/milestones`、`/new`、`/:milestoneId` 继续覆盖列表、概览、编辑、完成、撤销、删除和照片选择；首页“成长里程碑”整卡现链接 `/app/milestones`，显示真实能力说明，并由 `BabyApp.test.tsx` 断言。375／834／1440 分别使用单列、双列、桌面布局；按钮单行且同级 44px，弹层支持 Escape、焦点恢复、可见焦点和 `aria-live`。 |
 | 文档与作用范围 | PASS | Plan F Spec、Design、Plan、State、Review、Regression、Acceptance、执行记录及索引相互链接；原 Plan D/E 归档不改；导航和生命周期证据不纳入产品 owned-scope 摘要，State 已收紧为产品与 `plan.md` 路径。 |
 
 ## 发现记录与复查
@@ -42,6 +42,7 @@ superseded_by: []
 2. `3c1e65c3fa89bde6a174f540147b8ee6ea805128`（`3c1e65c`）扩充 E2E 边界故事，覆盖模板唯一性、日期和照片关联边界及响应式流程。
 3. 独立回归发现头像设置按“照片→宝宝”、照片回收按“宝宝→照片”的锁顺序反转，在并发场景会触发 Prisma 500。该发现返回 Development 修复，未沿用受影响的通过结论。
 4. `aacf33644f5b487f7c5971618c478ba1da3d2bab`（`aacf336`）将头像设置统一为 `Membership→宝宝→照片`，与照片回收的锁顺序一致，并更新头像设置单元测试。定向并发场景执行 1 次，随后串行重复 3 次，均通过；最终 Review 对修复后的候选重新核对，没有阻断发现。
+5. 旧候选人工验收后发现首页仍保留“后续阶段开放”占位文案。`dfd2aeb` 将卡片改为真实说明并加上 `/app/milestones` 整卡链接，同时新增可重放 Web 断言；差异只涉及 `apps/web/src/app/BabyApp.tsx` 与 `BabyApp.test.tsx`，未发现范围、权限或响应式阻断问题。
 
 ## 视口 × 状态矩阵
 
@@ -65,7 +66,7 @@ superseded_by: []
 | SRC-006 | PASS | Plan F 中的模板、提醒、照片关联和时间轴行为均有用户确认依据。 |
 | SRC-007 | PASS | 本候选沿用已固定的规则版本，不把新规则写入历史归档。 |
 | SRC-008 | PASS | 修改前核对代码入口、迁移、接口、Web、E2E 和文档范围。 |
-| SRC-009 | PASS | 通过 fetch 精确核对 `origin/develop`；通用 preflight 的 upstream 未配置如实保留为 unverified。 |
+| SRC-009 | PASS | State 固定本地 HEAD、`origin/develop` 集成目标和 `remote_freshness=unverified`；本轮未把本地缓存写作远端当前真相。 |
 | SRC-010 | PASS | 文档索引由项目生成与检查脚本核对，入口与状态保持一致。 |
 | REPO-001 | PASS | 其他操作者的现有修改未被撤销或覆盖，证据变更限于 Plan F 文档范围。 |
 | REPO-002 | PASS | 代码、迁移、测试、OpenAPI/client、Web 和证据均属于确认的 Plan F 范围。 |
@@ -75,7 +76,7 @@ superseded_by: []
 | REPO-006 | PASS | 未改写 Plan D/E 归档、develop 历史或其他 Plan 的事实。 |
 | REPO-007 | PASS | Docker 运行时恢复使用可保留备份，项目内没有新增环境凭据或本地数据。 |
 | GIT-001 | PASS | preflight 确认真实 Git 根目录和 git_remote 模式。 |
-| GIT-002 | PASS | fetch 后精确目标为 `origin/develop@77c602c`；功能分支无 upstream，通用 preflight 的 unverified 状态如实记录。 |
+| GIT-002 | PASS | 记录候选 HEAD、功能分支、固定 `origin/develop@77c602c` 基线和本轮 `remote_freshness=unverified`；不把本地 refs 等同远端实时状态。 |
 | GIT-003 | PASS | 候选修改前检查路径重叠和工作区状态，产品代码在已提交候选中；证据文件单独登记。 |
 | GIT-004 | PASS | State 固定基线、分支、`origin/develop` 集成目标、owned_paths 和无重叠 Plan。 |
 | GIT-005 | PASS | 活动 Plan 路径扫描无未协调重叠；导航和生命周期文档不进入产品摘要。 |
@@ -126,4 +127,4 @@ superseded_by: []
 
 ## 后续门禁
 
-Review 已通过，允许依照阶段规则进入独立 Regression。用户人工验收、功能分支推送、PR 创建、合并、集成提交复验和归档仍分别等待授权；本候选没有远端 CI 通过证据。
+Review 已通过，允许依照阶段规则进入独立 Regression。用户人工验收将在 Regression 通过后单独记录；功能分支推送、PR 创建、合并、集成提交复验和归档仍分别等待授权；本候选没有远端 CI 通过证据。

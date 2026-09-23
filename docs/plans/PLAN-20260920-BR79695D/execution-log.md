@@ -62,3 +62,11 @@
 - `hooks/update-indexes.ps1 -Write` 与 `-Check` 均通过，`git diff --check` 通过。直接调用本机 Prettier 二进制返回“未识别命令”，未将其记为通过；当前 Web Docker 构建中的 `tsc -b && vite build` 成功，重建后的 Web 容器 healthy。
 - 用户补充要求“成长里程碑”卡片与“珍贵照片”卡片一样支持跳转。卡片已接入现有 `/app/milestones` 路由；该路由与页面在原 Plan F 中已实现，因此不增加首页聚合或新的业务能力。
 - Web Docker 构建中的 `tsc -b && vite build` 成功，重建后的 Web 容器为 healthy；当前本地页面已更新。
+
+## 2026-09-23T10:53:05+08:00 — 首页入口候选复核与人工验收
+
+- 用户明确“确认通过人工验收”，并在说明候选必须重新形成和复核后，明确“授权继续”；授权范围限于本地候选、验证和验收记录，不包含推送、PR、合并、归档或晋升。
+- 首页修订与同步生命周期记录形成候选 `dfd2aebe667eea19b8ece3e0d00c53c5affc7086`；产品差异仅为 `BabyApp.tsx` 的真实能力说明和 `/app/milestones` 整卡链接，以及 `BabyApp.test.tsx` 的跳转断言。v2 owned-scope 摘要为 `D78C899B2248B4887DF0AB98717441E1A94DA9AD87795BED6C96B46418F006CB`。
+- 照片依赖、ESLint、Prettier、类型检查、branch-flow 5 项、API 7 suites / 62 tests、Web 9 files / 56 tests、全工作区 build、`update-indexes -Check` 和 `PROJECT_VALIDATION=PASSED` 均通过。默认根 `pnpm validate` 的嵌套命令会调用系统 Node 24.19 / pnpm 11.19 并被 engine 门禁拒绝；使用 Corepack Node 24.20 / pnpm 11.21 显式运行其等价检查，未将主机 shim 问题写为通过。
+- 默认 E2E 启动模式试图另起开发服务器失败；复用 Docker 栈的首次并发运行受 Chromium `spawn EPERM` 和共享 Redis `429` 限流影响。受控环境外确认浏览器可启动后，仅重建本地 API 到隔离 Redis 前缀并设 `TRUST_PROXY=1`，不清理数据库、Redis 或对象存储；单 worker 完整 Playwright 为 38 passed / 31 项按项目条件 skipped / 0 failed。
+- 更新 Review 与独立 Regression 到新候选后，用户人工验收确认记录为 `confirmed`。Plan 进入 `integration_pending`；当前没有推送、PR、合并、集成提交、远端 CI 或归档。
