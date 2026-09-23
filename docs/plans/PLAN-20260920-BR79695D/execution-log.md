@@ -77,3 +77,9 @@
 - 已刷新 `origin` 并确认 PR #26 的精确集成提交为 `origin/develop@860be884287e8875f380e1dade3b38e629f4b8d5`；PR Head `bc4b897` 为 merge commit 的第二父提交，功能分支当前另有仅文档证据提交 `a7fa18e`，不属于已合并产品 Head。
 - 对集成提交按 v2 owned paths 重算 scope digest 得到 `D78C899B2248B4887DF0AB98717441E1A94DA9AD87795BED6C96B46418F006CB`，与 accepted digest 完全一致，人工验收未因合并失效。
 - GitHub `branch-flow-develop`、`quality`、`e2e-auth` 三项检查均完成并成功；Plan 状态由 `integration_pending` 推进为 `integration_review`，`integrated_commit` 与 `integrated_scope_digest` 已登记。
+
+## 2026-09-23T13:34:11+08:00 — Plan F 归档
+
+- 用户明确授权“授权归档”。归档门禁复核确认 Plan 状态为 `integration_review`，accepted/integrated v2 digest 一致，集成提交 `860be884287e8875f380e1dade3b38e629f4b8d5` 位于已通过 GitHub API 验证的 `develop` ref `662d24e67cbba9f27edc3af3b1f4dffa899b31d3`。
+- PR #26 已合并，`branch-flow-develop`、`quality` 和 `e2e-auth` 全部成功；合并后 `update-indexes -Check`、`validate-project.ps1 -Check` 和 `PROJECT_VALIDATION=PASSED` 均通过。
+- 按规则原子生成唯一 Achievement `ACH-20260920-BR79695D`，更新 Plan State 为 `archived`，更新中央索引，并将完整 Plan 包与 Achievement 写入 `docs/ARCHIVE.sha256`。未执行 `develop → release → master → main` 晋升。
