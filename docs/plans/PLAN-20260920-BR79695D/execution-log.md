@@ -53,3 +53,12 @@
 
 - 用户明确回复“验收通过，开始推分支”。验收记录绑定最终产品候选 `aacf33644f5b487f7c5971618c478ba1da3d2bab` 与 v2 owned-scope 摘要 `94EFC4E2AB98BD53E53719F9A72380D9FB019DEA4D76C9A109849E974872FE13`，Plan 状态由 `acceptance_pending` 转为 `integration_pending`。
 - 本次授权仅覆盖推送 `feature/baby-milestones` 功能分支；未授权创建 PR、合并 `develop`、推送归档证据、受保护分支晋升或生成 Achievement。`accepted_*` 已写入，`integrated_*` 与 `pr_url` 继续保持 `null`。
+
+## 2026-09-22T10:12:00+08:00 — 首页里程碑占位文案修订
+
+- 用户反馈首页“成长里程碑”卡片仍显示“里程碑记录将在后续阶段开放”。代码实际已有 `/app/milestones` 页面和主导航入口，原文案已经过期。
+- 本次只修正首页卡片文案为真实能力说明，不增加首页聚合、统计或提醒数据，仍符合 Plan F 的非目标边界。
+- 修订会改变 `apps/web/src/app` 的 v2 owned-scope 摘要，原 `aacf33644f5b487f7c5971618c478ba1da3d2bab` 的人工验收不再覆盖修订候选。Acceptance Record 标记为 `invalidated`，State 返回 `in_progress`；需要重新形成候选并完成 Review、Regression 和人工验收。
+- `hooks/update-indexes.ps1 -Write` 与 `-Check` 均通过，`git diff --check` 通过。直接调用本机 Prettier 二进制返回“未识别命令”，未将其记为通过；当前 Web Docker 构建中的 `tsc -b && vite build` 成功，重建后的 Web 容器 healthy。
+- 用户补充要求“成长里程碑”卡片与“珍贵照片”卡片一样支持跳转。卡片已接入现有 `/app/milestones` 路由；该路由与页面在原 Plan F 中已实现，因此不增加首页聚合或新的业务能力。
+- Web Docker 构建中的 `tsc -b && vite build` 成功，重建后的 Web 容器为 healthy；当前本地页面已更新。
