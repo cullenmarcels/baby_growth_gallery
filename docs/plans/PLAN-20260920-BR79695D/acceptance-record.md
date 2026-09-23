@@ -5,7 +5,7 @@ title: "Plan F 人工验收记录"
 status: confirmed
 acceptance_status: confirmed
 created_at: 2026-09-20T15:37:48+08:00
-updated_at: 2026-09-23T10:53:05+08:00
+updated_at: 2026-09-23T11:28:21+08:00
 plan_id: PLAN-20260920-BR79695D
 confirmed_by: user
 confirmed_at: 2026-09-23T10:53:05+08:00
@@ -14,7 +14,7 @@ accepted_commit: dfd2aebe667eea19b8ece3e0d00c53c5affc7086
 accepted_scope_digest: D78C899B2248B4887DF0AB98717441E1A94DA9AD87795BED6C96B46418F006CB
 integration_commit: null
 integration_scope_digest: null
-pr_url: null
+pr_url: https://github.com/cullenmarcels/baby_growth_gallery/pull/26
 related_ids: [PLAN-20260920-BR79695D]
 supersedes: []
 superseded_by: []
@@ -31,3 +31,5 @@ superseded_by: []
 修订候选 `dfd2aebe667eea19b8ece3e0d00c53c5affc7086` 已完成重新绑定的 Review、独立 Regression、完整隔离 Playwright（38 passed / 31 项按项目条件 skipped / 0 failed）和 `PROJECT_VALIDATION=PASSED`。用户随后明确“确认通过人工验收”，并授权在形成候选和完成必要复核后记录确认；该确认现绑定本候选及 v2 摘要 `D78C899B2248B4887DF0AB98717441E1A94DA9AD87795BED6C96B46418F006CB`。
 
 本次确认只完成 Plan F 候选验收；不授权推送功能分支、创建 PR、合并 `develop`、推送归档证据、受保护分支晋升或生成 Achievement。`integration_commit`、`integration_scope_digest` 和 `pr_url` 保持 `null`。
+
+用户随后明确授权“为该候选创建以 `develop` 为目标的 PR”。已按该独立授权推送包含候选与验收记录的 `feature/baby-milestones@bc4b89772b04ec39481772f04b4bc6cb259ea236`，并创建 [Pull Request #26](https://github.com/cullenmarcels/baby_growth_gallery/pull/26)（`feature/baby-milestones` → `develop`）。该操作没有合并 PR、生成集成提交、推送归档证据或晋升受保护分支；`integration_commit` 与 `integration_scope_digest` 继续为 `null`。

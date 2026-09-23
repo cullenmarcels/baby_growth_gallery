@@ -70,3 +70,10 @@
 - 照片依赖、ESLint、Prettier、类型检查、branch-flow 5 项、API 7 suites / 62 tests、Web 9 files / 56 tests、全工作区 build、`update-indexes -Check` 和 `PROJECT_VALIDATION=PASSED` 均通过。默认根 `pnpm validate` 的嵌套命令会调用系统 Node 24.19 / pnpm 11.19 并被 engine 门禁拒绝；使用 Corepack Node 24.20 / pnpm 11.21 显式运行其等价检查，未将主机 shim 问题写为通过。
 - 默认 E2E 启动模式试图另起开发服务器失败；复用 Docker 栈的首次并发运行受 Chromium `spawn EPERM` 和共享 Redis `429` 限流影响。受控环境外确认浏览器可启动后，仅重建本地 API 到隔离 Redis 前缀并设 `TRUST_PROXY=1`，不清理数据库、Redis 或对象存储；单 worker 完整 Playwright 为 38 passed / 31 项按项目条件 skipped / 0 failed。
 - 更新 Review 与独立 Regression 到新候选后，用户人工验收确认记录为 `confirmed`。Plan 进入 `integration_pending`；当前没有推送、PR、合并、集成提交、远端 CI 或归档。
+
+## 2026-09-23T11:28:21+08:00 — 功能分支推送与 Plan F PR
+
+- 用户明确授权“为该候选创建以 `develop` 为目标的 PR”。该授权仅覆盖本次功能分支推送与 PR 创建；不包含合并、归档、集成提交或受保护分支晋升。
+- `git fetch --prune origin` 后远端 preflight 通过：`origin/develop@77c602c58f7f266e4fbee979b21e82b5de7b8085` 仍是候选祖先、工作树 clean、远端 freshness 为 verified、无重叠 Plan；创建前不存在同一 `feature/baby-milestones` → `develop` 的开放 PR。
+- 已将 `feature/baby-milestones` 从 `origin/feature/baby-milestones@c7af91d` 推送至 `bc4b89772b04ec39481772f04b4bc6cb259ea236`；该 Head 包含产品候选 `dfd2aebe667eea19b8ece3e0d00c53c5affc7086` 与人工验收记录。
+- 已创建 [Pull Request #26](https://github.com/cullenmarcels/baby_growth_gallery/pull/26)（`feature/baby-milestones` → `develop`）。PR 创建时未合并；远端 CI 和任何集成复验尚未登记为通过。
