@@ -19,7 +19,7 @@ const auth = vi.hoisted(() => ({
 vi.mock('./AuthContext', () => ({ useAuth: () => auth }));
 
 import { api } from './api';
-import { BabyCreatePage, BabyEntryRedirect, BabyManagePage } from './BabyApp';
+import { BabyCreatePage, BabyEntryRedirect, BabyHomePage, BabyManagePage } from './BabyApp';
 
 const familyId = '00000000-0000-4000-8000-000000000010';
 const babyId = '00000000-0000-4000-8000-000000000020';
@@ -87,6 +87,16 @@ afterEach(() => {
 });
 
 describe('baby profile application states', () => {
+  it('links the milestone home card to the real milestone workspace', async () => {
+    auth.account.activeBabyId = babyId;
+    vi.spyOn(api, 'getBaby').mockResolvedValue(baby());
+    renderAt(<BabyHomePage />, '/app/home');
+
+    const milestoneCard = await screen.findByRole('link', { name: /成长里程碑/ });
+    expect(milestoneCard).toHaveAttribute('href', '/app/milestones');
+    expect(milestoneCard).toHaveTextContent('管理当前宝宝的里程碑清单、提醒与完成记录。');
+  });
+
   it('directs a manager without babies to the create form', async () => {
     vi.spyOn(api, 'getFamily').mockResolvedValue(family('ADMIN'));
     vi.spyOn(api, 'listBabies').mockResolvedValue({ items: [] });

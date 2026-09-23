@@ -12,7 +12,15 @@ import {
   Req,
   applyDecorators,
 } from '@nestjs/common';
-import { ApiBody, ApiCookieAuth, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiCookieAuth,
+  ApiExtraModels,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import type { Request } from 'express';
 import { parseBody } from '../auth/auth.schemas.js';
 import { AuthSessionService } from '../auth/session.service.js';
@@ -30,6 +38,8 @@ import {
   PhotoUploadInstructionDto,
   PublishPhotosRequestDto,
   TimelinePageDto,
+  TimelineMilestoneEntryDto,
+  TimelinePhotoEntryDto,
   UpdatePhotoRequestDto,
 } from './photo.dto.js';
 import {
@@ -59,6 +69,7 @@ const PhotoParams = () =>
 
 @ApiTags('photos')
 @ApiCookieAuth()
+@ApiExtraModels(TimelinePhotoEntryDto, TimelineMilestoneEntryDto)
 @Controller('families/:familyId/babies/:babyId')
 export class PhotoController {
   constructor(

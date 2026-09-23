@@ -40,6 +40,20 @@ const publishedCursorSchema = z.object({
   publishedAt: z.iso.datetime({ offset: true }),
   id: z.uuid(),
 });
+const timelineCursorV2Schema = z.object({
+  v: z.literal(2),
+  eventOn: z.iso.date(),
+  recordedAt: z.iso.datetime({ offset: true }),
+  kind: z.enum(['PHOTO', 'MILESTONE']),
+  id: z.uuid(),
+});
+
+type TimelinePosition = {
+  kind: 'PHOTO' | 'MILESTONE';
+  id: string;
+  eventOn: Date;
+  recordedAt: Date;
+};
 
 @Injectable()
 export class PhotoService {
@@ -487,10 +501,92 @@ export class PhotoService {
     babyId: string,
     query: PublishedPhotosQuery,
   ): Promise<TimelinePageDto> {
-    const page = await this.published(accountId, familyId, babyId, query);
+    const { membership } = await this.policy.requireActiveBaby(accountId, familyId, babyId);
+    const cursor = query.cursor ? this.decodeTimelineCursor(query.cursor) : null;
+    const [photos, milestones] = await Promise.all([
+      this.prisma.photo.findMany({
+        where: {
+          familyId,
+          babyId,
+          status: 'PUBLISHED',
+          ...(cursor ? { OR: this.timelinePhotoOlderThan(cursor) } : {}),
+        },
+        orderBy: [{ capturedOn: 'desc' }, { publishedAt: 'desc' }, { id: 'desc' }],
+        take: query.limit + 1,
+      }),
+      this.prisma.milestone.findMany({
+        where: {
+          familyId,
+          babyId,
+          state: 'COMPLETED',
+          completedOn: { not: null },
+          completedAt: { not: null },
+          ...(cursor ? { OR: this.timelineMilestoneOlderThan(cursor) } : {}),
+        },
+        include: {
+          createdBy: { select: { id: true, displayName: true } },
+          _count: { select: { photos: true } },
+        },
+        orderBy: [{ completedOn: 'desc' }, { completedAt: 'desc' }, { id: 'desc' }],
+        take: query.limit + 1,
+      }),
+    ]);
+    const candidates = [
+      ...photos.map((photo) => ({
+        position: {
+          kind: 'PHOTO' as const,
+          id: photo.id,
+          eventOn: photo.capturedOn,
+          recordedAt: photo.publishedAt!,
+        },
+        entry: {
+          kind: 'PHOTO' as const,
+          eventOn: photo.capturedOn.toISOString().slice(0, 10),
+          photo: this.summary(photo, membership),
+        },
+      })),
+      ...milestones.map((milestone) => ({
+        position: {
+          kind: 'MILESTONE' as const,
+          id: milestone.id,
+          eventOn: milestone.completedOn!,
+          recordedAt: milestone.completedAt!,
+        },
+        entry: {
+          kind: 'MILESTONE' as const,
+          eventOn: milestone.completedOn!.toISOString().slice(0, 10),
+          milestone: {
+            id: milestone.id,
+            babyId: milestone.babyId,
+            source: milestone.source,
+            templateKey: milestone.templateKey,
+            title: milestone.title,
+            state: milestone.state,
+            reminderOn: milestone.reminderOn?.toISOString().slice(0, 10) ?? null,
+            completedOn: milestone.completedOn!.toISOString().slice(0, 10),
+            completionNote: milestone.completionNote,
+            completedAt: milestone.completedAt!.toISOString(),
+            photoCount: milestone._count.photos,
+            createdBy: {
+              membershipId: milestone.createdBy.id,
+              displayName: milestone.createdBy.displayName,
+            },
+            canManage:
+              ['OWNER', 'ADMIN'].includes(membership.role) ||
+              milestone.createdByMembershipId === membership.id,
+            version: milestone.version,
+            createdAt: milestone.createdAt.toISOString(),
+            updatedAt: milestone.updatedAt.toISOString(),
+          },
+        },
+      })),
+    ].sort((a, b) => this.compareTimeline(b.position, a.position));
+    const page = candidates.slice(0, query.limit);
+    const hasMore = candidates.length > query.limit;
+    const last = page.at(-1);
     return {
-      items: page.items.map((photo) => ({ kind: 'PHOTO', eventOn: photo.capturedOn, photo })),
-      nextCursor: page.nextCursor,
+      items: page.map(({ entry }) => entry),
+      nextCursor: hasMore && last ? this.encodeTimelineCursor(last.position) : null,
     };
   }
 
@@ -578,12 +674,27 @@ export class PhotoService {
         SELECT role, status FROM family_memberships WHERE id = ${membership.id}::uuid FOR UPDATE
       `;
       if (!currentMembership || currentMembership.status !== 'ACTIVE') this.policy.notFound();
+      const activeBabies = await transaction.$queryRaw<Array<{ id: string }>>`
+        SELECT id FROM baby_profiles
+        WHERE id = ${babyId}::uuid AND family_id = ${familyId}::uuid AND status = 'ACTIVE'
+        FOR UPDATE
+      `;
+      if (activeBabies.length !== 1) this.policy.notFound();
       const actingMembership = {
         ...membership,
         role: currentMembership.role as typeof membership.role,
       };
       if (!this.policy.canManagePublished(actingMembership, photo)) this.policy.permissionDenied();
       if (photo.status !== 'PUBLISHED') this.policy.stateConflict();
+      const publishedPhotos = await transaction.$queryRaw<Array<{ id: string }>>`
+        SELECT id FROM photos
+        WHERE id = ${photoId}::uuid
+          AND family_id = ${familyId}::uuid
+          AND baby_id = ${babyId}::uuid
+          AND status = 'PUBLISHED'
+        FOR UPDATE
+      `;
+      if (publishedPhotos.length !== 1) this.policy.stateConflict();
       const now = new Date();
       const result = await transaction.photo.updateMany({
         where: { id: photoId, familyId, babyId, status: 'PUBLISHED' },
@@ -600,6 +711,7 @@ export class PhotoService {
         where: { id: babyId, familyId, avatarPhotoId: photoId },
         data: { avatarPhotoId: null },
       });
+      await transaction.milestonePhoto.deleteMany({ where: { photoId } });
       return this.summary(
         await transaction.photo.findUniqueOrThrow({ where: { id: photoId } }),
         actingMembership,
@@ -741,6 +853,81 @@ export class PhotoService {
         id: { gt: position.id },
       },
     ];
+  }
+
+  private timelinePhotoOlderThan(cursor: TimelinePosition) {
+    const eventOn = cursor.eventOn;
+    const recordedAt = cursor.recordedAt;
+    const cursorRank = cursor.kind === 'MILESTONE' ? 1 : 0;
+    return [
+      { capturedOn: { lt: eventOn } },
+      { capturedOn: eventOn, publishedAt: { lt: recordedAt } },
+      ...(cursorRank > 0 ? [{ capturedOn: eventOn, publishedAt: recordedAt }] : []),
+      ...(cursorRank === 0
+        ? [{ capturedOn: eventOn, publishedAt: recordedAt, id: { lt: cursor.id } }]
+        : []),
+    ];
+  }
+
+  private timelineMilestoneOlderThan(cursor: TimelinePosition) {
+    const eventOn = cursor.eventOn;
+    const recordedAt = cursor.recordedAt;
+    const cursorRank = cursor.kind === 'MILESTONE' ? 1 : 0;
+    return [
+      { completedOn: { lt: eventOn } },
+      { completedOn: eventOn, completedAt: { lt: recordedAt } },
+      ...(cursorRank === 1
+        ? [{ completedOn: eventOn, completedAt: recordedAt, id: { lt: cursor.id } }]
+        : []),
+    ];
+  }
+
+  private compareTimeline(a: TimelinePosition, b: TimelinePosition): number {
+    const date = a.eventOn.valueOf() - b.eventOn.valueOf();
+    if (date) return date;
+    const recorded = a.recordedAt.valueOf() - b.recordedAt.valueOf();
+    if (recorded) return recorded;
+    const rank = (a.kind === 'MILESTONE' ? 1 : 0) - (b.kind === 'MILESTONE' ? 1 : 0);
+    if (rank) return rank;
+    return a.id.localeCompare(b.id);
+  }
+
+  private encodeTimelineCursor(position: TimelinePosition): string {
+    return Buffer.from(
+      JSON.stringify({
+        v: 2,
+        eventOn: position.eventOn.toISOString().slice(0, 10),
+        recordedAt: position.recordedAt.toISOString(),
+        kind: position.kind,
+        id: position.id,
+      }),
+      'utf8',
+    ).toString('base64url');
+  }
+
+  private decodeTimelineCursor(value: string): TimelinePosition {
+    try {
+      if (!/^[A-Za-z0-9_-]+$/.test(value)) throw new Error('invalid');
+      const raw: unknown = JSON.parse(Buffer.from(value, 'base64url').toString('utf8'));
+      const v2 = timelineCursorV2Schema.safeParse(raw);
+      if (v2.success) {
+        return {
+          kind: v2.data.kind,
+          id: v2.data.id,
+          eventOn: new Date(`${v2.data.eventOn}T00:00:00.000Z`),
+          recordedAt: new Date(v2.data.recordedAt),
+        };
+      }
+      const v1 = publishedCursorSchema.parse(raw);
+      return {
+        kind: 'PHOTO',
+        id: v1.id,
+        eventOn: new Date(`${v1.capturedOn}T00:00:00.000Z`),
+        recordedAt: new Date(v1.publishedAt),
+      };
+    } catch {
+      throw new ApiProblemException(400, '时间轴分页游标无效。', 'CURSOR_INVALID');
+    }
   }
 
   private encodePublishedCursor(photo: Photo): string {

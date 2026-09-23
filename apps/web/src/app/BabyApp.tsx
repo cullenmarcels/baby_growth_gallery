@@ -169,7 +169,11 @@ export function BabyHomePage(): React.JSX.Element {
           to="/app/gallery"
           icon="photo"
         />
-        <FeatureCard title="成长里程碑" text="里程碑记录将在后续阶段开放。" />
+        <FeatureCard
+          title="成长里程碑"
+          text="管理当前宝宝的里程碑清单、提醒与完成记录。"
+          to="/app/milestones"
+        />
         <FeatureCard title="成长数据" text="身高、体重和头围记录将在后续阶段开放。" />
       </section>
     </div>

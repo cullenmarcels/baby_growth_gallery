@@ -26,6 +26,11 @@ export type PhotoManagementPage = components['schemas']['PhotoManagementPageDto'
 export type PublishedPhotoPage = components['schemas']['PublishedPhotoPageDto'];
 export type PublishedPhotoDetail = components['schemas']['PublishedPhotoDetailDto'];
 export type TimelinePage = components['schemas']['TimelinePageDto'];
+export type MilestoneSummary = components['schemas']['MilestoneSummaryDto'];
+export type MilestoneDetail = components['schemas']['MilestoneDetailDto'];
+export type MilestonePage = components['schemas']['MilestonePageDto'];
+export type MilestoneOverview = components['schemas']['MilestoneOverviewDto'];
+export type MilestoneTemplateList = components['schemas']['MilestoneTemplateListDto'];
 
 export class ApiClientError extends Error {
   constructor(
@@ -574,6 +579,138 @@ export function createApiClient({ baseUrl, fetchImpl }: ApiClientOptions) {
         '/api/v1/families/{familyId}/babies/{babyId}/photos/{photoId}',
         {
           params: { path: { familyId, babyId, photoId } },
+          headers: await mutationHeaders(),
+        },
+      );
+      if (!result.response.ok) requireData(result.data, result.error, result.response);
+    },
+    async listMilestoneTemplates(familyId: string, babyId: string): Promise<MilestoneTemplateList> {
+      const result = await client.GET(
+        '/api/v1/families/{familyId}/babies/{babyId}/milestone-templates',
+        { params: { path: { familyId, babyId } } },
+      );
+      return requireData<MilestoneTemplateList>(result.data, result.error, result.response);
+    },
+    async listMilestones(
+      familyId: string,
+      babyId: string,
+      query: { state: 'PENDING' | 'COMPLETED'; limit?: number; cursor?: string },
+    ): Promise<MilestonePage> {
+      const result = await client.GET('/api/v1/families/{familyId}/babies/{babyId}/milestones', {
+        params: { path: { familyId, babyId }, query },
+      });
+      return requireData<MilestonePage>(result.data, result.error, result.response);
+    },
+    async getMilestoneOverview(
+      familyId: string,
+      babyId: string,
+      query: { fromOn: string; limit?: number; cursor?: string },
+    ): Promise<MilestoneOverview> {
+      const result = await client.GET(
+        '/api/v1/families/{familyId}/babies/{babyId}/milestones/overview',
+        { params: { path: { familyId, babyId }, query } },
+      );
+      return requireData<MilestoneOverview>(result.data, result.error, result.response);
+    },
+    async getMilestone(
+      familyId: string,
+      babyId: string,
+      milestoneId: string,
+    ): Promise<MilestoneDetail> {
+      const result = await client.GET(
+        '/api/v1/families/{familyId}/babies/{babyId}/milestones/{milestoneId}',
+        { params: { path: { familyId, babyId, milestoneId } } },
+      );
+      return requireData<MilestoneDetail>(result.data, result.error, result.response);
+    },
+    async createMilestone(
+      familyId: string,
+      babyId: string,
+      body:
+        | components['schemas']['CreateTemplateMilestoneRequestDto']
+        | components['schemas']['CreateCustomMilestoneRequestDto'],
+    ): Promise<MilestoneDetail> {
+      const result = await client.POST('/api/v1/families/{familyId}/babies/{babyId}/milestones', {
+        params: { path: { familyId, babyId } },
+        body,
+        headers: await mutationHeaders(),
+      });
+      return requireData<MilestoneDetail>(result.data, result.error, result.response);
+    },
+    async updateMilestone(
+      familyId: string,
+      babyId: string,
+      milestoneId: string,
+      body: components['schemas']['UpdateMilestoneRequestDto'],
+    ): Promise<MilestoneDetail> {
+      const result = await client.PATCH(
+        '/api/v1/families/{familyId}/babies/{babyId}/milestones/{milestoneId}',
+        {
+          params: { path: { familyId, babyId, milestoneId } },
+          body,
+          headers: await mutationHeaders(),
+        },
+      );
+      return requireData<MilestoneDetail>(result.data, result.error, result.response);
+    },
+    async completeMilestone(
+      familyId: string,
+      babyId: string,
+      milestoneId: string,
+      body: components['schemas']['CompleteMilestoneRequestDto'],
+    ): Promise<MilestoneDetail> {
+      const result = await client.POST(
+        '/api/v1/families/{familyId}/babies/{babyId}/milestones/{milestoneId}/complete',
+        {
+          params: { path: { familyId, babyId, milestoneId } },
+          body,
+          headers: await mutationHeaders(),
+        },
+      );
+      return requireData<MilestoneDetail>(result.data, result.error, result.response);
+    },
+    async updateMilestoneCompletion(
+      familyId: string,
+      babyId: string,
+      milestoneId: string,
+      body: components['schemas']['CompleteMilestoneRequestDto'],
+    ): Promise<MilestoneDetail> {
+      const result = await client.PATCH(
+        '/api/v1/families/{familyId}/babies/{babyId}/milestones/{milestoneId}/completion',
+        {
+          params: { path: { familyId, babyId, milestoneId } },
+          body,
+          headers: await mutationHeaders(),
+        },
+      );
+      return requireData<MilestoneDetail>(result.data, result.error, result.response);
+    },
+    async reopenMilestone(
+      familyId: string,
+      babyId: string,
+      milestoneId: string,
+      expectedVersion: number,
+    ): Promise<MilestoneDetail> {
+      const result = await client.POST(
+        '/api/v1/families/{familyId}/babies/{babyId}/milestones/{milestoneId}/reopen',
+        {
+          params: { path: { familyId, babyId, milestoneId } },
+          body: { expectedVersion },
+          headers: await mutationHeaders(),
+        },
+      );
+      return requireData<MilestoneDetail>(result.data, result.error, result.response);
+    },
+    async removeMilestone(
+      familyId: string,
+      babyId: string,
+      milestoneId: string,
+      expectedVersion: number,
+    ): Promise<void> {
+      const result = await client.DELETE(
+        '/api/v1/families/{familyId}/babies/{babyId}/milestones/{milestoneId}',
+        {
+          params: { path: { familyId, babyId, milestoneId }, query: { expectedVersion } },
           headers: await mutationHeaders(),
         },
       );

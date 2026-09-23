@@ -65,6 +65,16 @@ enum PhotoVariantKind {
   ARCHIVE
 }
 
+enum MilestoneSource {
+  TEMPLATE
+  CUSTOM
+}
+
+enum MilestoneState {
+  PENDING
+  COMPLETED
+}
+
 model Account {
   id                String             @id @default(uuid()) @db.Uuid
   phoneE164         String             @unique @map("phone_e164") @db.VarChar(16)
@@ -97,6 +107,7 @@ model Family {
   babies             BabyProfile[]
   photoUploadBatches PhotoUploadBatch[]
   photos             Photo[]
+  milestones         Milestone[]
 
   @@index([createdByAccountId])
   @@map("families")
@@ -120,6 +131,7 @@ model FamilyMembership {
   createdPhotoBatches PhotoUploadBatch[]     @relation("PhotoBatchCreator")
   createdPhotos       Photo[]                @relation("PhotoCreator")
   trashedPhotos       Photo[]                @relation("PhotoTrashActor")
+  createdMilestones   Milestone[]            @relation("MilestoneCreator")
 
   @@unique([familyId, accountId])
   @@index([accountId, status, joinedAt])
@@ -185,6 +197,7 @@ model BabyProfile {
   photoUploadBatches    PhotoUploadBatch[]
   photos                Photo[]
   avatarPhoto           Photo?              @relation("BabyAvatar", fields: [avatarPhotoId], references: [id], onDelete: SetNull)
+  milestones            Milestone[]
 
   @@index([familyId, status, createdAt(sort: Desc), id(sort: Desc)])
   @@index([status, purgeAfter])
@@ -248,6 +261,7 @@ model Photo {
   trashedBy             FamilyMembership?  @relation("PhotoTrashActor", fields: [trashedByMembershipId], references: [id], onDelete: Restrict)
   variants              PhotoVariant[]
   avatarForBaby         BabyProfile?        @relation("BabyAvatar")
+  milestonePhotos       MilestonePhoto[]
 
   @@index([uploadBatchId, displayOrder])
   @@index([familyId, babyId, updatedAt(sort: Desc), id(sort: Desc)])
@@ -257,6 +271,49 @@ model Photo {
   @@index([status, nextProcessingAt, processingLeaseUntil])
   @@index([status, purgeAfter])
   @@map("photos")
+}
+
+model Milestone {
+  id                    String           @id @default(uuid()) @db.Uuid
+  familyId              String           @map("family_id") @db.Uuid
+  babyId                String           @map("baby_id") @db.Uuid
+  createdByMembershipId String           @map("created_by_membership_id") @db.Uuid
+  source                MilestoneSource
+  templateKey           String?          @map("template_key") @db.VarChar(64)
+  title                 String           @db.VarChar(40)
+  state                 MilestoneState   @default(PENDING)
+  reminderOn            DateTime?        @map("reminder_on") @db.Date
+  completedOn           DateTime?        @map("completed_on") @db.Date
+  completionNote        String?          @map("completion_note") @db.VarChar(1000)
+  completedAt           DateTime?        @map("completed_at") @db.Timestamptz(3)
+  version               Int              @default(1)
+  createdAt             DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
+  family                Family           @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  baby                  BabyProfile      @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  createdBy             FamilyMembership @relation("MilestoneCreator", fields: [createdByMembershipId], references: [id], onDelete: Restrict)
+  photos                MilestonePhoto[]
+
+  @@unique([babyId, templateKey])
+  @@index([familyId, babyId, state, createdAt(sort: Desc), id(sort: Desc)])
+  @@index([familyId, babyId, state, completedOn(sort: Desc), completedAt(sort: Desc), id(sort: Desc)])
+  @@index([familyId, babyId, state, reminderOn, createdAt, id])
+  @@index([createdByMembershipId])
+  @@map("milestones")
+}
+
+model MilestonePhoto {
+  milestoneId String    @map("milestone_id") @db.Uuid
+  photoId     String    @map("photo_id") @db.Uuid
+  displayOrder Int      @map("display_order")
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  milestone   Milestone @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  photo       Photo     @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@id([milestoneId, photoId])
+  @@index([milestoneId, displayOrder])
+  @@index([photoId])
+  @@map("milestone_photos")
 }
 
 model PhotoVariant {

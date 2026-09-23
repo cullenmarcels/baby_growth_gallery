@@ -19,6 +19,10 @@ function syntheticPhone(): string {
   return `136${randomInt(10_000_000, 100_000_000)}`;
 }
 
+function localToday(): string {
+  return new Date(Date.now() + 8 * 3_600_000).toISOString().slice(0, 10);
+}
+
 async function csrf(context: APIRequestContext): Promise<string> {
   const response = await context.get('/api/v1/auth/csrf');
   expect(response.ok()).toBe(true);
@@ -940,4 +944,37 @@ test('uploads and publishes a synthetic photo in the responsive flow', async ({
   expect(unavailablePadding).toEqual(['16px', '16px', '16px', '16px']);
   await page.unroute(previewApi);
   await page.unroute(batchApi);
+
+  await page.goto('/app/milestones');
+  await expect(page.getByRole('heading', { name: '里程碑' })).toBeVisible();
+  await expect(page.getByText('清单还是空的，可以先添加一项。')).toBeVisible();
+  await page.getByRole('link', { name: '添加里程碑' }).click();
+  await expect(page.getByRole('heading', { name: '添加里程碑' })).toBeVisible();
+  await page.getByRole('button', { name: '加入' }).first().click();
+  await expect(page.getByRole('heading', { name: '第一次翻身' })).toBeVisible();
+  await page.getByRole('button', { name: '完成' }).click();
+  const pickerTrigger = page.getByRole('button', { name: '选择照片' });
+  await pickerTrigger.click();
+  await expect(page.getByRole('dialog', { name: '选择照片' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '关闭照片选择' })).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog', { name: '选择照片' })).toHaveCount(0);
+  await expect(pickerTrigger).toBeFocused();
+  await page.getByLabel('完成日期').fill(localToday());
+  await page.getByLabel('完成说明（可选）').fill('全家一起见证');
+  await page.getByRole('button', { name: '保存' }).click();
+  await expect(page.getByText('里程碑已完成。')).toBeVisible();
+  await page.goto('/app/milestones');
+  await expect(page.getByText('1 / 1')).toBeVisible();
+  await page.goto('/app/timeline');
+  await expect(page.getByRole('link', { name: '查看里程碑：第一次翻身' })).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
+  const milestoneButtonWhiteSpaces = await page
+    .locator('button:visible')
+    .evaluateAll((buttons) => buttons.map((button) => getComputedStyle(button).whiteSpace));
+  expect(milestoneButtonWhiteSpaces.every((whiteSpace) => whiteSpace === 'nowrap')).toBe(true);
 });

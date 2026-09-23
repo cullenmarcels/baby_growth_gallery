@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { MilestoneSummaryDto } from '../milestone/milestone.dto.js';
 
 export const photoStatuses = [
   'AWAITING_UPLOAD',
@@ -89,8 +90,23 @@ export class TimelinePhotoEntryDto {
   @ApiProperty({ type: String, format: 'date' }) eventOn!: string;
   @ApiProperty({ type: () => PhotoSummaryDto }) photo!: PhotoSummaryDto;
 }
+export class TimelineMilestoneEntryDto {
+  @ApiProperty({ type: String, enum: ['MILESTONE'] }) kind!: 'MILESTONE';
+  @ApiProperty({ type: String, format: 'date' }) eventOn!: string;
+  @ApiProperty({ type: () => MilestoneSummaryDto }) milestone!: MilestoneSummaryDto;
+}
 export class TimelinePageDto {
-  @ApiProperty({ type: () => [TimelinePhotoEntryDto] }) items!: TimelinePhotoEntryDto[];
+  @ApiProperty({
+    type: 'array',
+    items: {
+      oneOf: [
+        { $ref: '#/components/schemas/TimelinePhotoEntryDto' },
+        { $ref: '#/components/schemas/TimelineMilestoneEntryDto' },
+      ],
+      discriminator: { propertyName: 'kind' },
+    },
+  })
+  items!: Array<TimelinePhotoEntryDto | TimelineMilestoneEntryDto>;
   @ApiProperty({ type: String, nullable: true }) nextCursor!: string | null;
 }
 export class PublishedPhotoDetailDto {

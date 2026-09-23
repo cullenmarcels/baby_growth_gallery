@@ -124,6 +124,10 @@ export class PhotoUploadedActivitySummaryV1Dto {
   @ApiProperty({ type: String, format: 'uuid' }) babyId!: string;
 }
 
+export class MilestoneRecordedActivitySummaryV1Dto {
+  @ApiProperty({ type: String, format: 'uuid' }) babyId!: string;
+}
+
 export class ActiveFamilyActivityItemDto {
   @ApiProperty({ type: String, format: 'uuid' }) id!: string;
   @ApiProperty({ type: String, enum: ['ACTIVE'] }) visibility!: 'ACTIVE';
@@ -141,6 +145,7 @@ export class ActiveFamilyActivityItemDto {
       { $ref: '#/components/schemas/MemberRoleChangedSummaryDto' },
       { $ref: '#/components/schemas/MemberLeftSummaryDto' },
       { $ref: '#/components/schemas/PhotoUploadedActivitySummaryV1Dto' },
+      { $ref: '#/components/schemas/MilestoneRecordedActivitySummaryV1Dto' },
     ],
   })
   summary!: Record<string, unknown>;

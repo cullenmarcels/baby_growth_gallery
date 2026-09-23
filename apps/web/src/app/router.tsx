@@ -21,6 +21,7 @@ import {
 } from './BabyApp';
 import { PhotoManagePage, PhotoUploadPage } from './PhotoApp';
 import { BabyAvatarPickerPage, GalleryPage, PhotoDetailPage, TimelinePage } from './PhotoBrowse';
+import { MilestoneDetailPage, MilestoneNewPage, MilestonePage } from './MilestoneApp';
 
 export const router = createBrowserRouter([
   { path: '/', element: <RootRedirect /> },
@@ -60,7 +61,9 @@ export const router = createBrowserRouter([
           { path: 'families/:familyId', element: <FamilyPage /> },
           { path: 'timeline', element: <TimelinePage /> },
           { path: 'gallery', element: <GalleryPage /> },
-          { path: 'milestones', element: <ComingSoonPage title="里程碑" icon="milestone" /> },
+          { path: 'milestones', element: <MilestonePage /> },
+          { path: 'milestones/new', element: <MilestoneNewPage /> },
+          { path: 'milestones/:milestoneId', element: <MilestoneDetailPage /> },
           { path: 'growth', element: <ComingSoonPage title="成长数据" icon="growth" /> },
         ],
       },

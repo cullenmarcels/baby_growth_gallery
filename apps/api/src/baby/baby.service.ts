@@ -102,6 +102,12 @@ export class BabyService {
         ...membership,
         role: currentMembership.role as typeof membership.role,
       });
+      const activeBabies = await transaction.$queryRaw<Array<{ id: string }>>`
+        SELECT id FROM baby_profiles
+        WHERE id = ${babyId}::uuid AND family_id = ${familyId}::uuid AND status = 'ACTIVE'
+        FOR UPDATE
+      `;
+      if (activeBabies.length !== 1) this.policy.notFound();
       if (photoId) {
         const [photo] = await transaction.$queryRaw<Array<{ status: string }>>`
           SELECT status FROM photos
