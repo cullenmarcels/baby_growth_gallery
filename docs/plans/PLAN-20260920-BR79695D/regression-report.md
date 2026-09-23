@@ -4,12 +4,16 @@ type: regression_report
 title: "Plan F Regression"
 status: passed
 created_at: 2026-09-20T15:37:48+08:00
-updated_at: 2026-09-23T10:53:05+08:00
+updated_at: 2026-09-23T11:36:36+08:00
 plan_id: PLAN-20260920-BR79695D
-phase: candidate
+phase: candidate_and_integration
 reviewed_commit: dfd2aebe667eea19b8ece3e0d00c53c5affc7086
 reviewed_scope_digest: D78C899B2248B4887DF0AB98717441E1A94DA9AD87795BED6C96B46418F006CB
-ci_status: pending
+accepted_commit: dfd2aebe667eea19b8ece3e0d00c53c5affc7086
+accepted_scope_digest: D78C899B2248B4887DF0AB98717441E1A94DA9AD87795BED6C96B46418F006CB
+integrated_commit: 860be884287e8875f380e1dade3b38e629f4b8d5
+integrated_scope_digest: D78C899B2248B4887DF0AB98717441E1A94DA9AD87795BED6C96B46418F006CB
+ci_status: passed
 related_ids: [PLAN-20260920-BR79695D, SPEC-20260920-QQ9SQ9VT, DES-20260920-SAX3DM0H]
 supersedes: []
 superseded_by: []
@@ -59,4 +63,14 @@ superseded_by: []
 
 ## 结论
 
-候选 Regression `passed`，没有剩余阻断风险，Plan 可以进入 `acceptance_pending`，等待用户人工验收。集成提交、远端 CI、集成 Regression、推送和归档仍未执行。
+候选与集成 Regression 均为 `passed`。合并后的精确集成提交为 `860be884287e8875f380e1dade3b38e629f4b8d5`，其 v2 owned-scope 摘要与 accepted 摘要一致；PR #26 的 branch-flow、quality 和 e2e-auth 检查均为 SUCCESS。由于合并没有改变已验收产品作用范围，当前已完成集成证据核对并进入 `integration_review`，尚未执行归档或生成 Achievement。
+
+## 合并后集成复验
+
+| 检查 | 结果 | 证据 |
+| --- | --- | --- |
+| 版本绑定 | PASS | PR #26 已 MERGED；accepted commit `dfd2aeb` 是 merge commit `860be88` 的第二父提交；集成提交位于 `origin/develop`。 |
+| v2 owned-scope 摘要 | PASS | `860be88` 重算为 `D78C899B2248B4887DF0AB98717441E1A94DA9AD87795BED6C96B46418F006CB`，与 accepted 摘要完全一致。 |
+| 远端 CI | PASS | GitHub PR #26 的 `branch-flow-develop`、`quality` 和 `e2e-auth` 均 completed/success。 |
+| 集成树差异 | PASS | `origin/develop@860be88` 相对基线包含候选产品变更；owned paths 未出现合并后额外产品差异。 |
+| 本地项目校验 | PASS | `update-indexes.ps1 -Check` 与 `validate-project.ps1 -Check` 在合并后证据树上通过；该结果不替代远端 CI。 |

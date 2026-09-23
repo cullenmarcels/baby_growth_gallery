@@ -70,3 +70,10 @@
 - 照片依赖、ESLint、Prettier、类型检查、branch-flow 5 项、API 7 suites / 62 tests、Web 9 files / 56 tests、全工作区 build、`update-indexes -Check` 和 `PROJECT_VALIDATION=PASSED` 均通过。默认根 `pnpm validate` 的嵌套命令会调用系统 Node 24.19 / pnpm 11.19 并被 engine 门禁拒绝；使用 Corepack Node 24.20 / pnpm 11.21 显式运行其等价检查，未将主机 shim 问题写为通过。
 - 默认 E2E 启动模式试图另起开发服务器失败；复用 Docker 栈的首次并发运行受 Chromium `spawn EPERM` 和共享 Redis `429` 限流影响。受控环境外确认浏览器可启动后，仅重建本地 API 到隔离 Redis 前缀并设 `TRUST_PROXY=1`，不清理数据库、Redis 或对象存储；单 worker 完整 Playwright 为 38 passed / 31 项按项目条件 skipped / 0 failed。
 - 更新 Review 与独立 Regression 到新候选后，用户人工验收确认记录为 `confirmed`。Plan 进入 `integration_pending`；当前没有推送、PR、合并、集成提交、远端 CI 或归档。
+
+## 2026-09-23T11:36:36+08:00 — 合并后集成证据同步
+
+- 用户明确反馈已在 GitHub 处理并合并 PR #26；只继续同步合并后的生命周期证据，不执行归档、Achievement 生成或受保护分支晋升。
+- 已刷新 `origin` 并确认 PR #26 的精确集成提交为 `origin/develop@860be884287e8875f380e1dade3b38e629f4b8d5`；PR Head `bc4b897` 为 merge commit 的第二父提交，功能分支当前另有仅文档证据提交 `a7fa18e`，不属于已合并产品 Head。
+- 对集成提交按 v2 owned paths 重算 scope digest 得到 `D78C899B2248B4887DF0AB98717441E1A94DA9AD87795BED6C96B46418F006CB`，与 accepted digest 完全一致，人工验收未因合并失效。
+- GitHub `branch-flow-develop`、`quality`、`e2e-auth` 三项检查均完成并成功；Plan 状态由 `integration_pending` 推进为 `integration_review`，`integrated_commit` 与 `integrated_scope_digest` 已登记。
