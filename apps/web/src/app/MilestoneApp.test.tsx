@@ -145,6 +145,39 @@ describe('milestone pages', () => {
     );
   });
 
+  it('opens associated photos with the milestone detail as an explicit return target', async () => {
+    const associatedPhoto = {
+      id: '00000000-0000-4000-8000-000000000050',
+      babyId,
+      batchId: '00000000-0000-4000-8000-000000000051',
+      status: 'PUBLISHED' as const,
+      title: '合成里程碑照片',
+      description: null,
+      capturedOn: '2026-09-20',
+      location: null,
+      sourceFormat: 'PNG' as const,
+      width: 20,
+      height: 20,
+      draftExpiresAt: null,
+      publishedAt: '2026-09-20T00:00:00.000Z',
+      trashedAt: null,
+      purgeAfter: null,
+      canRestore: false,
+      failureCode: null,
+      updatedAt: '2026-09-20T00:00:00.000Z',
+    };
+    vi.spyOn(api, 'getMilestone').mockResolvedValue({ ...milestone, photos: [associatedPhoto] });
+    vi.spyOn(api, 'getPhotoPreview').mockResolvedValue({
+      url: 'data:image/png;base64,AA==',
+      expiresAt: '2026-09-20T00:05:00.000Z',
+    });
+    renderAt(`/app/milestones/${milestoneId}`);
+    expect(await screen.findByRole('link', { name: /合成里程碑照片/ })).toHaveAttribute(
+      'href',
+      `/app/photos/${associatedPhoto.id}?from=milestone&milestoneId=${milestoneId}`,
+    );
+  });
+
   it('edits a custom title without resubmitting an unchanged past reminder', async () => {
     const detail: MilestoneDetail = {
       ...milestone,

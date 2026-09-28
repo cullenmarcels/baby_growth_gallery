@@ -193,13 +193,11 @@ test('uploads to private storage, isolates drafts, publishes an activity, and re
   const processedBatch = await member.context.get(
     `/api/v1/families/${familyId}/babies/${babyId}/photo-upload-batches/${batch.id}`,
   );
-  expect(
-    (
-      (await processedBatch.json()) as {
-        photos: Array<{ sourceFormat: string }>;
-      }
-    ).photos.map((photo) => photo.sourceFormat),
-  ).toEqual(['PNG', 'HEIC']);
+  const processedBatchData = (await processedBatch.json()) as {
+    photos: Array<{ sourceFormat: string; uploadedBy?: unknown }>;
+  };
+  expect(processedBatchData.photos.map((photo) => photo.sourceFormat)).toEqual(['PNG', 'HEIC']);
+  expect(processedBatchData.photos.every((photo) => !('uploadedBy' in photo))).toBe(true);
 
   const hiddenDraft = await owner.context.get(
     `/api/v1/families/${familyId}/babies/${babyId}/photos/${photoId}/preview?variant=THUMBNAIL`,
@@ -261,10 +259,12 @@ test('uploads to private storage, isolates drafts, publishes an activity, and re
   const firstGallery = await owner.context.get(`${galleryBase}/photos/published?limit=1`);
   expect(firstGallery.status()).toBe(200);
   const firstPage = (await firstGallery.json()) as {
-    items: Array<{ id: string }>;
+    items: Array<{ id: string; uploadedBy: { displayName: string; [key: string]: unknown } }>;
     nextCursor: string | null;
   };
   expect(firstPage.items).toHaveLength(1);
+  expect(firstPage.items[0]?.uploadedBy.displayName).toBe('合成成员');
+  expect(Object.keys(firstPage.items[0]!.uploadedBy)).toEqual(['displayName']);
   expect(firstPage.nextCursor).toBeTruthy();
   const secondGallery = await owner.context.get(
     `${galleryBase}/photos/published?limit=1&cursor=${encodeURIComponent(firstPage.nextCursor!)}`,
@@ -277,11 +277,21 @@ test('uploads to private storage, isolates drafts, publishes an activity, and re
   const timeline = await owner.context.get(`${galleryBase}/timeline`);
   expect(timeline.status()).toBe(200);
   expect(
-    ((await timeline.json()) as { items: Array<{ kind: string; photo: { id: string } }> }).items,
+    (
+      (await timeline.json()) as {
+        items: Array<{
+          kind: string;
+          photo: { id: string; uploadedBy: { displayName: string; [key: string]: unknown } };
+        }>;
+      }
+    ).items,
   ).toEqual([
     expect.objectContaining({
       kind: 'PHOTO',
-      photo: expect.objectContaining({ id: firstPage.items[0]!.id }),
+      photo: expect.objectContaining({
+        id: firstPage.items[0]!.id,
+        uploadedBy: { displayName: '合成成员' },
+      }),
     }),
     expect.objectContaining({
       kind: 'PHOTO',
@@ -290,11 +300,19 @@ test('uploads to private storage, isolates drafts, publishes an activity, and re
   ]);
   const detail = await owner.context.get(`${galleryBase}/photos/${firstPage.items[0]!.id}`);
   expect(detail.status()).toBe(200);
-  expect(await detail.json()).toMatchObject({
+  const detailBody = (await detail.json()) as {
+    photo: { uploadedBy: { displayName: string; [key: string]: unknown } };
+    canManage: boolean;
+    previousPhotoId: string | null;
+    nextPhotoId: string | null;
+  };
+  expect(detailBody).toMatchObject({
+    photo: { uploadedBy: { displayName: '合成成员' } },
     canManage: true,
     previousPhotoId: null,
     nextPhotoId: secondPage.items[0]!.id,
   });
+  expect(Object.keys(detailBody.photo.uploadedBy)).toEqual(['displayName']);
   const readerDetail = await spectator.context.get(`${galleryBase}/photos/${photoId}`);
   expect(readerDetail.status()).toBe(200);
   expect((await readerDetail.json()) as { canManage: boolean }).toMatchObject({ canManage: false });
@@ -716,9 +734,15 @@ test('uploads and publishes a synthetic photo in the responsive flow', async ({
   await page.unroute(manageApi);
   await page.unroute(previewApi);
 
+  const publishedItems = managedItems.map((item, index) => ({
+    ...item,
+    uploadedBy: {
+      displayName: index === 1 ? '超过十五字符的合成照片上传者名称' : '合成照片上传者',
+    },
+  }));
   const galleryApi = /\/api\/v1\/families\/[^/]+\/babies\/[^/]+\/photos\/published(?:\?.*)?$/;
   await page.route(galleryApi, (route) =>
-    route.fulfill({ status: 200, json: { items: managedItems, nextCursor: null } }),
+    route.fulfill({ status: 200, json: { items: publishedItems, nextCursor: null } }),
   );
   await page.route(previewApi, (route) =>
     route.fulfill({
@@ -734,6 +758,10 @@ test('uploads and publishes a synthetic photo in the responsive flow', async ({
   const galleryCards = page.locator('[class*="galleryGridItem"]');
   await expect(galleryCards).toHaveCount(managedNames.length);
   expect(await galleryCards.locator('strong').allTextContents()).toEqual(managedNames);
+  const uploader = galleryCards.nth(1).getByRole('note');
+  await expect(uploader).toHaveText('上传者：超过十五字符的合成照片上传者名…');
+  await expect(uploader).toHaveAttribute('title', '上传者：超过十五字符的合成照片上传者名称');
+  await expect(uploader).toHaveAttribute('aria-label', '上传者：超过十五字符的合成照片上传者名称');
   await expect
     .poll(() => galleryCards.first().evaluate((card) => getComputedStyle(card).gridRowEnd))
     .toMatch(/^span \d+$/);
@@ -772,15 +800,84 @@ test('uploads and publishes a synthetic photo in the responsive flow', async ({
   await page.goto('/app/gallery');
   const galleryTile = page.getByRole('link', { name: /查看照片：/ }).first();
   await expect(galleryTile).toBeVisible();
+  const realPhotoId = new URL(
+    (await galleryTile.getAttribute('href'))!,
+    'http://localhost',
+  ).pathname
+    .split('/')
+    .at(-1)!;
   await galleryTile.focus();
   await expect(galleryTile).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page.getByRole('heading', { name: '成长照片' })).toBeVisible();
   const detailUrl = page.url();
+  expect(new URL(detailUrl).searchParams.get('from')).toBe('gallery');
+  await expect(page.getByRole('link', { name: '返回图集' })).toHaveAttribute(
+    'href',
+    '/app/gallery',
+  );
+  await expect(page.getByText(/^上传者：.+/)).toBeVisible();
   await expect(page.getByText('合成地点')).toBeVisible();
   await expect(page.getByText('上一张')).toHaveAttribute('aria-disabled', 'true');
+
+  const milestoneId = randomUUID();
+  await page.route(
+    new RegExp(`/api/v1/families/[^/]+/babies/[^/]+/milestones/${milestoneId}$`),
+    (route) =>
+      route.fulfill({
+        status: 200,
+        json: {
+          id: milestoneId,
+          babyId: randomUUID(),
+          source: 'CUSTOM',
+          templateKey: null,
+          title: '照片来源验证里程碑',
+          state: 'PENDING',
+          reminderOn: null,
+          completedOn: null,
+          completionNote: null,
+          completedAt: null,
+          photoCount: 1,
+          photos: [
+            {
+              id: realPhotoId,
+              title: '照片来源验证',
+              capturedOn: '2026-09-23',
+              width: 1,
+              height: 1,
+            },
+          ],
+          createdBy: { membershipId: randomUUID(), displayName: '合成创建者' },
+          canManage: false,
+          version: 1,
+          createdAt: '2026-09-23T00:00:00.000Z',
+          updatedAt: '2026-09-23T00:00:00.000Z',
+        },
+      }),
+  );
+  await page.goto(`/app/milestones/${milestoneId}`);
+  const milestonePhoto = page.getByRole('link', { name: /照片来源验证/ });
+  await expect(milestonePhoto).toHaveAttribute(
+    'href',
+    `/app/photos/${realPhotoId}?from=milestone&milestoneId=${milestoneId}`,
+  );
+  await milestonePhoto.click();
+  await expect(page.getByRole('link', { name: '返回里程碑' })).toHaveAttribute(
+    'href',
+    `/app/milestones/${milestoneId}`,
+  );
+
   await page.goto('/app/timeline');
   await expect(page.getByRole('heading', { name: /^\d{4} 年 \d{2} 月$/ })).toBeVisible();
+  await expect(page.getByRole('note').first()).toBeVisible();
+  const timelinePhoto = page.getByRole('link', { name: /查看照片：/ }).first();
+  await expect(timelinePhoto).toBeVisible();
+  await timelinePhoto.click();
+  await expect(page.getByRole('link', { name: '返回时间轴' })).toHaveAttribute(
+    'href',
+    '/app/timeline',
+  );
+  expect(new URL(page.url()).searchParams.get('from')).toBe('timeline');
   await page.goto('/app/babies/manage');
   await page.getByRole('link', { name: '选择头像' }).click();
   await expect(page.getByRole('heading', { name: '选择头像' })).toBeVisible();

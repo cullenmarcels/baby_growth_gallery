@@ -1,7 +1,7 @@
 import {
   ApiClientError,
   type MilestoneSummary,
-  type PhotoSummary,
+  type PublishedPhotoSummary,
 } from '@baby-growth-gallery/api-client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen } from '@testing-library/react';
@@ -23,7 +23,7 @@ vi.mock('./AuthContext', () => ({ useAuth: () => auth }));
 import { api } from './api';
 import { BabyAvatarPickerPage, GalleryPage, PhotoDetailPage, TimelinePage } from './PhotoBrowse';
 
-const photo: PhotoSummary = {
+const photo: PublishedPhotoSummary = {
   id: photoId,
   babyId,
   batchId: '00000000-0000-4000-8000-000000000040',
@@ -42,6 +42,7 @@ const photo: PhotoSummary = {
   canRestore: false,
   failureCode: null,
   updatedAt: '2026-09-17T02:00:00.000Z',
+  uploadedBy: { displayName: '合成照片上传者' },
 };
 
 function renderAt(path: string) {
@@ -118,7 +119,11 @@ describe('published photo browsing', () => {
     renderAt('/app/timeline');
     expect(await screen.findByRole('heading', { name: '2026 年 09 月' })).toBeInTheDocument();
     const timelineTile = screen.getByRole('link', { name: /合成生日照/ });
-    expect(timelineTile).toHaveAttribute('href', `/app/photos/${photoId}`);
+    expect(timelineTile).toHaveAttribute('href', `/app/photos/${photoId}?from=timeline`);
+    expect(screen.getByLabelText('上传者：合成照片上传者')).toHaveAttribute(
+      'title',
+      '上传者：合成照片上传者',
+    );
     expect(timelineTile.firstElementChild).not.toHaveAttribute('style');
     expect(screen.getByRole('link', { name: '查看里程碑：第一次看海' })).toHaveAttribute(
       'href',
@@ -135,7 +140,7 @@ describe('published photo browsing', () => {
   });
 
   it('shows a loading state until the list is returned', async () => {
-    let complete!: (value: { items: PhotoSummary[]; nextCursor: null }) => void;
+    let complete!: (value: { items: PublishedPhotoSummary[]; nextCursor: null }) => void;
     vi.spyOn(api, 'listPublishedPhotos').mockImplementation(
       () =>
         new Promise((resolve) => {
@@ -184,10 +189,131 @@ describe('published photo browsing', () => {
     });
     renderAt(`/app/photos/${photoId}`);
     expect(await screen.findByRole('heading', { name: '合成生日照' })).toBeInTheDocument();
+    expect(screen.getByText('上传者：合成照片上传者')).toHaveAttribute(
+      'title',
+      '上传者：合成照片上传者',
+    );
     expect(screen.queryByRole('button', { name: '编辑信息' })).not.toBeInTheDocument();
     expect(screen.getByText('上一张')).toHaveAttribute('aria-disabled', 'true');
     expect(screen.getByText('下一张')).toHaveAttribute('aria-disabled', 'true');
     expect(screen.getByText('合成地点')).toBeInTheDocument();
+  });
+
+  it('keeps the full uploader visible while photo metadata is being edited', async () => {
+    vi.spyOn(api, 'getPublishedPhoto').mockResolvedValue({
+      photo,
+      canManage: true,
+      previousPhotoId: null,
+      nextPhotoId: null,
+    });
+    vi.spyOn(api, 'getPhotoPreview').mockResolvedValue({
+      url: 'data:image/png;base64,AA==',
+      expiresAt: '2026-09-17T02:05:00.000Z',
+    });
+    renderAt(`/app/photos/${photoId}`);
+    await userEvent.click(await screen.findByRole('button', { name: '编辑信息' }));
+    expect(screen.getByText('上传者：合成照片上传者')).toBeInTheDocument();
+    expect(screen.getByLabelText('标题')).toBeInTheDocument();
+  });
+
+  it('shows uploader names with a 15-code-point limit and links from the gallery explicitly', async () => {
+    const longName = '甲乙丙丁戊己庚辛壬癸子丑寅卯辰巳';
+    vi.spyOn(api, 'listPublishedPhotos').mockResolvedValue({
+      items: [{ ...photo, uploadedBy: { displayName: longName } }],
+      nextCursor: null,
+    });
+    vi.spyOn(api, 'getPhotoPreview').mockResolvedValue({
+      url: 'data:image/png;base64,AA==',
+      expiresAt: '2026-09-17T02:05:00.000Z',
+    });
+    renderAt('/app/gallery');
+    expect(await screen.findByText('上传者：甲乙丙丁戊己庚辛壬癸子丑寅卯辰…')).toBeInTheDocument();
+    expect(screen.getByRole('note', { name: `上传者：${longName}` })).toHaveAttribute(
+      'title',
+      `上传者：${longName}`,
+    );
+    expect(screen.getByRole('link', { name: '查看照片：合成生日照' })).toHaveAttribute(
+      'href',
+      `/app/photos/${photoId}?from=gallery`,
+    );
+  });
+
+  it('returns timeline details to the timeline and preserves the source between neighbors', async () => {
+    vi.spyOn(api, 'getPublishedPhoto').mockResolvedValue({
+      photo,
+      canManage: false,
+      previousPhotoId: '00000000-0000-4000-8000-000000000031',
+      nextPhotoId: '00000000-0000-4000-8000-000000000032',
+    });
+    vi.spyOn(api, 'getPhotoPreview').mockResolvedValue({
+      url: 'data:image/png;base64,AA==',
+      expiresAt: '2026-09-17T02:05:00.000Z',
+    });
+    renderAt(`/app/photos/${photoId}?from=timeline`);
+    expect(await screen.findByRole('heading', { name: '合成生日照' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '返回时间轴' })).toHaveAttribute(
+      'href',
+      '/app/timeline',
+    );
+    expect(screen.getByRole('link', { name: /上一张/ })).toHaveAttribute(
+      'href',
+      '/app/photos/00000000-0000-4000-8000-000000000031?from=timeline',
+    );
+    expect(screen.getByRole('link', { name: /下一张/ })).toHaveAttribute(
+      'href',
+      '/app/photos/00000000-0000-4000-8000-000000000032?from=timeline',
+    );
+  });
+
+  it('returns milestone-linked photos to the exact milestone and preserves its ID', async () => {
+    const milestoneId = '00000000-0000-4000-8000-000000000060';
+    vi.spyOn(api, 'getPublishedPhoto').mockResolvedValue({
+      photo,
+      canManage: false,
+      previousPhotoId: '00000000-0000-4000-8000-000000000031',
+      nextPhotoId: '00000000-0000-4000-8000-000000000032',
+    });
+    vi.spyOn(api, 'getPhotoPreview').mockResolvedValue({
+      url: 'data:image/png;base64,AA==',
+      expiresAt: '2026-09-17T02:05:00.000Z',
+    });
+    renderAt(`/app/photos/${photoId}?from=milestone&milestoneId=${milestoneId}`);
+    expect(await screen.findByRole('heading', { name: '合成生日照' })).toBeInTheDocument();
+    expect(await screen.findByRole('link', { name: '返回里程碑' })).toHaveAttribute(
+      'href',
+      `/app/milestones/${milestoneId}`,
+    );
+    expect(screen.getByRole('link', { name: /下一张/ })).toHaveAttribute(
+      'href',
+      `/app/photos/00000000-0000-4000-8000-000000000032?from=milestone&milestoneId=${milestoneId}`,
+    );
+  });
+
+  it.each([
+    `/app/photos/${photoId}`,
+    `/app/photos/${photoId}?from=unknown`,
+    `/app/photos/${photoId}?from=milestone`,
+    `/app/photos/${photoId}?from=milestone&milestoneId=not-a-uuid`,
+    `/app/photos/${photoId}?from=timeline&milestoneId=00000000-0000-4000-8000-000000000060`,
+    `/app/photos/${photoId}?from=timeline&from=gallery`,
+  ])('uses the safe gallery destination for an invalid or missing source: %s', async (path) => {
+    vi.spyOn(api, 'getPublishedPhoto').mockResolvedValue({
+      photo,
+      canManage: false,
+      previousPhotoId: null,
+      nextPhotoId: null,
+    });
+    vi.spyOn(api, 'getPhotoPreview').mockResolvedValue({
+      url: 'data:image/png;base64,AA==',
+      expiresAt: '2026-09-17T02:05:00.000Z',
+    });
+    renderAt(path);
+    expect(await screen.findByRole('heading', { name: '合成生日照' })).toBeInTheDocument();
+    expect(await screen.findByRole('link', { name: '返回图集' })).toHaveAttribute(
+      'href',
+      '/app/gallery',
+    );
+    expect(screen.queryByRole('link', { name: /上一张/ })).not.toBeInTheDocument();
   });
 
   it('does not jump to another photo when the detail link is no longer valid', async () => {
@@ -202,10 +328,13 @@ describe('published photo browsing', () => {
         code: 'PHOTO_NOT_FOUND',
       }),
     );
-    renderAt(`/app/photos/${photoId}`);
+    renderAt(`/app/photos/${photoId}?from=timeline`);
     expect(await screen.findByRole('alert')).toHaveTextContent('找不到这张照片，或你无权访问。');
     expect(screen.queryByRole('heading', { name: '合成生日照' })).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '返回图集' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '返回时间轴' })).toHaveAttribute(
+      'href',
+      '/app/timeline',
+    );
   });
 
   it('keeps a recycled photo on a Chinese state instead of opening its neighbor', async () => {

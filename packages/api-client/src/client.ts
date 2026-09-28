@@ -15,6 +15,7 @@ export type PhotoUploadedActivitySummaryV1 =
   components['schemas']['PhotoUploadedActivitySummaryV1Dto'];
 export type BabySummary = components['schemas']['BabySummaryDto'];
 export type PhotoSummary = components['schemas']['PhotoSummaryDto'];
+export type PublishedPhotoSummary = components['schemas']['PublishedPhotoSummaryDto'];
 export type PhotoUploadBatch = components['schemas']['PhotoUploadBatchDto'];
 export type PhotoUploadInstruction = Omit<
   components['schemas']['PhotoUploadInstructionDto'],

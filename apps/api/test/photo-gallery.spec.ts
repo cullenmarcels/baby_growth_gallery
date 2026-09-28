@@ -65,6 +65,10 @@ function published(
   };
 }
 
+function publishedWithUploader(id = photoId) {
+  return { ...published(id), createdBy: { displayName: '合成照片上传者' } };
+}
+
 function serviceWith(rows: Photo[], role: FamilyMembership['role'] = 'MEMBER') {
   const findMany = jest.fn().mockResolvedValue(rows);
   const findFirst = jest.fn().mockResolvedValue(null);
@@ -116,14 +120,24 @@ function serviceWith(rows: Photo[], role: FamilyMembership['role'] = 'MEMBER') {
 
 describe('published gallery and avatar boundaries', () => {
   it('uses the stable descending order and scopes both pages to published photos of one baby', async () => {
-    const rows = [published(), published('00000000-0000-4000-8000-000000000007', '2026-09-15')];
+    const rows = [
+      publishedWithUploader(),
+      publishedWithUploader('00000000-0000-4000-8000-000000000007'),
+    ];
     const { service, findMany } = serviceWith(rows);
     const first = await service.published(accountId, familyId, babyId, { limit: 1 });
     expect(first.items).toHaveLength(1);
+    expect(first.items[0]).toMatchObject({ uploadedBy: { displayName: '合成照片上传者' } });
+    expect(Object.keys(first.items[0]!.uploadedBy)).toEqual(['displayName']);
+    expect(first.items[0]).not.toHaveProperty('accountId');
+    expect(first.items[0]).not.toHaveProperty('membershipId');
+    expect(first.items[0]).not.toHaveProperty('phoneNumber');
+    expect(first.items[0]).not.toHaveProperty('role');
     expect(first.nextCursor).toBeTruthy();
     expect(findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { familyId, babyId, status: 'PUBLISHED' },
+        include: { createdBy: { select: { displayName: true } } },
         orderBy: [{ capturedOn: 'desc' }, { publishedAt: 'desc' }, { id: 'desc' }],
         take: 2,
       }),
@@ -141,6 +155,10 @@ describe('published gallery and avatar boundaries', () => {
     );
     const timeline = await service.timeline(accountId, familyId, babyId, { limit: 1 });
     expect(timeline.items[0]).toMatchObject({ kind: 'PHOTO', eventOn: '2026-09-16' });
+    expect(timeline.items[0]).toMatchObject({
+      kind: 'PHOTO',
+      photo: { uploadedBy: { displayName: '合成照片上传者' } },
+    });
   });
 
   it('rejects invalid cursors and keeps detail within the same family, baby and published state', async () => {
@@ -154,11 +172,12 @@ describe('published gallery and avatar boundaries', () => {
     );
     expect(findFirst).toHaveBeenCalledWith({
       where: { id: photoId, familyId, babyId, status: 'PUBLISHED' },
+      include: { createdBy: { select: { displayName: true } } },
     });
   });
 
   it('accepts legacy photo cursors and puts a milestone before a photo at an exact timestamp tie', async () => {
-    const tiedPhoto = published(photoId, '2026-09-16', '2026-09-17T02:00:00.000Z');
+    const tiedPhoto = publishedWithUploader(photoId);
     const { service, milestoneFindMany } = serviceWith([tiedPhoto]);
     milestoneFindMany.mockResolvedValue([
       {
@@ -200,14 +219,24 @@ describe('published gallery and avatar boundaries', () => {
   it('calculates adjacent IDs in the same order and returns server-side manage permission', async () => {
     const { service, findFirst } = serviceWith([], 'ADMIN');
     findFirst
-      .mockResolvedValueOnce(published())
+      .mockResolvedValueOnce(publishedWithUploader())
       .mockResolvedValueOnce({ id: '00000000-0000-4000-8000-000000000008' })
       .mockResolvedValueOnce({ id: '00000000-0000-4000-8000-000000000009' });
     const result = await service.publishedDetail(accountId, familyId, babyId, photoId);
     expect(result).toMatchObject({
+      photo: { uploadedBy: { displayName: '合成照片上传者' } },
       canManage: true,
       previousPhotoId: '00000000-0000-4000-8000-000000000008',
       nextPhotoId: '00000000-0000-4000-8000-000000000009',
+    });
+    expect(Object.keys(result.photo.uploadedBy)).toEqual(['displayName']);
+    expect(result.photo).not.toHaveProperty('accountId');
+    expect(result.photo).not.toHaveProperty('membershipId');
+    expect(result.photo).not.toHaveProperty('phoneNumber');
+    expect(result.photo).not.toHaveProperty('role');
+    expect(findFirst).toHaveBeenNthCalledWith(1, {
+      where: { id: photoId, familyId, babyId, status: 'PUBLISHED' },
+      include: { createdBy: { select: { displayName: true } } },
     });
     expect(findFirst).toHaveBeenNthCalledWith(
       2,

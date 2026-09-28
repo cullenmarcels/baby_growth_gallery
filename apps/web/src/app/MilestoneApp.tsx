@@ -533,10 +533,12 @@ function PhotoPicker({
 function DetailPhoto({
   familyId,
   babyId,
+  milestoneId,
   photo,
 }: {
   familyId: string;
   babyId: string;
+  milestoneId: string;
   photo: MilestoneDetail['photos'][number];
 }): React.JSX.Element {
   const [failedUrl, setFailedUrl] = useState<string>();
@@ -548,7 +550,10 @@ function DetailPhoto({
   const url = preview.data?.url;
   const unavailable = preview.isError || Boolean(url && url === failedUrl);
   return (
-    <Link className={styles.detailPhoto} to={`/app/photos/${photo.id}`}>
+    <Link
+      className={styles.detailPhoto}
+      to={`/app/photos/${photo.id}?from=milestone&milestoneId=${encodeURIComponent(milestoneId)}`}
+    >
       {url && !unavailable ? (
         <img
           src={url}
@@ -736,7 +741,13 @@ export function MilestoneDetailPage(): React.JSX.Element {
               <h2>关联照片</h2>
               <div className={styles.detailPhotos}>
                 {item.photos.map((photo) => (
-                  <DetailPhoto familyId={familyId} babyId={babyId} photo={photo} key={photo.id} />
+                  <DetailPhoto
+                    familyId={familyId}
+                    babyId={babyId}
+                    milestoneId={item.id}
+                    photo={photo}
+                    key={photo.id}
+                  />
                 ))}
               </div>
             </div>

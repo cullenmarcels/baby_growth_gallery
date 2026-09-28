@@ -11,8 +11,9 @@
 
 ## 当前有效 Design / Spec
 
-| ID | 类型 | 标题 | 状态 | 替代 | 被替代 | 原始文件 |
-| --- | --- | --- | --- | --- | --- | --- |
+| ID  | 类型 | 标题 | 状态 | 替代 | 被替代 | 原始文件 |
+| --- | ---- | ---- | ---- | ---- | ------ | -------- |
+
 <!-- GENERATED:BEGIN DESIGNS_SPECS -->
 | `DES-20260908-ZVZKM07B` | `design` | 小福宝成长记 UI 设计基线 | `active` | `[]` | `[]` | [source](./designs/DES-20260908-ZVZKM07B-baby-growth-ui/design.md) |
 | `SPEC-20260908-5BD26QCA` | `spec` | 前后端分离 Monorepo 工程基础规格 | `active` | `[]` | `[]` | [source](./specs/SPEC-20260908-5BD26QCA-project-foundation/spec.md) |
@@ -33,13 +34,20 @@
 | `DES-20260918-Y2GFD47V` | `design` | 宝宝档案与照片管理界面修订 | `active` | `[]` | `[]` | [source](./designs/DES-20260918-Y2GFD47V-baby-photo-ui-revision/design.md) |
 | `DES-20260920-SAX3DM0H` | `design` | 成长里程碑、提醒与混合时间轴界面设计 | `active` | `[]` | `[]` | [source](./designs/DES-20260920-SAX3DM0H-baby-milestones-ui/design.md) |
 | `SPEC-20260920-QQ9SQ9VT` | `spec` | 成长里程碑、清单提醒与时间轴整合规格 | `active` | `[]` | `[]` | [source](./specs/SPEC-20260920-QQ9SQ9VT-baby-milestones/spec.md) |
+| `DES-20260923-290T84JW` | `design` | 照片卡片上传者与来源感知详情导航设计 | `superseded` | `[]` | `[DES-20260923-M1TKDS56]` | [source](./designs/DES-20260923-290T84JW-photo-browsing-experience-revision/design.md) |
+| `SPEC-20260923-SN5XW196` | `spec` | 照片浏览信息与来源路由修订规格 | `superseded` | `[]` | `[SPEC-20260923-Y0XZXEM0]` | [source](./specs/SPEC-20260923-SN5XW196-photo-browsing-experience-revision/spec.md) |
+| `DES-20260923-M1TKDS56` | `design` | 照片卡片与详情上传者、来源导航设计 | `active` | `[DES-20260923-290T84JW]` | `[]` | [source](./designs/DES-20260923-M1TKDS56-photo-detail-uploader/design.md) |
+| `SPEC-20260923-Y0XZXEM0` | `spec` | 照片浏览上传者与来源导航修订规格 | `active` | `[SPEC-20260923-SN5XW196]` | `[]` | [source](./specs/SPEC-20260923-Y0XZXEM0-photo-detail-uploader/spec.md) |
 <!-- GENERATED:END DESIGNS_SPECS -->
 
 ## Plan 台账
 
 | Plan ID | 标题 | 状态 | 仓库模式 | 基线提交 | 候选提交 | 集成提交 | Review | Regression | 验收有效性 | Achievement |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| ------- | ---- | ---- | -------- | -------- | -------- | -------- | ------ | ---------- | ---------- | ----------- |
+
 <!-- GENERATED:BEGIN PLANS -->
+| [PLAN-20260923-1FC2B42D](./plans/PLAN-20260923-1FC2B42D/plan.md) | 补充照片详情上传者信息 | `in_review` | `git_remote` | `99d0adc02aa01572601e58f4fa03ea936ce6488f` | `-` | `-` | [pending](./plans/PLAN-20260923-1FC2B42D/review-report.md) | [pending](./plans/PLAN-20260923-1FC2B42D/regression-report.md) | pending | - |
+| [PLAN-20260923-NF3S35VD](./plans/PLAN-20260923-NF3S35VD/plan.md) | 修订照片卡片信息与详情来源导航 | `superseded` | `git_remote` | `99d0adc02aa01572601e58f4fa03ea936ce6488f` | `-` | `-` | [pending](./plans/PLAN-20260923-NF3S35VD/review-report.md) | [pending](./plans/PLAN-20260923-NF3S35VD/regression-report.md) | pending | - |
 | [PLAN-20260920-BR79695D](./plans/PLAN-20260920-BR79695D/plan.md) | 实现成长里程碑、清单提醒与时间轴整合 | `archived` | `git_remote` | `77c602c58f7f266e4fbee979b21e82b5de7b8085` | `dfd2aebe667eea19b8ece3e0d00c53c5affc7086` | `860be884287e8875f380e1dade3b38e629f4b8d5` | [passed](./plans/PLAN-20260920-BR79695D/review-report.md) | [passed](./plans/PLAN-20260920-BR79695D/regression-report.md) | confirmed 2026-09-23T10:53:05+08:00 | [ACH-20260920-BR79695D](./achievements/ACH-20260920-BR79695D-baby-milestones.md) |
 | [PLAN-20260918-RC0Y5QH3](./plans/PLAN-20260918-RC0Y5QH3/plan.md) | 修订 Plan E 宝宝档案与照片管理界面 | `archived` | `git_remote` | `d401a2d0d29fd9e3b0f71ffae815c3a307a72242` | `8fc539813c28d5f56e973f59eb6ff6eb11c86470` | `5e9244a19c56e4da76ab467678bb839d98689099` | [passed](./plans/PLAN-20260918-RC0Y5QH3/review-report.md) | [passed](./plans/PLAN-20260918-RC0Y5QH3/regression-report.md) | confirmed 2026-09-20T13:32:50+08:00 | [ACH-20260918-RC0Y5QH3](./achievements/ACH-20260918-RC0Y5QH3-photo-gallery-timeline-ui.md) |
 | [PLAN-20260917-K0AH0D6T](./plans/PLAN-20260917-K0AH0D6T/plan.md) | 实现图集、时间轴、照片详情与宝宝头像 | `superseded` | `git_remote` | `c0e2108226886183e35f6a9d1ae6f4075d15acb5` | `8b780574efddd11ec05d87781c57a4e7d4c3d242` | `-` | [passed](./plans/PLAN-20260917-K0AH0D6T/review-report.md) | [passed](./plans/PLAN-20260917-K0AH0D6T/regression-report.md) | pending | - |
@@ -64,7 +72,8 @@
 ## 已人工确认的归档
 
 | Achievement ID | Plan ID | 标题 | 确认时间 | 归档文件 |
-| --- | --- | --- | --- | --- |
+| -------------- | ------- | ---- | -------- | -------- |
+
 <!-- GENERATED:BEGIN ACHIEVEMENTS -->
 | `ACH-20260920-BR79695D` | [PLAN-20260920-BR79695D](./plans/PLAN-20260920-BR79695D/plan.md) | 成长里程碑、清单提醒与混合时间轴：完成归档 | 2026-09-23T10:53:05+08:00 | [archive](./achievements/ACH-20260920-BR79695D-baby-milestones.md) |
 | `ACH-20260918-RC0Y5QH3` | [PLAN-20260918-RC0Y5QH3](./plans/PLAN-20260918-RC0Y5QH3/plan.md) | 图集、时间轴、照片详情、宝宝头像与界面修订：完成归档 | 2026-09-20T13:32:50+08:00 | [archive](./achievements/ACH-20260918-RC0Y5QH3-photo-gallery-timeline-ui.md) |
