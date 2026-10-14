@@ -63,3 +63,49 @@
 - 精确 fetch `origin/develop` 后验证 `origin/develop`、本地 `HEAD` 与 Plan `base_commit` 均为 `99d0adc02aa01572601e58f4fa03ea936ce6488f`，远端 ahead/behind 为 `0/0`。没有 fetch prune 或远端写操作。
 - 候选范围复核中：旧 superseded Plan 目录内除其 `state.md` 外的文件不属于本 Plan owned scope，将保留在工作树且不纳入候选提交。
 - Plan 状态准备进入 `in_review`；下步只暂存 state `owned_paths` 覆盖的变更并形成一个本地候选提交，再执行绑定该提交的 Review/Regression。
+
+## 2026-09-28T17:04:57+08:00 — 本地候选、Review 与 Regression
+
+- 暂存清单二次校验：26 个路径全部被本 Plan `owned_paths` 覆盖；被替代 Plan `PLAN-20260923-NF3S35VD` 中 `acceptance-record.md`、`execution-log.md`、`plan.md`、`regression-report.md`、`review-report.md` 五份非所有权文件保留为未跟踪状态，未纳入提交。
+- 用户授权创建一个本地候选后提交 `e6c67158fac997e7be6236149a4b2cf9a58ad582`（`feat: enrich photo detail uploader and origin navigation`）。未执行推送、PR、合并、分支晋升或归档。
+- 依据 Plan State 读取 24 个 `owned_paths`，对该候选执行 `Get-GitScopeDigest -Version 2`，结果 `7B2E0F6B7B233D35653C1948E875D78C86FA9B34F1CEFFEC89A004409706B850`。Review 与 Regression 报告均绑定该提交和摘要。
+- 独立 Review：PASS。DTO/API/OpenAPI、权限与查询范围、三来源和相邻导航、响应式卡片/详情、范围/文档及固定 Rule IDs 已逐项核对；无阻断发现。远端 CI 因未推送为 pending。
+- 候选后定向复跑：API 照片测试 7/7 PASS；Web PhotoBrowse 与 Milestone 测试 26/26 PASS；API 和 Web TypeScript 检查 PASS；`update-indexes.ps1 -Check` PASS；`validate-project.ps1 -Check` 输出 `PROJECT_VALIDATION=PASSED`。
+- 全量回归/构建证据来自候选提交前的相同产品工作树：API 7 suites/62 tests、Web 9 files/67 tests、API/Web/API Client 构建与类型检查、ESLint/Prettier、OpenAPI 导出及客户端连续生成均 PASS；候选仅封装该已验证树与其文档，没有候选前后的代码差异。候选后的 pnpm 命令被系统 Node 24.19.0/pnpm 11.19.0 对仓库要求 24.20.0/11.21.0 的 engine 检查拒绝；本地 Jest/Vitest/TypeScript 可执行文件直接运行并通过，未改全局工具配置。
+- Playwright `photo.spec.ts` + `milestone.spec.ts`：6 passed / 6 skipped / 0 failed；照片响应式流程覆盖 Chromium 375×812、834×1112、1440×1000，stack-connectivity 1/1 PASS。按项目项目/视口条件跳过的场景明确保留为 skipped。E2E 使用合成数据，未清理 PostgreSQL、Redis 或对象存储。
+- 候选 Review 和 Regression 均通过；State 进入 `acceptance_pending`。当前工作树因新增 Review、Regression 和 State 验收证据显示 `dirty_overlap`，这些证据尚未形成另一个候选提交；五份被替代 Plan 非所有权文档仍保留且未改动。人工验收仍待用户确认。
+- 项目校验首次验证已记录的 Review digest 时发现 State 的 `owned_paths` 使用多行方括号格式，而仓库 frontmatter 读取器仅支持单行 inline list，导致本地 digest 校验收到空路径并报错。将 State 的同一组 24 个路径规范化为验证器可解析的单行列表后重试；这是候选后 Plan 证据的格式修正，产品代码和候选提交未改变，candidate digest 仍从提交树按相同路径可复算。
+
+## 2026-10-14T09:49:50+08:00 — 用户人工验收
+
+- 用户明确回复“验收通过”；按 `GIT-007`，Acceptance Record 绑定候选 `e6c67158fac997e7be6236149a4b2cf9a58ad582` 和 v2 digest `7B2E0F6B7B233D35653C1948E875D78C86FA9B34F1CEFFEC89A004409706B850`，confirmed_by 为 user。
+- Plan 状态从 `acceptance_pending` 转为 `integration_pending`。当前预检 fresh state 为 `remote_freshness=unverified`，因此尚不具备基于当前远端的集成核对证据。
+- 用户本次只确认验收；没有推送、创建 PR、合并、分支晋升、集成复验或归档授权，也未执行这些操作。
+
+## 2026-10-14T10:16:08+08:00 — 授权刷新集成目标
+
+- 用户回复“授权执行”后，只执行只读刷新：`git fetch --no-tags origin refs/heads/develop:refs/remotes/origin/develop`；未使用 prune，未写入远端。
+- 刷新结果：`origin/develop=99d0adc02aa01572601e58f4fa03ea936ce6488f`，与 Plan 基线相同；候选 HEAD 为 `e6c67158fac997e7be6236149a4b2cf9a58ad582`。`git rev-list --left-right --count origin/develop...HEAD` 为 `0 1`，共同祖先仍是基线，即候选相对目标分支仅领先 1 个提交、无分叉。候选 v2 digest 与已验收摘要仍为 `7B2E0F6B7B233D35653C1948E875D78C86FA9B34F1CEFFEC89A004409706B850`。
+- 当前仓库通用 preflight 默认报 `origin/main`，但 Plan 的固定集成目标是 `origin/develop`；本次按 Plan 目标显式 fetch 并核验，State 的 remote freshness 更新为 `verified`。
+- 此授权仅执行远端引用刷新与核对。没有推送功能分支、创建 PR、合并、分支晋升或归档；这些远端写操作仍未获单独授权。
+
+## 2026-10-14T11:31:24+08:00 — PR #27 集成
+
+- 按用户授权创建 PR #27，`feature/photo-browse-experience-revision` → `develop`，精确 Head 为 `e6c67158fac997e7be6236149a4b2cf9a58ad582`。用户于 GitHub 以普通 merge commit 合并，集成提交 `fd70c6b629fcd0696c8526dcae1b1ea83d6a3e34`。
+- 合并前复算 accepted 与 integration v2 digest，均为 `7B2E0F6B7B233D35653C1948E875D78C86FA9B34F1CEFFEC89A004409706B850`。PR #27 的 branch-flow 通过，quality 因索引依赖的五份 `PLAN-20260923-NF3S35VD` 历史文档未在 develop 提交中而失败；产品路径未改变。
+
+## 2026-10-14T13:35:53+08:00 — 文档缺失修复 PR #28
+
+- 用户授权后从 PR #27 合并基线建立独立修复分支，仅恢复 `PLAN-20260923-NF3S35VD` 的五份已存在历史文档；三份 Markdown 按 Prettier 格式化，语义不变。原 Plan 归档准备文件未暂存或提交。
+- 修复提交 `2c22f7354c35b55481805aeca61ae76821f6a55a` 仅含上述五份文件。PR #28 合并提交为 `896a95c9568748709066fc724c7e7ae0a2988a5e`；quality 和 branch-flow 通过。PR #28 的 e2e-auth 及其合并后 Quality run 因 Quay.io 拒绝拉取 MinIO 镜像而失败，Playwright 没有启动，因此不记为 E2E 测试失败或通过。
+
+## 2026-10-14T13:50:45+08:00 — CI MinIO 镜像修复 PR #29
+
+- 为解除重复的外部镜像仓库访问阻塞，使用公开 GHCR 上从 MinIO 官方 `RELEASE.2025-04-22T22-12-26Z` 源码构建的固定 linux/amd64 镜像 digest；改用同镜像中随附的 `mc` 执行 bucket 设置和隔离上传检查。该支持性修复只改 `.github/workflows/quality.yml`，不属于本 Plan 的产品 owned-scope，也不改变 accepted/integrated digest。
+- PR #29 的 Head 为 `43f1a6cd0bb708f894c2d38354b1253cf3e0e11c`；branch-flow、quality、e2e-auth 均通过，Playwright 全量 E2E 实际运行成功。用户授权后以普通 merge commit 合并到 develop，集成提交为 `f1bf5fca1d696d8399da6efc01839f1370cd694b`。
+- 合并后的 develop Quality run `38518835483` 的 quality 与 e2e-auth 均通过；已执行 API/Web 单测、生成确定性检查、类型检查、构建、项目校验及完整 E2E。`origin/develop` 最新 ref 与上述合并提交一致，候选 `e6c67158...` 为其祖先，集成 v2 digest 仍为接受的 `7B2E0F6B...`。
+
+## 2026-10-14T13:58:07+08:00 — 集成复验与归档准备
+
+- 在集成候选及最新 develop CI 通过、accepted/integrated digest 一致后，创建唯一 Achievement `ACH-20260923-1FC2B42D` 并准备将 Plan 原子归档。
+- 归档提交前的 `hooks/update-indexes.ps1 -Check`、归档规范化哈希逐项复算、Plan 文档定向 Prettier 和 `git diff --check` 均通过。全量 Prettier 对 `state.md`、生成的 `docs/INDEX.md`、`AGENTS.md` 报告既有格式差异；State 的单行 owned_paths 是仓库解析器要求，索引为生成内容，未对这些文件执行会改写受约束格式或生成区块的格式化。`hooks/validate-project.ps1 -Check` 将在归档内容进入 `origin/develop` 后，以该集成目标运行；远端归档保护复核仍待推送后完成。
