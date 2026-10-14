@@ -109,3 +109,9 @@
 
 - 在集成候选及最新 develop CI 通过、accepted/integrated digest 一致后，创建唯一 Achievement `ACH-20260923-1FC2B42D` 并准备将 Plan 原子归档。
 - 归档提交前的 `hooks/update-indexes.ps1 -Check`、归档规范化哈希逐项复算、Plan 文档定向 Prettier 和 `git diff --check` 均通过。全量 Prettier 对 `state.md`、生成的 `docs/INDEX.md`、`AGENTS.md` 报告既有格式差异；State 的单行 owned_paths 是仓库解析器要求，索引为生成内容，未对这些文件执行会改写受约束格式或生成区块的格式化。`hooks/validate-project.ps1 -Check` 将在归档内容进入 `origin/develop` 后，以该集成目标运行；远端归档保护复核仍待推送后完成。
+
+## 2026-10-14T14:05:42+08:00 — Plan 归档提交与远端校验
+
+- 归档证据提交 `0a3537efb85c7e467c8a8d54a98342b8ce015df5` 已快进推送到 `origin/develop`；刷新后的远端 develop 与该提交一致，原功能候选是其祖先。
+- `hooks/update-indexes.ps1 -Check` 输出 `INDEX_VALIDATION=PASSED`；按 Plan 集成目标临时将本地 `origin/HEAD` 指向 develop 后，`hooks/validate-project.ps1 -Check` 输出 `PROJECT_VALIDATION=PASSED`、`REPOSITORY_MODE=git_remote`。验证完成后已恢复 `origin/HEAD` 为原 `origin/main`。
+- 归档 Plan 包六份文件及 Achievement 的规范化 UTF-8/LF SHA-256 与 `docs/ARCHIVE.sha256` 一致；工作区在验证时干净。候选、接受和集成的 v2 owned-scope digest 均为 `7B2E0F6B7B233D35653C1948E875D78C86FA9B34F1CEFFEC89A004409706B850`。
