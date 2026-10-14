@@ -84,11 +84,20 @@ export class PhotoListResponseDto {
 export class PhotoManagementPageDto extends PhotoListResponseDto {
   @ApiProperty({ type: String, nullable: true }) nextCursor!: string | null;
 }
-export class PublishedPhotoPageDto extends PhotoManagementPageDto {}
+export class PhotoUploaderDto {
+  @ApiProperty({ type: String }) displayName!: string;
+}
+export class PublishedPhotoSummaryDto extends PhotoSummaryDto {
+  @ApiProperty({ type: () => PhotoUploaderDto }) uploadedBy!: PhotoUploaderDto;
+}
+export class PublishedPhotoPageDto extends PhotoManagementPageDto {
+  @ApiProperty({ type: () => [PublishedPhotoSummaryDto] })
+  override items!: PublishedPhotoSummaryDto[];
+}
 export class TimelinePhotoEntryDto {
   @ApiProperty({ type: String, enum: ['PHOTO'] }) kind!: 'PHOTO';
   @ApiProperty({ type: String, format: 'date' }) eventOn!: string;
-  @ApiProperty({ type: () => PhotoSummaryDto }) photo!: PhotoSummaryDto;
+  @ApiProperty({ type: () => PublishedPhotoSummaryDto }) photo!: PublishedPhotoSummaryDto;
 }
 export class TimelineMilestoneEntryDto {
   @ApiProperty({ type: String, enum: ['MILESTONE'] }) kind!: 'MILESTONE';
@@ -110,7 +119,7 @@ export class TimelinePageDto {
   @ApiProperty({ type: String, nullable: true }) nextCursor!: string | null;
 }
 export class PublishedPhotoDetailDto {
-  @ApiProperty({ type: () => PhotoSummaryDto }) photo!: PhotoSummaryDto;
+  @ApiProperty({ type: () => PublishedPhotoSummaryDto }) photo!: PublishedPhotoSummaryDto;
   @ApiProperty({ type: Boolean }) canManage!: boolean;
   @ApiProperty({ type: String, nullable: true, format: 'uuid' }) previousPhotoId!: string | null;
   @ApiProperty({ type: String, nullable: true, format: 'uuid' }) nextPhotoId!: string | null;

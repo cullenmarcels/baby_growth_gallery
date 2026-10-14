@@ -10,6 +10,7 @@ export type {
   FamilyMember,
   FamilySummary,
   PhotoManagementPage,
+  PublishedPhotoSummary,
   PublishedPhotoPage,
   PublishedPhotoDetail,
   TimelinePage,

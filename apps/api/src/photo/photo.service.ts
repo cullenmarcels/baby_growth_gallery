@@ -10,6 +10,7 @@ import type {
   PhotoManagementPageDto,
   PublishedPhotoDetailDto,
   PublishedPhotoPageDto,
+  PublishedPhotoSummaryDto,
   PhotoPreviewDto,
   PhotoSummaryDto,
   TimelinePageDto,
@@ -483,6 +484,7 @@ export class PhotoService {
         status: 'PUBLISHED',
         ...(cursor ? { OR: this.olderThan(cursor) } : {}),
       },
+      include: { createdBy: { select: { displayName: true } } },
       orderBy: [{ capturedOn: 'desc' }, { publishedAt: 'desc' }, { id: 'desc' }],
       take: query.limit + 1,
     });
@@ -490,7 +492,7 @@ export class PhotoService {
     const items = hasMore ? rows.slice(0, query.limit) : rows;
     const last = items.at(-1);
     return {
-      items: items.map((photo) => this.summary(photo, membership)),
+      items: items.map((photo) => this.publishedSummary(photo, membership)),
       nextCursor: hasMore && last ? this.encodePublishedCursor(last) : null,
     };
   }
@@ -511,6 +513,7 @@ export class PhotoService {
           status: 'PUBLISHED',
           ...(cursor ? { OR: this.timelinePhotoOlderThan(cursor) } : {}),
         },
+        include: { createdBy: { select: { displayName: true } } },
         orderBy: [{ capturedOn: 'desc' }, { publishedAt: 'desc' }, { id: 'desc' }],
         take: query.limit + 1,
       }),
@@ -542,7 +545,7 @@ export class PhotoService {
         entry: {
           kind: 'PHOTO' as const,
           eventOn: photo.capturedOn.toISOString().slice(0, 10),
-          photo: this.summary(photo, membership),
+          photo: this.publishedSummary(photo, membership),
         },
       })),
       ...milestones.map((milestone) => ({
@@ -599,6 +602,7 @@ export class PhotoService {
     const { membership } = await this.policy.requireActiveBaby(accountId, familyId, babyId);
     const photo = await this.prisma.photo.findFirst({
       where: { id: photoId, familyId, babyId, status: 'PUBLISHED' },
+      include: { createdBy: { select: { displayName: true } } },
     });
     if (!photo || !photo.publishedAt) this.policy.notFound();
     const position = {
@@ -619,7 +623,7 @@ export class PhotoService {
       }),
     ]);
     return {
-      photo: this.summary(photo, membership),
+      photo: this.publishedSummary(photo, membership),
       canManage: this.policy.canManagePublished(membership, photo),
       previousPhotoId: previous?.id ?? null,
       nextPhotoId: next?.id ?? null,
@@ -828,6 +832,16 @@ export class PhotoService {
       canRestore: this.policy.canRestore(membership, photo),
       failureCode: photo.failureCode,
       updatedAt: photo.updatedAt.toISOString(),
+    };
+  }
+
+  private publishedSummary(
+    photo: Photo & { createdBy: { displayName: string } },
+    membership: FamilyMembership,
+  ): PublishedPhotoSummaryDto {
+    return {
+      ...this.summary(photo, membership),
+      uploadedBy: { displayName: photo.createdBy.displayName },
     };
   }
 

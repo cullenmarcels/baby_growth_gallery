@@ -318,6 +318,9 @@ export interface components {
     "PhotoUploadedActivitySummaryV1Dto": {
       "babyId": string;
     };
+    "PhotoUploaderDto": {
+      "displayName": string;
+    };
     "PhotoUploadInstructionDto": {
       "expiresAt": string;
       "fields": Record<string, string>;
@@ -327,12 +330,33 @@ export interface components {
     "PublishedPhotoDetailDto": {
       "canManage": boolean;
       "nextPhotoId": string | null;
-      "photo": components['schemas']['PhotoSummaryDto'];
+      "photo": components['schemas']['PublishedPhotoSummaryDto'];
       "previousPhotoId": string | null;
     };
     "PublishedPhotoPageDto": {
-      "items": Array<components['schemas']['PhotoSummaryDto']>;
+      "items": Array<components['schemas']['PublishedPhotoSummaryDto']>;
       "nextCursor": string | null;
+    };
+    "PublishedPhotoSummaryDto": {
+      "babyId": string;
+      "batchId": string;
+      "canRestore": boolean;
+      "capturedOn": string;
+      "description": string | null;
+      "draftExpiresAt": string | null;
+      "failureCode": string | null;
+      "height": number | null;
+      "id": string;
+      "location": string | null;
+      "publishedAt": string | null;
+      "purgeAfter": string | null;
+      "sourceFormat": "JPEG" | "PNG" | "WEBP" | "HEIC" | "HEIF" | null;
+      "status": "AWAITING_UPLOAD" | "QUEUED" | "PROCESSING" | "DRAFT" | "PUBLISHED" | "TRASHED" | "FAILED";
+      "title": string | null;
+      "trashedAt": string | null;
+      "updatedAt": string;
+      "uploadedBy": components['schemas']['PhotoUploaderDto'];
+      "width": number | null;
     };
     "PublishPhotosRequestDto": {
       "photoIds": Array<string>;
@@ -363,7 +387,7 @@ export interface components {
     "TimelinePhotoEntryDto": {
       "eventOn": string;
       "kind": "PHOTO";
-      "photo": components['schemas']['PhotoSummaryDto'];
+      "photo": components['schemas']['PublishedPhotoSummaryDto'];
     };
     "TombstonedFamilyActivityItemDto": {
       "id": string;

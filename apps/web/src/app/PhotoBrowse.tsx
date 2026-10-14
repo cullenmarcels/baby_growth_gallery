@@ -1,5 +1,5 @@
 import type {
-  PhotoSummary,
+  PublishedPhotoSummary,
   PublishedPhotoDetail,
   TimelinePage as TimelineData,
 } from '@baby-growth-gallery/api-client';
@@ -14,7 +14,7 @@ import {
   Upload,
 } from 'lucide-react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { api } from './api';
 import { babyKeys } from './baby-query';
@@ -24,6 +24,51 @@ import styles from './PhotoBrowse.module.css';
 import { userFacingError } from './user-facing-error';
 
 const PAGE_SIZE = 24;
+type PhotoOrigin = 'gallery' | 'timeline' | 'milestone';
+
+function resolvePhotoOrigin(search: string): {
+  origin: PhotoOrigin;
+  backTo: string;
+  backLabel: string;
+  query: string;
+} {
+  const params = new URLSearchParams(search);
+  const origins = params.getAll('from');
+  const milestoneIds = params.getAll('milestoneId');
+  const origin = origins.length === 1 ? origins[0] : undefined;
+  if (origin === 'timeline' && milestoneIds.length === 0) {
+    return { origin, backTo: '/app/timeline', backLabel: '返回时间轴', query: '?from=timeline' };
+  }
+  if (
+    origin === 'milestone' &&
+    milestoneIds.length === 1 &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      milestoneIds[0] ?? '',
+    )
+  ) {
+    const milestoneId = milestoneIds[0]!;
+    return {
+      origin,
+      backTo: `/app/milestones/${milestoneId}`,
+      backLabel: '返回里程碑',
+      query: `?from=milestone&milestoneId=${encodeURIComponent(milestoneId)}`,
+    };
+  }
+  if (origin === 'gallery' && milestoneIds.length === 0) {
+    return { origin, backTo: '/app/gallery', backLabel: '返回图集', query: '?from=gallery' };
+  }
+  return {
+    origin: 'gallery',
+    backTo: '/app/gallery',
+    backLabel: '返回图集',
+    query: '?from=gallery',
+  };
+}
+
+function truncateUploaderName(displayName: string): string {
+  const characters = Array.from(displayName);
+  return characters.length > 15 ? `${characters.slice(0, 15).join('')}…` : displayName;
+}
 
 function useScope(): { familyId: string; babyId: string } {
   const auth = useAuth();
@@ -123,17 +168,19 @@ function PhotoTile({
   familyId,
   babyId,
   photo,
+  origin,
   naturalAspectRatio = false,
 }: {
   familyId: string;
   babyId: string;
-  photo: PhotoSummary;
+  photo: PublishedPhotoSummary;
+  origin: 'gallery' | 'timeline';
   naturalAspectRatio?: boolean;
 }): React.JSX.Element {
   return (
     <Link
       className={styles.tile}
-      to={`/app/photos/${photo.id}`}
+      to={`/app/photos/${photo.id}?from=${origin}`}
       aria-label={`查看照片：${photo.title || photo.capturedOn}`}
     >
       <span
@@ -155,6 +202,14 @@ function PhotoTile({
       <span className={styles.tileMeta}>
         <strong>{photo.title || '成长照片'}</strong>
         <time dateTime={photo.capturedOn}>{photo.capturedOn}</time>
+        <span
+          className={styles.uploader}
+          role="note"
+          title={`上传者：${photo.uploadedBy.displayName}`}
+          aria-label={`上传者：${photo.uploadedBy.displayName}`}
+        >
+          上传者：{truncateUploaderName(photo.uploadedBy.displayName)}
+        </span>
       </span>
     </Link>
   );
@@ -269,7 +324,13 @@ export function GalleryPage(): React.JSX.Element {
           <div className={styles.galleryGrid}>
             {items.map((photo) => (
               <MasonryItem key={photo.id}>
-                <PhotoTile familyId={familyId} babyId={babyId} photo={photo} naturalAspectRatio />
+                <PhotoTile
+                  familyId={familyId}
+                  babyId={babyId}
+                  photo={photo}
+                  origin="gallery"
+                  naturalAspectRatio
+                />
               </MasonryItem>
             ))}
           </div>
@@ -336,6 +397,7 @@ export function TimelinePage(): React.JSX.Element {
                       familyId={familyId}
                       babyId={babyId}
                       photo={entry.photo}
+                      origin="timeline"
                     />
                   ) : (
                     <MilestoneTile key={`MILESTONE-${entry.milestone.id}`} entry={entry} />
@@ -369,6 +431,8 @@ export function TimelinePage(): React.JSX.Element {
 export function PhotoDetailPage(): React.JSX.Element {
   const { familyId, babyId } = useScope();
   const photoId = useParams().photoId ?? '';
+  const location = useLocation();
+  const photoOrigin = resolvePhotoOrigin(location.search);
   const [removedId, setRemovedId] = useState<string>();
   const queryClient = useQueryClient();
   const detail = useQuery({
@@ -385,9 +449,9 @@ export function PhotoDetailPage(): React.JSX.Element {
   if (!familyId || !babyId) return <Navigate replace to="/app" />;
   return (
     <section className={styles.page}>
-      <Link className={styles.back} to="/app/gallery">
+      <Link className={styles.back} to={photoOrigin.backTo}>
         <ArrowLeft size={17} />
-        返回图集
+        {photoOrigin.backLabel}
       </Link>
       {removedId === photoId ? (
         <BrowseState message="照片已放入回收站，图集与时间轴已更新。" />
@@ -404,6 +468,7 @@ export function PhotoDetailPage(): React.JSX.Element {
           familyId={familyId}
           babyId={babyId}
           data={detail.data}
+          neighborQuery={photoOrigin.query}
           onTrashed={() => setRemovedId(photoId)}
         />
       )}
@@ -415,11 +480,13 @@ function DetailContent({
   familyId,
   babyId,
   data,
+  neighborQuery,
   onTrashed,
 }: {
   familyId: string;
   babyId: string;
   data: PublishedPhotoDetail;
+  neighborQuery: string;
   onTrashed: () => void;
 }): React.JSX.Element {
   const { photo, previousPhotoId, nextPhotoId, canManage } = data;
@@ -504,6 +571,9 @@ function DetailContent({
             </div>
           ) : null}
         </div>
+        <p className={styles.detailUploader} title={`上传者：${photo.uploadedBy.displayName}`}>
+          上传者：{photo.uploadedBy.displayName}
+        </p>
         {editing && canManage ? (
           <form
             className={styles.editForm}
@@ -567,7 +637,7 @@ function DetailContent({
         )}
         <nav className={styles.neighbors} aria-label="浏览相邻照片">
           {previousPhotoId ? (
-            <Link to={`/app/photos/${previousPhotoId}`}>
+            <Link to={`/app/photos/${previousPhotoId}${neighborQuery}`}>
               <ChevronLeft size={17} />
               上一张
             </Link>
@@ -578,7 +648,7 @@ function DetailContent({
             </span>
           )}
           {nextPhotoId ? (
-            <Link to={`/app/photos/${nextPhotoId}`}>
+            <Link to={`/app/photos/${nextPhotoId}${neighborQuery}`}>
               下一张
               <ChevronRight size={17} />
             </Link>

@@ -1549,6 +1549,17 @@
         ],
         "type": "object"
       },
+      "PhotoUploaderDto": {
+        "properties": {
+          "displayName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "displayName"
+        ],
+        "type": "object"
+      },
       "PhotoUploadInstructionDto": {
         "properties": {
           "expiresAt": {
@@ -1588,7 +1599,7 @@
             "type": "string"
           },
           "photo": {
-            "$ref": "#/components/schemas/PhotoSummaryDto"
+            "$ref": "#/components/schemas/PublishedPhotoSummaryDto"
           },
           "previousPhotoId": {
             "format": "uuid",
@@ -1608,7 +1619,7 @@
         "properties": {
           "items": {
             "items": {
-              "$ref": "#/components/schemas/PhotoSummaryDto"
+              "$ref": "#/components/schemas/PublishedPhotoSummaryDto"
             },
             "type": "array"
           },
@@ -1620,6 +1631,125 @@
         "required": [
           "items",
           "nextCursor"
+        ],
+        "type": "object"
+      },
+      "PublishedPhotoSummaryDto": {
+        "properties": {
+          "babyId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "batchId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "canRestore": {
+            "type": "boolean"
+          },
+          "capturedOn": {
+            "format": "date",
+            "type": "string"
+          },
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "draftExpiresAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "failureCode": {
+            "nullable": true,
+            "type": "string"
+          },
+          "height": {
+            "nullable": true,
+            "type": "number"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "location": {
+            "nullable": true,
+            "type": "string"
+          },
+          "publishedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "purgeAfter": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "sourceFormat": {
+            "enum": [
+              "JPEG",
+              "PNG",
+              "WEBP",
+              "HEIC",
+              "HEIF"
+            ],
+            "nullable": true,
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "AWAITING_UPLOAD",
+              "QUEUED",
+              "PROCESSING",
+              "DRAFT",
+              "PUBLISHED",
+              "TRASHED",
+              "FAILED"
+            ],
+            "type": "string"
+          },
+          "title": {
+            "nullable": true,
+            "type": "string"
+          },
+          "trashedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "uploadedBy": {
+            "$ref": "#/components/schemas/PhotoUploaderDto"
+          },
+          "width": {
+            "nullable": true,
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "batchId",
+          "babyId",
+          "status",
+          "title",
+          "description",
+          "capturedOn",
+          "location",
+          "sourceFormat",
+          "width",
+          "height",
+          "draftExpiresAt",
+          "publishedAt",
+          "trashedAt",
+          "purgeAfter",
+          "canRestore",
+          "failureCode",
+          "updatedAt",
+          "uploadedBy"
         ],
         "type": "object"
       },
@@ -1768,7 +1898,7 @@
             "type": "string"
           },
           "photo": {
-            "$ref": "#/components/schemas/PhotoSummaryDto"
+            "$ref": "#/components/schemas/PublishedPhotoSummaryDto"
           }
         },
         "required": [
