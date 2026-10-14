@@ -98,10 +98,11 @@ jobs:
       - name: Start pinned private MinIO
         run: |
           docker network create bgg-photo-ci
+          # GHCR build from the official 2025-04-22 release; pinned linux/amd64 manifest digest.
           docker run --detach --name minio-ci --network bgg-photo-ci --publish 9000:9000 \
             --env MINIO_ROOT_USER=baby_gallery_minio \
             --env MINIO_ROOT_PASSWORD=baby_gallery_minio_ci_password \
-            quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z@sha256:a1ea29fa28355559ef137d71fc570e508a214ec84ff8083e39bc5428980b015e \
+            ghcr.io/coollabsio/minio@sha256:d8cfccee3f7bf0182d89c223b2ff53b94c9a88237bc0dd5733dd49fa0f4dab4c \
             server /data
           docker run --detach --name minio-public-ci --network bgg-photo-ci --publish 9002:9000 \
             --env WEB_ORIGIN=http://127.0.0.1:5173 --env S3_UPSTREAM=minio-ci:9000 \
@@ -119,9 +120,9 @@ jobs:
             if [ "$attempt" = 30 ]; then exit 1; fi
             sleep 1
           done
-          docker run --rm --network host --entrypoint /bin/sh \
-            quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z@sha256:aead63c77f9db9107f1696fb08ecb0faeda23729cde94b0f663edf4fe09728e3 \
-            -c 'mc alias set local http://127.0.0.1:9000 baby_gallery_minio baby_gallery_minio_ci_password && mc mb --ignore-existing local/baby-growth-gallery-ci && mc anonymous set none local/baby-growth-gallery-ci'
+          docker exec minio-ci mc alias set local http://127.0.0.1:9000 baby_gallery_minio baby_gallery_minio_ci_password
+          docker exec minio-ci mc mb --ignore-existing local/baby-growth-gallery-ci
+          docker exec minio-ci mc anonymous set none local/baby-growth-gallery-ci
       - run: pnpm --filter @baby-growth-gallery/api prisma:generate
       - run: pnpm --filter @baby-growth-gallery/api exec prisma migrate deploy
       - run: pnpm exec playwright install --with-deps chromium
@@ -129,9 +130,7 @@ jobs:
       - name: Verify no isolated uploads remain
         if: always()
         run: |
-          output="$(docker run --rm --network host --entrypoint /bin/sh \
-            quay.io/minio/mc:RELEASE.2025-04-16T18-13-26Z@sha256:aead63c77f9db9107f1696fb08ecb0faeda23729cde94b0f663edf4fe09728e3 \
-            -c 'mc alias set local http://127.0.0.1:9000 baby_gallery_minio baby_gallery_minio_ci_password >/dev/null && mc find local/baby-growth-gallery-ci/quarantine --name "*" 2>/dev/null' || true)"
+          output="$(docker exec minio-ci mc find local/baby-growth-gallery-ci/quarantine --name "*" 2>/dev/null || true)"
           test -z "$output"
       # Raw traces/reports can capture cookies and presigned POST fields. Only the
       # runner's status manifest is safe to retain; detailed failures stay in logs.
