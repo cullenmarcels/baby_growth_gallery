@@ -115,6 +115,51 @@ type RecordRow = {
   }>;
 };
 
+test('growth list presents loading, empty and recoverable error states', async ({ page }) => {
+  const { owner, familyId, babyId } = await setupGrowth();
+  try {
+    expect(
+      (
+        await post(
+          owner.context,
+          `/api/v1/families/${familyId}/babies/${babyId}/activate`,
+          owner.csrf,
+        )
+      ).status(),
+    ).toBe(200);
+    await page.context().addCookies((await owner.context.storageState()).cookies);
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let mode: 'loading' | 'failure' | 'success' = 'loading';
+    await page.route(/\/growth-records(?:\?.*)?$/, async (route) => {
+      if (mode === 'loading') await gate;
+      if (mode === 'failure') {
+        await route.fulfill({ status: 503, contentType: 'application/json', body: '{}' });
+      } else {
+        await route.fulfill({ json: { items: [], nextCursor: null } });
+      }
+    });
+    await page.goto('/app/growth');
+    await expect(page.getByText('正在加载记录…')).toBeVisible();
+    mode = 'success';
+    release();
+    await expect(page.getByText('还没有测量记录，添加第一条吧。')).toBeVisible();
+    mode = 'failure';
+    await page.getByRole('button', { name: '回收站' }).click();
+    await expect(page.getByText('记录加载失败，请重试。')).toBeVisible();
+    mode = 'success';
+    await page.getByRole('button', { name: '重试' }).click();
+    await expect(page.getByText('回收站为空。')).toBeVisible();
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+    ).toBe(true);
+  } finally {
+    await owner.context.dispose();
+  }
+});
+
 test('growth UI supports partial entry, real curves, recycle, recovery and administrator permanent deletion', async ({
   page,
 }, testInfo) => {
