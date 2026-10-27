@@ -1,5 +1,9 @@
 export { ApiClientError, createApiClient, getReadiness } from './client.js';
 export type {
+  GrowthRecord,
+  GrowthPage,
+  GrowthOverview,
+  GrowthSeries,
   AccountSummary,
   ApiClient,
   ApiClientOptions,

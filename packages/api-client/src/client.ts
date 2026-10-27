@@ -33,6 +33,11 @@ export type MilestonePage = components['schemas']['MilestonePageDto'];
 export type MilestoneOverview = components['schemas']['MilestoneOverviewDto'];
 export type MilestoneTemplateList = components['schemas']['MilestoneTemplateListDto'];
 
+export type GrowthRecord = components['schemas']['GrowthRecordDto'];
+export type GrowthPage = components['schemas']['GrowthPageDto'];
+export type GrowthOverview = components['schemas']['GrowthOverviewDto'];
+export type GrowthSeries = components['schemas']['GrowthSeriesDto'];
+
 export class ApiClientError extends Error {
   constructor(
     message: string,
@@ -712,6 +717,126 @@ export function createApiClient({ baseUrl, fetchImpl }: ApiClientOptions) {
         '/api/v1/families/{familyId}/babies/{babyId}/milestones/{milestoneId}',
         {
           params: { path: { familyId, babyId, milestoneId }, query: { expectedVersion } },
+          headers: await mutationHeaders(),
+        },
+      );
+      if (!result.response.ok) requireData(result.data, result.error, result.response);
+    },
+    async listGrowthRecords(
+      familyId: string,
+      babyId: string,
+      query: { state?: 'ACTIVE' | 'TRASHED'; limit?: number; cursor?: string },
+    ): Promise<GrowthPage> {
+      const result = await client.GET(
+        '/api/v1/families/{familyId}/babies/{babyId}/growth-records',
+        { params: { path: { familyId, babyId }, query } },
+      );
+      return requireData<GrowthPage>(result.data, result.error, result.response);
+    },
+    async getGrowthOverview(familyId: string, babyId: string): Promise<GrowthOverview> {
+      const result = await client.GET(
+        '/api/v1/families/{familyId}/babies/{babyId}/growth-records/overview',
+        { params: { path: { familyId, babyId } } },
+      );
+      return requireData<GrowthOverview>(result.data, result.error, result.response);
+    },
+    async getGrowthSeries(
+      familyId: string,
+      babyId: string,
+      query: {
+        metric: 'LENGTH' | 'WEIGHT' | 'HEAD' | 'BMI';
+        fromOn?: string;
+        toOn?: string;
+        limit?: number;
+        cursor?: string;
+      },
+    ): Promise<GrowthSeries> {
+      const result = await client.GET(
+        '/api/v1/families/{familyId}/babies/{babyId}/growth-records/series',
+        { params: { path: { familyId, babyId }, query } },
+      );
+      return requireData<GrowthSeries>(result.data, result.error, result.response);
+    },
+    async getGrowthRecord(
+      familyId: string,
+      babyId: string,
+      recordId: string,
+    ): Promise<GrowthRecord> {
+      const result = await client.GET(
+        '/api/v1/families/{familyId}/babies/{babyId}/growth-records/{recordId}',
+        { params: { path: { familyId, babyId, recordId } } },
+      );
+      return requireData<GrowthRecord>(result.data, result.error, result.response);
+    },
+    async createGrowthRecord(
+      familyId: string,
+      babyId: string,
+      body: components['schemas']['CreateGrowthRequestDto'],
+    ): Promise<GrowthRecord> {
+      const result = await client.POST(
+        '/api/v1/families/{familyId}/babies/{babyId}/growth-records',
+        { params: { path: { familyId, babyId } }, body, headers: await mutationHeaders() },
+      );
+      return requireData<GrowthRecord>(result.data, result.error, result.response);
+    },
+    async updateGrowthRecord(
+      familyId: string,
+      babyId: string,
+      recordId: string,
+      body: components['schemas']['UpdateGrowthRequestDto'],
+    ): Promise<GrowthRecord> {
+      const result = await client.PATCH(
+        '/api/v1/families/{familyId}/babies/{babyId}/growth-records/{recordId}',
+        {
+          params: { path: { familyId, babyId, recordId } },
+          body,
+          headers: await mutationHeaders(),
+        },
+      );
+      return requireData<GrowthRecord>(result.data, result.error, result.response);
+    },
+    async trashGrowthRecord(
+      familyId: string,
+      babyId: string,
+      recordId: string,
+      body: components['schemas']['GrowthVersionRequestDto'],
+    ): Promise<GrowthRecord> {
+      const result = await client.POST(
+        '/api/v1/families/{familyId}/babies/{babyId}/growth-records/{recordId}/trash',
+        {
+          params: { path: { familyId, babyId, recordId } },
+          body,
+          headers: await mutationHeaders(),
+        },
+      );
+      return requireData<GrowthRecord>(result.data, result.error, result.response);
+    },
+    async restoreGrowthRecord(
+      familyId: string,
+      babyId: string,
+      recordId: string,
+      body: components['schemas']['RestoreGrowthRequestDto'],
+    ): Promise<GrowthRecord> {
+      const result = await client.POST(
+        '/api/v1/families/{familyId}/babies/{babyId}/growth-records/{recordId}/restore',
+        {
+          params: { path: { familyId, babyId, recordId } },
+          body,
+          headers: await mutationHeaders(),
+        },
+      );
+      return requireData<GrowthRecord>(result.data, result.error, result.response);
+    },
+    async purgeGrowthRecord(
+      familyId: string,
+      babyId: string,
+      recordId: string,
+      expectedVersion: number,
+    ): Promise<void> {
+      const result = await client.DELETE(
+        '/api/v1/families/{familyId}/babies/{babyId}/growth-records/{recordId}',
+        {
+          params: { path: { familyId, babyId, recordId }, query: { expectedVersion } },
           headers: await mutationHeaders(),
         },
       );

@@ -1,0 +1,7 @@
+# WHO reference parameters
+
+Copyright World Health Organization and upstream contributors. These data retain upstream GPL terms (COPYING); the root application license does not replace the data license. The exact source commits and source-file SHA256 values are in manifest.json. Preferred source R objects are retained as anthro-source.rda and anthroplus-source.rda. who-lms.json is an unrounded age/sex/L/M/S extraction, with embedded attribution, corresponding-source links and full license text so production JSON also carries the notices. No R code is included in the application calculation module.
+
+anthro 1.0.1 is pinned for individual-assessment references through 60 completed months (0-1856 days). The newer 1.1 survey release shortens the range to under 60 months. The confirmed product requires the individual-assessment range. anthroplus supplies the 2007 monthly reference. Head circumference uses the child-standard 2007 supplement. Source: https://www.who.int/tools/child-growth-standards/software and https://www.who.int/tools/growth-reference-data-for-5to19-years/application-tools.
+
+TypeScript imports JSON into dist/growth/reference-data, so containers need no R runtime or external service. Synthetic oracle fixtures run the pinned official R functions in a temporary R container. Low-level functions are used to obtain unrounded z-scores because public APIs round to two decimals. Production equations independently implement the published LMS method.

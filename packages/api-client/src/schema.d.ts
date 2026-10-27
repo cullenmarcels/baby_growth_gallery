@@ -110,6 +110,14 @@ export interface components {
       "displayName": string;
       "name": string;
     };
+    "CreateGrowthRequestDto": {
+      "headCm"?: number | null;
+      "lengthCm"?: number | null;
+      "measuredOn": string;
+      "measurementPosition"?: "RECUMBENT" | "STANDING" | null;
+      "note"?: string | null;
+      "weightKg"?: number | null;
+    };
     "CreatePhotoBatchRequestDto": {
       "files": Array<components['schemas']['PhotoFileDescriptorDto']>;
     };
@@ -157,6 +165,71 @@ export interface components {
       "currentMembership": components['schemas']['FamilyMembershipSummaryDto'];
       "id": string;
       "name": string;
+    };
+    "GrowthAuthorDto": {
+      "displayName": string;
+    };
+    "GrowthCurvePointDto": {
+      "lower": number;
+      "measuredOn": string;
+      "median": number;
+      "standard": string;
+      "upper": number;
+    };
+    "GrowthLatestDto": {
+      "measuredOn": string;
+      "metric": "LENGTH" | "WEIGHT" | "HEAD" | "BMI";
+      "recordId": string;
+      "reference": components['schemas']['GrowthReferenceDto'];
+      "value": number | null;
+    };
+    "GrowthOverviewDto": {
+      "latest": Array<components['schemas']['GrowthLatestDto']>;
+    };
+    "GrowthPageDto": {
+      "items": Array<components['schemas']['GrowthRecordDto']>;
+      "nextCursor": string | null;
+    };
+    "GrowthRecordDto": {
+      "babyId": string;
+      "bmi": number | null;
+      "canManage": boolean;
+      "canPurge": boolean;
+      "canRestore": boolean;
+      "createdAt": string;
+      "createdBy": components['schemas']['GrowthAuthorDto'];
+      "dateConflict": boolean;
+      "headCm": number | null;
+      "id": string;
+      "lengthCm": number | null;
+      "measuredOn": string;
+      "measurementPosition": "RECUMBENT" | "STANDING" | null;
+      "measurements": Array<components['schemas']['GrowthValueDto']>;
+      "note": string | null;
+      "purgeAfter": string | null;
+      "status": "ACTIVE" | "TRASHED";
+      "updatedAt": string;
+      "version": number;
+      "weightKg": number | null;
+    };
+    "GrowthReferenceDto": {
+      "percentile": number | null;
+      "reason": string | null;
+      "standard": string | null;
+      "zScore": number | null;
+    };
+    "GrowthSeriesDto": {
+      "items": Array<components['schemas']['GrowthRecordDto']>;
+      "nextCursor": string | null;
+      "referenceCurve": Array<components['schemas']['GrowthCurvePointDto']>;
+    };
+    "GrowthValueDto": {
+      "metric": "LENGTH" | "WEIGHT" | "HEAD" | "BMI";
+      "reference": components['schemas']['GrowthReferenceDto'];
+      "value": number | null;
+    };
+    "GrowthVersionRequestDto": {
+      "expectedVersion": number;
     };
     "HealthResponseDto": {
       "dependencies"?: components['schemas']['DependencyHealthDto'];
@@ -372,6 +445,10 @@ export interface components {
     "ReopenMilestoneRequestDto": {
       "expectedVersion": number;
     };
+    "RestoreGrowthRequestDto": {
+      "expectedVersion": number;
+      "measuredOn"?: string;
+    };
     "SetBabyAvatarRequestDto": {
       "photoId": string | null;
     };
@@ -400,6 +477,15 @@ export interface components {
       "birthDate"?: string;
       "nickname"?: string;
       "sex"?: "MALE" | "FEMALE" | null;
+    };
+    "UpdateGrowthRequestDto": {
+      "expectedVersion": number;
+      "headCm"?: number | null;
+      "lengthCm"?: number | null;
+      "measuredOn"?: string;
+      "measurementPosition"?: "RECUMBENT" | "STANDING" | null;
+      "note"?: string | null;
+      "weightKg"?: number | null;
     };
     "UpdateMilestoneRequestDto": {
       "expectedVersion": number;
@@ -1062,6 +1148,191 @@ export interface paths {
         "200": {
           content: {
             "application/json": components['schemas']['BabySummaryDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies/{babyId}/growth-records": {
+    get: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+        };
+        "query"?: {
+          "cursor"?: string;
+          "limit"?: number;
+          "state"?: "ACTIVE" | "TRASHED";
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['GrowthPageDto'];
+          };
+        };
+      };
+    };
+    post: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+        };
+      };
+      requestBody: {
+        content: {
+          "application/json": components['schemas']['CreateGrowthRequestDto'];
+        };
+      };
+      responses: {
+        "201": {
+          content: {
+            "application/json": components['schemas']['GrowthRecordDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies/{babyId}/growth-records/{recordId}": {
+    delete: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+          "recordId": string;
+        };
+        "query": {
+          "expectedVersion": number;
+        };
+      };
+      responses: {
+        "204": {
+          content: Record<string, never>;
+        };
+      };
+    };
+    get: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+          "recordId": string;
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['GrowthRecordDto'];
+          };
+        };
+      };
+    };
+    patch: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+          "recordId": string;
+        };
+      };
+      requestBody: {
+        content: {
+          "application/json": components['schemas']['UpdateGrowthRequestDto'];
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['GrowthRecordDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies/{babyId}/growth-records/{recordId}/restore": {
+    post: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+          "recordId": string;
+        };
+      };
+      requestBody: {
+        content: {
+          "application/json": components['schemas']['RestoreGrowthRequestDto'];
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['GrowthRecordDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies/{babyId}/growth-records/{recordId}/trash": {
+    post: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+          "recordId": string;
+        };
+      };
+      requestBody: {
+        content: {
+          "application/json": components['schemas']['GrowthVersionRequestDto'];
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['GrowthRecordDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies/{babyId}/growth-records/overview": {
+    get: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['GrowthOverviewDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/families/{familyId}/babies/{babyId}/growth-records/series": {
+    get: {
+      parameters: {
+        "path": {
+          "babyId": string;
+          "familyId": string;
+        };
+        "query": {
+          "cursor"?: string;
+          "fromOn"?: string;
+          "limit"?: number;
+          "metric": "LENGTH" | "WEIGHT" | "HEAD" | "BMI";
+          "toOn"?: string;
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['GrowthSeriesDto'];
           };
         };
       };

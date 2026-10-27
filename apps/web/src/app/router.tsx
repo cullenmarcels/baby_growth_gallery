@@ -1,3 +1,4 @@
+import { GrowthPage, GrowthFormPage } from './GrowthApp';
 import { createBrowserRouter } from 'react-router-dom';
 import { AuthLayout } from './AuthLayout';
 import { ForgotPasswordPage, LoginPage, RegisterPage } from './AuthPages';
@@ -5,13 +6,7 @@ import { LegalPage } from './LegalPage';
 import { NotFoundPage } from './NotFoundPage';
 import { GuestRoute, ProtectedRoute, RootRedirect } from './route-guards';
 import { StatusPage } from './StatusPage';
-import {
-  AppHomeRedirect,
-  ComingSoonPage,
-  FamilyPage,
-  FamilyShell,
-  OnboardingPage,
-} from './FamilyApp';
+import { AppHomeRedirect, FamilyPage, FamilyShell, OnboardingPage } from './FamilyApp';
 import {
   BabyCreatePage,
   BabyEntryRedirect,
@@ -64,7 +59,9 @@ export const router = createBrowserRouter([
           { path: 'milestones', element: <MilestonePage /> },
           { path: 'milestones/new', element: <MilestoneNewPage /> },
           { path: 'milestones/:milestoneId', element: <MilestoneDetailPage /> },
-          { path: 'growth', element: <ComingSoonPage title="成长数据" icon="growth" /> },
+          { path: 'growth', element: <GrowthPage /> },
+          { path: 'growth/new', element: <GrowthFormPage /> },
+          { path: 'growth/:recordId/edit', element: <GrowthFormPage /> },
         ],
       },
     ],

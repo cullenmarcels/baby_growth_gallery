@@ -530,6 +530,52 @@
         ],
         "type": "object"
       },
+      "CreateGrowthRequestDto": {
+        "properties": {
+          "headCm": {
+            "maximum": 999999.9,
+            "minimum": 0.1,
+            "multipleOf": 0.1,
+            "nullable": true,
+            "type": "number"
+          },
+          "lengthCm": {
+            "maximum": 999999.9,
+            "minimum": 0.1,
+            "multipleOf": 0.1,
+            "nullable": true,
+            "type": "number"
+          },
+          "measuredOn": {
+            "format": "date",
+            "type": "string"
+          },
+          "measurementPosition": {
+            "enum": [
+              "RECUMBENT",
+              "STANDING"
+            ],
+            "nullable": true,
+            "type": "string"
+          },
+          "note": {
+            "maxLength": 1000,
+            "nullable": true,
+            "type": "string"
+          },
+          "weightKg": {
+            "maximum": 999999.99,
+            "minimum": 0.01,
+            "multipleOf": 0.01,
+            "nullable": true,
+            "type": "number"
+          }
+        },
+        "required": [
+          "measuredOn"
+        ],
+        "type": "object"
+      },
       "CreatePhotoBatchRequestDto": {
         "properties": {
           "files": {
@@ -770,6 +816,314 @@
           "name",
           "createdAt",
           "currentMembership"
+        ],
+        "type": "object"
+      },
+      "GrowthAuthorDto": {
+        "properties": {
+          "displayName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "displayName"
+        ],
+        "type": "object"
+      },
+      "GrowthCurvePointDto": {
+        "properties": {
+          "lower": {
+            "type": "number"
+          },
+          "measuredOn": {
+            "format": "date",
+            "type": "string"
+          },
+          "median": {
+            "type": "number"
+          },
+          "standard": {
+            "type": "string"
+          },
+          "upper": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "measuredOn",
+          "median",
+          "lower",
+          "upper",
+          "standard"
+        ],
+        "type": "object"
+      },
+      "GrowthLatestDto": {
+        "properties": {
+          "measuredOn": {
+            "format": "date",
+            "type": "string"
+          },
+          "metric": {
+            "enum": [
+              "LENGTH",
+              "WEIGHT",
+              "HEAD",
+              "BMI"
+            ],
+            "type": "string"
+          },
+          "recordId": {
+            "type": "string"
+          },
+          "reference": {
+            "$ref": "#/components/schemas/GrowthReferenceDto"
+          },
+          "value": {
+            "nullable": true,
+            "type": "number"
+          }
+        },
+        "required": [
+          "metric",
+          "value",
+          "reference",
+          "recordId",
+          "measuredOn"
+        ],
+        "type": "object"
+      },
+      "GrowthOverviewDto": {
+        "properties": {
+          "latest": {
+            "items": {
+              "$ref": "#/components/schemas/GrowthLatestDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "latest"
+        ],
+        "type": "object"
+      },
+      "GrowthPageDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/GrowthRecordDto"
+            },
+            "type": "array"
+          },
+          "nextCursor": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "type": "object"
+      },
+      "GrowthRecordDto": {
+        "properties": {
+          "babyId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "bmi": {
+            "nullable": true,
+            "type": "number"
+          },
+          "canManage": {
+            "type": "boolean"
+          },
+          "canPurge": {
+            "type": "boolean"
+          },
+          "canRestore": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/GrowthAuthorDto"
+          },
+          "dateConflict": {
+            "type": "boolean"
+          },
+          "headCm": {
+            "nullable": true,
+            "type": "number"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "lengthCm": {
+            "nullable": true,
+            "type": "number"
+          },
+          "measuredOn": {
+            "format": "date",
+            "type": "string"
+          },
+          "measurementPosition": {
+            "enum": [
+              "RECUMBENT",
+              "STANDING"
+            ],
+            "nullable": true,
+            "type": "string"
+          },
+          "measurements": {
+            "items": {
+              "$ref": "#/components/schemas/GrowthValueDto"
+            },
+            "type": "array"
+          },
+          "note": {
+            "nullable": true,
+            "type": "string"
+          },
+          "purgeAfter": {
+            "nullable": true,
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "ACTIVE",
+              "TRASHED"
+            ],
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "version": {
+            "type": "number"
+          },
+          "weightKg": {
+            "nullable": true,
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "babyId",
+          "measuredOn",
+          "lengthCm",
+          "weightKg",
+          "headCm",
+          "bmi",
+          "measurementPosition",
+          "note",
+          "status",
+          "version",
+          "createdBy",
+          "createdAt",
+          "updatedAt",
+          "purgeAfter",
+          "canManage",
+          "canRestore",
+          "canPurge",
+          "dateConflict",
+          "measurements"
+        ],
+        "type": "object"
+      },
+      "GrowthReferenceDto": {
+        "properties": {
+          "percentile": {
+            "nullable": true,
+            "type": "number"
+          },
+          "reason": {
+            "nullable": true,
+            "type": "string"
+          },
+          "standard": {
+            "nullable": true,
+            "type": "string"
+          },
+          "zScore": {
+            "nullable": true,
+            "type": "number"
+          }
+        },
+        "required": [
+          "standard",
+          "zScore",
+          "percentile",
+          "reason"
+        ],
+        "type": "object"
+      },
+      "GrowthSeriesDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/GrowthRecordDto"
+            },
+            "type": "array"
+          },
+          "nextCursor": {
+            "nullable": true,
+            "type": "string"
+          },
+          "referenceCurve": {
+            "items": {
+              "$ref": "#/components/schemas/GrowthCurvePointDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor",
+          "referenceCurve"
+        ],
+        "type": "object"
+      },
+      "GrowthValueDto": {
+        "properties": {
+          "metric": {
+            "enum": [
+              "LENGTH",
+              "WEIGHT",
+              "HEAD",
+              "BMI"
+            ],
+            "type": "string"
+          },
+          "reference": {
+            "$ref": "#/components/schemas/GrowthReferenceDto"
+          },
+          "value": {
+            "nullable": true,
+            "type": "number"
+          }
+        },
+        "required": [
+          "metric",
+          "value",
+          "reference"
+        ],
+        "type": "object"
+      },
+      "GrowthVersionRequestDto": {
+        "properties": {
+          "expectedVersion": {
+            "minimum": 1,
+            "type": "number"
+          }
+        },
+        "required": [
+          "expectedVersion"
         ],
         "type": "object"
       },
@@ -1820,6 +2174,22 @@
         ],
         "type": "object"
       },
+      "RestoreGrowthRequestDto": {
+        "properties": {
+          "expectedVersion": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "measuredOn": {
+            "format": "date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expectedVersion"
+        ],
+        "type": "object"
+      },
       "SetBabyAvatarRequestDto": {
         "properties": {
           "photoId": {
@@ -1964,6 +2334,56 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "UpdateGrowthRequestDto": {
+        "properties": {
+          "expectedVersion": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "headCm": {
+            "maximum": 999999.9,
+            "minimum": 0.1,
+            "multipleOf": 0.1,
+            "nullable": true,
+            "type": "number"
+          },
+          "lengthCm": {
+            "maximum": 999999.9,
+            "minimum": 0.1,
+            "multipleOf": 0.1,
+            "nullable": true,
+            "type": "number"
+          },
+          "measuredOn": {
+            "format": "date",
+            "type": "string"
+          },
+          "measurementPosition": {
+            "enum": [
+              "RECUMBENT",
+              "STANDING"
+            ],
+            "nullable": true,
+            "type": "string"
+          },
+          "note": {
+            "maxLength": 1000,
+            "nullable": true,
+            "type": "string"
+          },
+          "weightKg": {
+            "maximum": 999999.99,
+            "minimum": 0.01,
+            "multipleOf": 0.01,
+            "nullable": true,
+            "type": "number"
+          }
+        },
+        "required": [
+          "expectedVersion"
+        ],
         "type": "object"
       },
       "UpdateMilestoneRequestDto": {
@@ -3445,6 +3865,567 @@
         ],
         "tags": [
           "babies"
+        ]
+      }
+    },
+    "/api/v1/families/{familyId}/babies/{babyId}/growth-records": {
+      "get": {
+        "operationId": "GrowthController_list",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "state",
+            "required": false,
+            "schema": {
+              "enum": [
+                "ACTIVE",
+                "TRASHED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthPageDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "growth"
+        ]
+      },
+      "post": {
+        "operationId": "GrowthController_create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGrowthRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthRecordDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "growth"
+        ]
+      }
+    },
+    "/api/v1/families/{familyId}/babies/{babyId}/growth-records/{recordId}": {
+      "delete": {
+        "operationId": "GrowthController_purge",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "expectedVersion",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "recordId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "growth"
+        ]
+      },
+      "get": {
+        "operationId": "GrowthController_detail",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "recordId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthRecordDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "growth"
+        ]
+      },
+      "patch": {
+        "operationId": "GrowthController_update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "recordId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGrowthRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthRecordDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "growth"
+        ]
+      }
+    },
+    "/api/v1/families/{familyId}/babies/{babyId}/growth-records/{recordId}/restore": {
+      "post": {
+        "operationId": "GrowthController_restore",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "recordId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestoreGrowthRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthRecordDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "growth"
+        ]
+      }
+    },
+    "/api/v1/families/{familyId}/babies/{babyId}/growth-records/{recordId}/trash": {
+      "post": {
+        "operationId": "GrowthController_trash",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "recordId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GrowthVersionRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthRecordDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "growth"
+        ]
+      }
+    },
+    "/api/v1/families/{familyId}/babies/{babyId}/growth-records/overview": {
+      "get": {
+        "operationId": "GrowthController_overview",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthOverviewDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "growth"
+        ]
+      }
+    },
+    "/api/v1/families/{familyId}/babies/{babyId}/growth-records/series": {
+      "get": {
+        "operationId": "GrowthController_series",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "toOn",
+            "required": false,
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "fromOn",
+            "required": false,
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "metric",
+            "required": true,
+            "schema": {
+              "enum": [
+                "LENGTH",
+                "WEIGHT",
+                "HEAD",
+                "BMI"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "babyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthSeriesDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "growth"
         ]
       }
     },
