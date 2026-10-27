@@ -31,6 +31,22 @@ const record = {
 } as GrowthRecord & { createdBy: { displayName: string } };
 
 describe('growth record domain and lifecycle', () => {
+  it('includes the final supported day of the 228th completed month in the reference curve', async () => {
+    const birthDate = new Date('2000-01-01T00:00:00Z');
+    const lastDate = new Date(birthDate.valueOf() + 6970 * 86_400_000).toISOString().slice(0, 10);
+    const baby = { id: '00000000-0000-4000-8000-000000000003', birthDate, sex: 'MALE' };
+    const prisma = { growthRecord: { findMany: jest.fn(async () => []) } };
+    const babies = { requireBaby: jest.fn(async () => ({ membership, baby })) };
+    const service = new GrowthService(prisma as never, babies as never);
+    const result = await service.series('account', 'family', 'baby', {
+      metric: 'LENGTH',
+      fromOn: lastDate,
+      toOn: lastDate,
+      limit: 20,
+    });
+    expect(result.referenceCurve).toHaveLength(1);
+    expect(result.referenceCurve[0]).toMatchObject({ measuredOn: lastDate, standard: 'WHO_2007' });
+  });
   it('rejects precision, calendar, type, version and empty-patch errors', () => {
     expect(growthInputSchema.safeParse({ measuredOn: '2026-02-30', weightKg: 4 }).success).toBe(
       false,

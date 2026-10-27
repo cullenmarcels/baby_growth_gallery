@@ -1,7 +1,7 @@
 import type { GrowthRecord } from '@baby-growth-gallery/api-client';
 import { ApiClientError } from '@baby-growth-gallery/api-client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { afterEach, beforeEach, vi } from 'vitest';
@@ -49,14 +49,13 @@ function renderPage(path = '/app/growth') {
     ],
     { initialEntries: [path] },
   );
-  render(
-    <QueryClientProvider
-      client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
-    >
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const view = render(
+    <QueryClientProvider client={client}>
       <RouterProvider router={router} />
     </QueryClientProvider>,
   );
-  return router;
+  return { router, client, unmount: view.unmount };
 }
 beforeEach(() => {
   vi.spyOn(api, 'getBaby').mockResolvedValue({
@@ -108,6 +107,16 @@ describe('growth interface', () => {
     expect(screen.queryByRole('button', { name: '恢复' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '彻底删除' })).not.toBeInTheDocument();
   });
+  it('does not offer recovery when a cached trash record has expired', async () => {
+    vi.mocked(api.listGrowthRecords).mockResolvedValue({
+      items: [{ ...item, status: 'TRASHED', canRestore: true, purgeAfter: '2000-01-01T00:00:00Z' }],
+      nextCursor: null,
+    });
+    renderPage();
+    await userEvent.click(await screen.findByRole('button', { name: '回收站' }));
+    expect(await screen.findByText(/恢复期限已过/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '恢复' })).not.toBeInTheDocument();
+  });
   it('preserves input after save failure and maps unknown errors to Chinese', async () => {
     vi.spyOn(api, 'createGrowthRecord').mockRejectedValue(new Error('private database failure'));
     renderPage('/app/growth/new');
@@ -143,6 +152,30 @@ describe('growth interface', () => {
     expect(screen.getByRole('img').querySelectorAll('polyline')).toHaveLength(0);
     expect(screen.getByText('2026-01-02：4.00 kg', { selector: 'li' })).toBeInTheDocument();
   });
+  it('does not connect the length reference across the 731-day position change', () => {
+    const birthDate = '2020-01-01';
+    const dateAt = (days: number) =>
+      new Date(Date.parse(birthDate) + days * 86_400_000).toISOString().slice(0, 10);
+    const measurement = {
+      ...item,
+      measurements: [{ ...item.measurements[0]!, metric: 'LENGTH' as const, value: 80 }],
+    };
+    const referenceCurve = [729, 730, 731, 732].map((days) => ({
+      measuredOn: dateAt(days),
+      median: 80,
+      lower: 70,
+      upper: 90,
+      standard: 'WHO_2006',
+    }));
+    render(
+      <GrowthChart
+        birthDate={birthDate}
+        metric="LENGTH"
+        pages={[{ items: [measurement], nextCursor: null, referenceCurve }]}
+      />,
+    );
+    expect(screen.getByRole('img').querySelectorAll('polyline')).toHaveLength(6);
+  });
   it('removes stale private records on a forbidden refetch', async () => {
     vi.mocked(api.listGrowthRecords).mockRejectedValue(
       new ApiClientError('unavailable', 404, { code: 'BABY_NOT_FOUND' } as never),
@@ -150,5 +183,32 @@ describe('growth interface', () => {
     renderPage();
     expect(await screen.findByRole('alert')).toHaveTextContent('找不到这个宝宝档案');
     expect(screen.queryByText(/记录者：合成成员/)).not.toBeInTheDocument();
+  });
+  it('erases previously loaded growth data when access is revoked', async () => {
+    const { client } = renderPage();
+    expect(await screen.findByText(/记录者：合成成员/)).toBeInTheDocument();
+    vi.mocked(api.listGrowthRecords).mockRejectedValue(
+      new ApiClientError('unavailable', 404, { code: 'BABY_NOT_FOUND' } as never),
+    );
+    await client.invalidateQueries({
+      queryKey: ['growth', 'family', 'baby', '2025-01-01', null, 'list'],
+    });
+    expect(await screen.findByRole('alert')).toHaveTextContent('找不到这个宝宝档案');
+    expect(screen.queryByText(/记录者：合成成员/)).not.toBeInTheDocument();
+    await waitFor(() => {
+      const entries = client.getQueryCache().findAll({ queryKey: ['growth', 'family', 'baby'] });
+      expect(entries.every((entry) => entry.state.data === undefined)).toBe(true);
+    });
+  });
+  it('clears the growth cache when leaving the account or baby context', async () => {
+    const { client, unmount } = renderPage();
+    expect(await screen.findByText(/记录者：合成成员/)).toBeInTheDocument();
+    expect(
+      client.getQueryCache().findAll({ queryKey: ['growth', 'family', 'baby'] }).length,
+    ).toBeGreaterThan(0);
+    unmount();
+    expect(client.getQueryCache().findAll({ queryKey: ['growth', 'family', 'baby'] })).toHaveLength(
+      0,
+    );
   });
 });

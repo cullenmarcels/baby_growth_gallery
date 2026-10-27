@@ -187,7 +187,11 @@ export class GrowthService {
     const referenceCurve: GrowthCurvePointDto[] = [];
     const birth = baby.birthDate.valueOf();
     const start = Math.max(0, Math.ceil((this.date(fromOn).valueOf() - birth) / DAY));
-    const end = Math.min(6969, Math.floor((this.date(toOn).valueOf() - birth) / DAY));
+    // 228 completed months includes fractional ages below 229 months.
+    const end = Math.min(
+      Math.floor(229 * 30.4375),
+      Math.floor((this.date(toOn).valueOf() - birth) / DAY),
+    );
     const days = new Set<number>([start, end, 730, 731, 1856, 1857]);
     for (let day = start; day <= end; day += 30) days.add(day);
     for (const day of [...days].filter((day) => day >= start && day <= end).sort((a, b) => a - b)) {

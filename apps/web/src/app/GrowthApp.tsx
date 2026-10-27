@@ -52,14 +52,26 @@ function State({ message, retry }: { message: string; retry?: (() => void) | und
 
 function GrowthScope({ edit = false }: { edit?: boolean }) {
   const auth = useAuth();
+  const client = useQueryClient();
   const { recordId } = useParams();
   const familyId = auth.account?.activeFamilyId ?? '';
   const babyId = auth.account?.activeBabyId ?? '';
+  useEffect(
+    () => () => {
+      if (familyId && babyId) client.removeQueries({ queryKey: ['growth', familyId, babyId] });
+    },
+    [client, familyId, babyId],
+  );
   const baby = useQuery({
     queryKey: babyKeys.detail(familyId, babyId),
     queryFn: () => api.getBaby(familyId, babyId),
     enabled: !!familyId && !!babyId,
   });
+  useEffect(() => {
+    if (baby.isError && familyId && babyId) {
+      client.removeQueries({ queryKey: ['growth', familyId, babyId] });
+    }
+  }, [baby.isError, client, familyId, babyId]);
   if (!familyId || !babyId) return <Navigate replace to="/app" />;
   if (baby.isError) return <State message="无法访问当前宝宝，请重新选择宝宝。" />;
   if (!baby.data) return <State message="正在打开成长记录…" />;
@@ -89,6 +101,7 @@ function GrowthContent({ familyId, babyId, baby }: Scope) {
   const [allDates, setAllDates] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [accessBlocked, setAccessBlocked] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
@@ -100,19 +113,35 @@ function GrowthContent({ familyId, babyId, baby }: Scope) {
     null,
   );
   const key = growthKeys.scope(familyId, babyId, baby.birthDate, baby.sex);
+  async function guardedFetch<T>(operation: () => Promise<T>): Promise<T> {
+    try {
+      return await operation();
+    } catch (err) {
+      if (err instanceof ApiClientError && [401, 403, 404].includes(err.status)) {
+        setAccessBlocked(userFacingError(err, '当前无法访问成长记录。'));
+        void client.cancelQueries({ queryKey: ['growth', familyId, babyId] });
+        client.removeQueries({ queryKey: ['growth', familyId, babyId] });
+      }
+      throw err;
+    }
+  }
   const overview = useQuery({
     queryKey: [...key, 'overview'],
-    queryFn: () => api.getGrowthOverview(familyId, babyId),
+    queryFn: () => guardedFetch(() => api.getGrowthOverview(familyId, babyId)),
+    enabled: accessBlocked === null,
   });
   const list = useInfiniteQuery({
     queryKey: [...key, 'list', state],
     initialPageParam: '',
     queryFn: ({ pageParam }) =>
-      api.listGrowthRecords(familyId, babyId, {
-        state,
-        ...(pageParam ? { cursor: pageParam } : {}),
-      }),
+      guardedFetch(() =>
+        api.listGrowthRecords(familyId, babyId, {
+          state,
+          ...(pageParam ? { cursor: pageParam } : {}),
+        }),
+      ),
     getNextPageParam: (page) => page.nextCursor ?? undefined,
+    enabled: accessBlocked === null,
   });
   const end = today();
   const startDate = new Date(`${end}T00:00:00Z`);
@@ -122,14 +151,16 @@ function GrowthContent({ familyId, babyId, baby }: Scope) {
     queryKey: [...key, 'series', metric, allDates, end],
     initialPageParam: '',
     queryFn: ({ pageParam }) =>
-      api.getGrowthSeries(familyId, babyId, {
-        metric,
-        toOn: end,
-        ...(!allDates ? { fromOn: start } : {}),
-        ...(pageParam ? { cursor: pageParam } : {}),
-      }),
+      guardedFetch(() =>
+        api.getGrowthSeries(familyId, babyId, {
+          metric,
+          toOn: end,
+          ...(!allDates ? { fromOn: start } : {}),
+          ...(pageParam ? { cursor: pageParam } : {}),
+        }),
+      ),
     getNextPageParam: (page) => page.nextCursor ?? undefined,
-    enabled: state === 'ACTIVE',
+    enabled: state === 'ACTIVE' && accessBlocked === null,
   });
   const accessError = [list.error, overview.error, series.error].find(
     (err) => err instanceof ApiClientError && [401, 403, 404].includes(err.status),
@@ -183,11 +214,17 @@ function GrowthContent({ familyId, babyId, baby }: Scope) {
         </p>
       ) : null}
       <p aria-live="polite">{notice}</p>
-      {accessError || (list.isError && !list.data) ? (
+      {accessBlocked || accessError || (list.isError && !list.data) ? (
         <State
-          message={scopeError}
+          message={accessBlocked ?? scopeError}
           retry={() => {
-            void list.refetch();
+            if (accessBlocked) setAccessBlocked(null);
+            else
+              void Promise.all([
+                list.refetch(),
+                overview.refetch(),
+                ...(state === 'ACTIVE' ? [series.refetch()] : []),
+              ]);
           }}
         />
       ) : (
@@ -270,7 +307,9 @@ function GrowthContent({ familyId, babyId, baby }: Scope) {
                   }}
                 />
               ) : null}
-              {series.data ? <GrowthChart pages={series.data.pages} metric={metric} /> : null}
+              {series.data ? (
+                <GrowthChart pages={series.data.pages} metric={metric} birthDate={baby.birthDate} />
+              ) : null}
               {series.hasNextPage ? (
                 <button
                   disabled={series.isFetchingNextPage}
@@ -327,7 +366,10 @@ function GrowthContent({ familyId, babyId, baby }: Scope) {
                           </button>
                         </>
                       ) : null}
-                      {item.canRestore && !item.dateConflict ? (
+                      {item.canRestore &&
+                      item.purgeAfter &&
+                      Date.parse(item.purgeAfter) > now &&
+                      !item.dateConflict ? (
                         <button
                           disabled={busy}
                           onClick={() => {
@@ -337,7 +379,10 @@ function GrowthContent({ familyId, babyId, baby }: Scope) {
                           恢复
                         </button>
                       ) : null}
-                      {item.canRestore && item.dateConflict ? (
+                      {item.canRestore &&
+                      item.purgeAfter &&
+                      Date.parse(item.purgeAfter) > now &&
+                      item.dateConflict ? (
                         <Link to={`/app/growth/${item.id}/edit`}>核对日期</Link>
                       ) : null}
                       {item.canPurge ? (
@@ -414,7 +459,15 @@ function GrowthContent({ familyId, babyId, baby }: Scope) {
   );
 }
 
-export function GrowthChart({ pages, metric }: { pages: GrowthSeries[]; metric: Metric }) {
+export function GrowthChart({
+  pages,
+  metric,
+  birthDate,
+}: {
+  pages: GrowthSeries[];
+  metric: Metric;
+  birthDate?: string;
+}) {
   const records = [
     ...new Map(pages.flatMap((p) => p.items).map((item) => [item.id, item])).values(),
   ].sort(
@@ -438,12 +491,20 @@ export function GrowthChart({ pages, metric }: { pages: GrowthSeries[]; metric: 
     maxX = Math.max(...dates);
   const minY = Math.max(0, Math.min(...values) * 0.9),
     maxY = Math.max(...values) * 1.1;
-  const x = (date: string) => 64 + ((Date.parse(date) - minX) / (maxX - minX || 1)) * 590;
+  const x = (date: string) => 100 + ((Date.parse(date) - minX) / (maxX - minX || 1)) * 554;
   const y = (value: number) => 244 - ((value - minY) / (maxY - minY || 1)) * 210;
   const lines: Array<typeof curve> = [];
   for (const point of curve) {
     const last = lines.at(-1);
-    if (!last || last.at(-1)?.standard !== point.standard) lines.push([point]);
+    const previous = last?.at(-1);
+    const switchAt = birthDate ? Date.parse(birthDate) + 731 * 86_400_000 : null;
+    const crossesLengthChange =
+      switchAt !== null &&
+      (metric === 'LENGTH' || metric === 'BMI') &&
+      previous &&
+      Date.parse(previous.measuredOn) < switchAt &&
+      Date.parse(point.measuredOn) >= switchAt;
+    if (!last || previous?.standard !== point.standard || crossesLengthChange) lines.push([point]);
     else last.push(point);
   }
   return (
@@ -455,14 +516,14 @@ export function GrowthChart({ pages, metric }: { pages: GrowthSeries[]; metric: 
         role="img"
         aria-label={`${labels[metric]}曲线，单位 ${units[metric]}，详细数值见下方文本记录`}
       >
-        <line className={styles.axis} x1="64" x2="654" y1="244" y2="244" />
-        <line className={styles.axis} x1="64" x2="64" y1="24" y2="244" />
+        <line className={styles.axis} x1="100" x2="654" y1="244" y2="244" />
+        <line className={styles.axis} x1="100" x2="100" y1="24" y2="244" />
         {[minY, (minY + maxY) / 2, maxY].map((v, i) => (
-          <text key={i} x="58" y={y(v) + 4} textAnchor="end">
+          <text key={i} x="92" y={y(v) + 4} textAnchor="end">
             {v.toFixed(1)}
           </text>
         ))}
-        <text x="64" y="279">
+        <text x="100" y="279">
           {new Date(minX).toISOString().slice(0, 10)}
         </text>
         <text x="654" y="279" textAnchor="end">
