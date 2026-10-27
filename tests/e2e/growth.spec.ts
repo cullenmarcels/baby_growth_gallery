@@ -160,6 +160,63 @@ test('growth list presents loading, empty and recoverable error states', async (
   }
 });
 
+test('growth UI handles a stale edit and an expired cached trash record', async ({ page }) => {
+  const { owner, familyId, babyId, base } = await setupGrowth();
+  try {
+    const created = await post(owner.context, base, owner.csrf, {
+      measuredOn: localToday(),
+      weightKg: 9,
+    });
+    expect(created.status()).toBe(201);
+    const record = (await created.json()) as RecordRow;
+    expect(
+      (
+        await post(
+          owner.context,
+          `/api/v1/families/${familyId}/babies/${babyId}/activate`,
+          owner.csrf,
+        )
+      ).status(),
+    ).toBe(200);
+    await page.context().addCookies((await owner.context.storageState()).cookies);
+    await page.goto(`/app/growth/${record.id}/edit`);
+    await expect(page.getByLabel('体重（kg）')).toHaveValue('9');
+    const concurrent = await owner.context.patch(`${base}/${record.id}`, {
+      headers: headers(owner.csrf),
+      data: { expectedVersion: record.version, weightKg: 9.2 },
+    });
+    expect(concurrent.status()).toBe(200);
+    const updated = (await concurrent.json()) as RecordRow;
+    await page.getByLabel('备注').fill('保留输入');
+    await page.getByRole('button', { name: '保存', exact: true }).click();
+    await expect(page.getByRole('alert')).toContainText('记录已经变化');
+    await expect(page.getByRole('alert')).toBeFocused();
+    await expect(page.getByLabel('备注')).toHaveValue('保留输入');
+    const trashed = await post(owner.context, `${base}/${record.id}/trash`, owner.csrf, {
+      expectedVersion: updated.version,
+    });
+    expect(trashed.status()).toBe(200);
+    await page.route(/\/growth-records\?.*state=TRASHED/, async (route) => {
+      const response = await route.fetch();
+      const body = (await response.json()) as { items: Array<RecordRow & { purgeAfter: string }> };
+      body.items.forEach((item) => {
+        item.purgeAfter = '2000-01-01T00:00:00Z';
+        item.canRestore = true;
+      });
+      await route.fulfill({ response, json: body });
+    });
+    await page.getByRole('link', { name: '返回数据' }).click();
+    await page.getByRole('button', { name: '回收站' }).click();
+    await expect(page.getByText('恢复期限已过，等待永久清理。')).toBeVisible();
+    await expect(page.getByRole('button', { name: '恢复', exact: true })).toHaveCount(0);
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+    ).toBe(true);
+  } finally {
+    await owner.context.dispose();
+  }
+});
+
 test('growth UI supports partial entry, real curves, recycle, recovery and administrator permanent deletion', async ({
   page,
 }, testInfo) => {
