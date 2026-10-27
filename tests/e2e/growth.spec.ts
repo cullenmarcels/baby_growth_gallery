@@ -193,6 +193,10 @@ test('growth UI supports partial entry, real curves, recycle, recovery and admin
     expect(bounds?.height).toBeGreaterThanOrEqual(44);
     await page.getByRole('button', { name: '回收', exact: true }).click();
     await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(page.getByRole('button', { name: '取消', exact: true })).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('button', { name: '回收', exact: true })).toBeFocused();
+    await page.getByRole('button', { name: '回收', exact: true }).click();
     await page.getByRole('button', { name: '确认', exact: true }).click();
     await expect(page.getByText('记录已放入回收站。')).toBeVisible();
     await page.getByRole('button', { name: '回收站', exact: true }).click();
