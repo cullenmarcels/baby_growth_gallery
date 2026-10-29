@@ -9,6 +9,8 @@
 - 2026-10-27：首次 `pnpm stack:up` 的 API 镜像依赖部署因 npm 注册表超时失败；正在重试，容器运行验证尚未通过。本日志中的运行结果尚未绑定最终候选 SHA，不作为候选 Review 或独立 Regression 结论。
 - 2026-10-27：第二次默认 npm 注册表构建仍超时；使用现有 `NPM_REGISTRY` 构建参数临时指定 `https://registry.npmmirror.com` 后，`pnpm stack:up` 成功，API、Web 容器健康。浏览器实际连接容器时第一次运行 14 通过、1 项因注册限流返回 429；随后隔离测试 Redis 前缀并临时配置信任测试代理，成长和 readiness 测试三个视口共 15 项通过，之后恢复默认 API 容器配置。新增加载、空列表和失败重试三视口覆盖。
 - 2026-10-27：本地串行全量浏览器回归 53 通过、25 项按视口/环境设计跳过，包含认证、宝宝、家庭、照片及里程碑；先前并发照片失败仍按不稳定现象记录。以上执行发生于候选形成过程中，仍须完成提交绑定的 Review 与独立 Regression；各视口的冲突、过期及焦点恢复尚需核验。
+- 2026-10-27：补充确认框焦点与 Escape 恢复焦点断言，当前候选 `f56efa9e56a4a53b6c73c466663f8be76bc2d422`，v2 摘要 `B5A30106C849E894F69F218509834C4043F6598C4EB79080EE8263B70BDB0DA4`。此提交对应容器实际产品代码，在隔离测试限流设置下 15 项成长与 readiness 检查通过，包括 3 个视口的焦点断言；测试后恢复默认 API 容器配置。Review 及 Regression 报告只记录进行中证据，尚未通过。
+- 2026-10-29：用户人工验收确认通过并明确授权创建 PR。候选报告绑定 `f3fae9c259827b4533c4b1264e77cffd8a8fe925` / v2 `E8A7CDDD2A70AF903214F670F36E630B1E849C6E5FBA5884420A15EF705CDA53`。刷新 `origin/develop` 成功，仍等于基线。候选 Review 与其后独立 Regression 完成；`pnpm validate` 通过，stack 成长及 readiness 18 项通过；当前候选全量 Playwright 84 项为 53 passed、31 designed skips、0 failed。验收记录绑定同一 SHA/摘要。状态进入 `acceptance_pending`，CI 等待 PR 创建后运行。仅推送功能分支并开 PR，未授权合并/归档。
 
 
 | Task | 产出/责任域 | 依赖 |
