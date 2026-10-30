@@ -1,5 +1,5 @@
 ---
-id: ACH-20261030-707KSVG3
+id: ACH-20261022-707KSVG3
 type: achievement
 title: "Plan G：成长数据、WHO 参考与记录回收站"
 status: archived
