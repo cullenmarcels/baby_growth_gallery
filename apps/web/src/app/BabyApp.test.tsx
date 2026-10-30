@@ -87,14 +87,24 @@ afterEach(() => {
 });
 
 describe('baby profile application states', () => {
-  it('links the milestone home card to the real milestone workspace', async () => {
+  it('shows the milestone progress summary and links to its workspace', async () => {
     auth.account.activeBabyId = babyId;
     vi.spyOn(api, 'getBaby').mockResolvedValue(baby());
+    vi.spyOn(api, 'listPublishedPhotos').mockResolvedValue({ items: [], nextCursor: null });
+    vi.spyOn(api, 'getMilestoneOverview').mockResolvedValue({
+      progress: { completed: 1, total: 2 },
+      reminders: [],
+      nextCursor: null,
+    });
+    vi.spyOn(api, 'getGrowthOverview').mockResolvedValue({ latest: [] });
     renderAt(<BabyHomePage />, '/app/home');
 
-    const milestoneCard = await screen.findByRole('link', { name: /成长里程碑/ });
-    expect(milestoneCard).toHaveAttribute('href', '/app/milestones');
-    expect(milestoneCard).toHaveTextContent('管理当前宝宝的里程碑清单、提醒与完成记录。');
+    expect(await screen.findByRole('heading', { name: '里程碑进度' })).toBeInTheDocument();
+    expect(await screen.findByRole('progressbar')).toHaveAttribute('value', '1');
+    expect(screen.getByRole('link', { name: '查看全部里程碑进度' })).toHaveAttribute(
+      'href',
+      '/app/milestones',
+    );
   });
 
   it('directs a manager without babies to the create form', async () => {
