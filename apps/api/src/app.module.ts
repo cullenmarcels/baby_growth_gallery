@@ -1,3 +1,6 @@
+import { GrowthController } from './growth/growth.controller.js';
+import { GrowthService } from './growth/growth.service.js';
+import { GrowthMaintenanceService } from './growth/growth-maintenance.service.js';
 import { Module } from '@nestjs/common';
 import { BabyController } from './baby/baby.controller.js';
 import { BabyMaintenanceService } from './baby/baby-maintenance.service.js';
@@ -38,6 +41,7 @@ import { MilestoneService } from './milestone/milestone.service.js';
     BabyController,
     PhotoController,
     MilestoneController,
+    GrowthController,
   ],
   providers: [
     { provide: APP_CONFIG, useFactory: () => loadAppConfig() },
@@ -63,6 +67,8 @@ import { MilestoneService } from './milestone/milestone.service.js';
     PhotoMaintenanceService,
     MilestonePolicyService,
     MilestoneService,
+    GrowthService,
+    GrowthMaintenanceService,
   ],
 })
 export class AppModule {}

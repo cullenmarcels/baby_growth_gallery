@@ -108,6 +108,7 @@ model Family {
   photoUploadBatches PhotoUploadBatch[]
   photos             Photo[]
   milestones         Milestone[]
+  growthRecords      GrowthRecord[]
 
   @@index([createdByAccountId])
   @@map("families")
@@ -132,6 +133,9 @@ model FamilyMembership {
   createdPhotos       Photo[]                @relation("PhotoCreator")
   trashedPhotos       Photo[]                @relation("PhotoTrashActor")
   createdMilestones   Milestone[]            @relation("MilestoneCreator")
+
+  growthRecordsCreated GrowthRecord[] @relation("GrowthCreator")
+  growthRecordsTrashed GrowthRecord[] @relation("GrowthTrashActor")
 
   @@unique([familyId, accountId])
   @@index([accountId, status, joinedAt])
@@ -196,8 +200,9 @@ model BabyProfile {
   createdBy             FamilyMembership   @relation("BabyCreator", fields: [createdByMembershipId], references: [id], onDelete: Restrict)
   photoUploadBatches    PhotoUploadBatch[]
   photos                Photo[]
-  avatarPhoto           Photo?              @relation("BabyAvatar", fields: [avatarPhotoId], references: [id], onDelete: SetNull)
+  avatarPhoto           Photo?             @relation("BabyAvatar", fields: [avatarPhotoId], references: [id], onDelete: SetNull)
   milestones            Milestone[]
+  growthRecords         GrowthRecord[]
 
   @@index([familyId, status, createdAt(sort: Desc), id(sort: Desc)])
   @@index([status, purgeAfter])
@@ -260,7 +265,7 @@ model Photo {
   createdBy             FamilyMembership   @relation("PhotoCreator", fields: [createdByMembershipId], references: [id], onDelete: Restrict)
   trashedBy             FamilyMembership?  @relation("PhotoTrashActor", fields: [trashedByMembershipId], references: [id], onDelete: Restrict)
   variants              PhotoVariant[]
-  avatarForBaby         BabyProfile?        @relation("BabyAvatar")
+  avatarForBaby         BabyProfile?       @relation("BabyAvatar")
   milestonePhotos       MilestonePhoto[]
 
   @@index([uploadBatchId, displayOrder])
@@ -303,12 +308,12 @@ model Milestone {
 }
 
 model MilestonePhoto {
-  milestoneId String    @map("milestone_id") @db.Uuid
-  photoId     String    @map("photo_id") @db.Uuid
-  displayOrder Int      @map("display_order")
-  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
-  milestone   Milestone @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
-  photo       Photo     @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  milestoneId  String    @map("milestone_id") @db.Uuid
+  photoId      String    @map("photo_id") @db.Uuid
+  displayOrder Int       @map("display_order")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  milestone    Milestone @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  photo        Photo     @relation(fields: [photoId], references: [id], onDelete: Cascade)
 
   @@id([milestoneId, photoId])
   @@index([milestoneId, displayOrder])
@@ -344,4 +349,45 @@ model LegalAcceptance {
 
   @@index([accountId, acceptedAt])
   @@map("legal_acceptances")
+}
+
+enum GrowthRecordStatus {
+  ACTIVE
+  TRASHED
+}
+
+enum GrowthMeasurementPosition {
+  RECUMBENT
+  STANDING
+}
+
+model GrowthRecord {
+  id                    String                     @id @default(uuid()) @db.Uuid
+  familyId              String                     @map("family_id") @db.Uuid
+  babyId                String                     @map("baby_id") @db.Uuid
+  createdByMembershipId String                     @map("created_by_membership_id") @db.Uuid
+  measuredOn            DateTime                   @map("measured_on") @db.Date
+  lengthCm              Decimal?                   @map("length_cm") @db.Decimal(7, 1)
+  weightKg              Decimal?                   @map("weight_kg") @db.Decimal(8, 2)
+  headCm                Decimal?                   @map("head_cm") @db.Decimal(7, 1)
+  measurementPosition   GrowthMeasurementPosition? @map("measurement_position")
+  note                  String?                    @db.VarChar(1000)
+  status                GrowthRecordStatus         @default(ACTIVE)
+  version               Int                        @default(1)
+  trashedAt             DateTime?                  @map("trashed_at") @db.Timestamptz(3)
+  trashedByMembershipId String?                    @map("trashed_by_membership_id") @db.Uuid
+  trashedByRole         FamilyRole?                @map("trashed_by_role")
+  purgeAfter            DateTime?                  @map("purge_after") @db.Timestamptz(3)
+  createdAt             DateTime                   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime                   @updatedAt @map("updated_at") @db.Timestamptz(3)
+  family                Family                     @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  baby                  BabyProfile                @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  createdBy             FamilyMembership           @relation("GrowthCreator", fields: [createdByMembershipId], references: [id], onDelete: Restrict)
+  trashedBy             FamilyMembership?          @relation("GrowthTrashActor", fields: [trashedByMembershipId], references: [id], onDelete: Restrict)
+
+  @@index([familyId, babyId, status, measuredOn(sort: Desc), createdAt(sort: Desc), id(sort: Desc)])
+  @@index([status, purgeAfter])
+  @@index([createdByMembershipId])
+  @@index([trashedByMembershipId])
+  @@map("growth_records")
 }

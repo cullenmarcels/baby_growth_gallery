@@ -1,6 +1,14 @@
 import { ApiClientError } from '@baby-growth-gallery/api-client';
 
 const errorCopyByCode: Readonly<Record<string, string>> = {
+  GROWTH_NOT_FOUND: '找不到这条成长记录，或你无权访问。',
+  GROWTH_PERMISSION_DENIED: '你没有权限执行此成长记录操作。',
+  GROWTH_STATE_CONFLICT: '记录已经变化，请刷新后重试。',
+  GROWTH_RESTORE_EXPIRED: '记录的 30 天恢复期限已过。',
+  GROWTH_RESTORE_ADMIN_REQUIRED: '需要家庭管理员恢复此记录。',
+  GROWTH_DATE_INVALID: '测量日期须在宝宝出生日至今天之间。',
+  GROWTH_POSITION_REQUIRED: '请填写身高或身长的测量方式。',
+  GROWTH_MEASUREMENT_REQUIRED: '请至少填写一项测量数据。',
   PHONE_INVALID: '请输入有效的中国大陆手机号。',
   VALIDATION_FAILED: '请检查填写内容后重新提交。',
   AUTH_REQUEST_INVALID: '手机号或登录凭据不正确。',

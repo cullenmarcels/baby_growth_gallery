@@ -88,6 +88,8 @@
 | Plan F 成长里程碑                     | `docs/specs/SPEC-20260920-QQ9SQ9VT-baby-milestones/spec.md` / `docs/designs/DES-20260920-SAX3DM0H-baby-milestones-ui/design.md` / `docs/plans/PLAN-20260920-BR79695D/plan.md`               | 已归档：ACH-20260920-BR79695D | 共享清单、12 项模板、自定义里程碑、应用内提醒、照片关联与混合时间轴                                               |
 | 照片浏览上传者与来源导航修订          | `docs/specs/SPEC-20260923-Y0XZXEM0-photo-detail-uploader/spec.md` / `docs/designs/DES-20260923-M1TKDS56-photo-detail-uploader/design.md` / `docs/plans/PLAN-20260923-1FC2B42D/plan.md` / `docs/achievements/ACH-20260923-1FC2B42D-photo-browse-experience.md` | 已归档                      | 卡片与详情上传者显示、图集/时间轴/里程碑来源感知照片详情返回；CI 镜像支持修复另见 PR #29 |
 
+| Plan G 成长数据与回收站 | `docs/specs/SPEC-20261022-17HX5RTZ-growth-records/spec.md` / `docs/designs/DES-20261022-EM2SND6K-growth-records/design.md` / `docs/plans/PLAN-20261022-707KSVG3/plan.md` | 实施中 | 任意年龄测量、WHO 228 月参考、30 天回收与管理员彻底删除 |
+
 执行任务时先用 `rules/INDEX.md` 定位阶段；进入 `docs/` 后读取 `docs/README.md` 和 `docs/INDEX.md`。不得仅按文件日期推断当前有效资料。
 
 ## 8. 完成前核对

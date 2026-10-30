@@ -1,0 +1,20 @@
+[
+  {
+    "project": "anthro",
+    "commit": "0aa8151284fb6df50c9236048160b03c1715be90",
+    "url": "https://github.com/WorldHealthOrganization/anthro/tree/0aa8151284fb6df50c9236048160b03c1715be90",
+    "sourceSha256": "047d3f4d149e2b16723594650731d096d78b1b3b868d0ae91d861ca70924a786",
+    "license": "GPL-3.0-only"
+  },
+  {
+    "project": "anthroplus",
+    "commit": "7cfcdb39026e9a55de55732bc3cf14c82261bcf7",
+    "url": "https://github.com/WorldHealthOrganization/anthroplus/tree/7cfcdb39026e9a55de55732bc3cf14c82261bcf7",
+    "sourceSha256": "ca09deabdf3ba3b6acc9d120f0603d9b36ca883528653e05ff1117cfb365ac34",
+    "license": "GPL-3.0-or-later"
+  },
+  {
+    "file": "who-lms.json",
+    "sha256": "47c20998aa27e92c56783ca23243738b78995998457f95b3c42ea56bf67d361a"
+  }
+]

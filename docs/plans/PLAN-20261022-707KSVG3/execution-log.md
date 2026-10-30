@@ -1,0 +1,27 @@
+# 执行记录
+
+- 2026-10-22T17:23:00+08:00：用户全文确认；检查最新消息无新增长期 Rule 候选。已读入口、阶段菜单和全部适用 Rules。fetch origin develop 成功；基线如 State；工作树 clean，owned_paths 无活动重叠。创建 feature/growth-records。
+- G-01：创建专用 Spec/Design、冻结 Plan 与 State；不修改历史归档。后续 task 持续追加证据。
+- 2026-10-27：用户要求继续执行。重检 HEAD 与分支、远端 develop；确认上轮未提交改动属于本 Plan，另有 17 个未拥有文件仅为上轮工作区换行状态，`git diff --name-only` 不含这些路径，均予保护。原 preflight 为 `dirty_overlap`；按用户已确认的 feature 分支和本地候选提交范围，将 Plan 改动保存为本地进行中检查点 `20e97ab611062408ed5c46dbbaff703537ce591f`，不是 Review 通过或人工验收候选。未 stage 无关文件。随后 `-Remote` 预检为 `dirty_nonoverlap`、`remote_freshness=verified`、`overlapping_plan_ids=[]`、`blocking_reasons=[]`；实际集成目标依 Plan 为 `origin/develop`，工具默认 `origin/main` 不作为本 Plan 的目标。最新消息不包含新长期 Rule 候选。
+- 2026-10-27：对照已归档 Plan F 的摘要边界，将 State/Execution/Review/Regression/Acceptance 及索引导航从产品 owned-scope 摘要中分离，冻结 `plan.md`、Spec、Design、实现及测试保留在作用范围内；不改变用户确认的产品目标和交付内容。修正参考曲线 228 完成月的最后一天，并在身长/身高切换处断开参考线；补充权限撤销后的缓存清理及测试。
+- 2026-10-27：`pnpm validate` 通过：API 301 项、Web 76 项测试，lint、格式、类型、构建和知识库检查通过；运行时依赖的 JSON 导入弃用警告和前端大 chunk 警告仍存在。`pnpm api:generate` 前后 OpenAPI 与生成类型的 SHA-256 不变。随后为已过期回收记录补充界面测试，`GrowthApp.test.tsx` 10 项通过，格式检查通过。
+- 2026-10-27：本地依赖环境全量浏览器回归为 52 通过、25 按测试设计跳过、1 失败；失败为桌面照片批量编辑字段未更新。相同照片测试串行重跑 2 项均通过，因此保留首轮失败记录，尚不能将它视为已消除的稳定性问题。三视口各 3 项成长 E2E 均通过。临时测试代理仅连接本机容器；并非正式容器栈运行证据。
+- 2026-10-27：首次 `pnpm stack:up` 的 API 镜像依赖部署因 npm 注册表超时失败；正在重试，容器运行验证尚未通过。本日志中的运行结果尚未绑定最终候选 SHA，不作为候选 Review 或独立 Regression 结论。
+- 2026-10-27：第二次默认 npm 注册表构建仍超时；使用现有 `NPM_REGISTRY` 构建参数临时指定 `https://registry.npmmirror.com` 后，`pnpm stack:up` 成功，API、Web 容器健康。浏览器实际连接容器时第一次运行 14 通过、1 项因注册限流返回 429；随后隔离测试 Redis 前缀并临时配置信任测试代理，成长和 readiness 测试三个视口共 15 项通过，之后恢复默认 API 容器配置。新增加载、空列表和失败重试三视口覆盖。
+- 2026-10-27：本地串行全量浏览器回归 53 通过、25 项按视口/环境设计跳过，包含认证、宝宝、家庭、照片及里程碑；先前并发照片失败仍按不稳定现象记录。以上执行发生于候选形成过程中，仍须完成提交绑定的 Review 与独立 Regression；各视口的冲突、过期及焦点恢复尚需核验。
+- 2026-10-27：补充确认框焦点与 Escape 恢复焦点断言，当前候选 `f56efa9e56a4a53b6c73c466663f8be76bc2d422`，v2 摘要 `B5A30106C849E894F69F218509834C4043F6598C4EB79080EE8263B70BDB0DA4`。此提交对应容器实际产品代码，在隔离测试限流设置下 15 项成长与 readiness 检查通过，包括 3 个视口的焦点断言；测试后恢复默认 API 容器配置。Review 及 Regression 报告只记录进行中证据，尚未通过。
+- 2026-10-29：用户人工验收确认通过并明确授权创建 PR。候选报告绑定 `f3fae9c259827b4533c4b1264e77cffd8a8fe925` / v2 `E8A7CDDD2A70AF903214F670F36E630B1E849C6E5FBA5884420A15EF705CDA53`。刷新 `origin/develop` 成功，仍等于基线。候选 Review 与其后独立 Regression 完成；`pnpm validate` 通过，stack 成长及 readiness 18 项通过；当前候选全量 Playwright 84 项为 53 passed、31 designed skips、0 failed。验收记录绑定同一 SHA/摘要。状态进入 `acceptance_pending`，CI 等待 PR 创建后运行。仅推送功能分支并开 PR，未授权合并/归档。
+
+
+| Task | 产出/责任域 | 依赖 |
+| --- | --- | --- |
+| G-01 | 规格、设计与事务建档 | 无 |
+| G-02 | WHO 数据与纯计算模块 | G-01 |
+| G-03 | 测量模型与前向迁移 | G-01 |
+| G-04 | API、授权、OpenAPI 客户端 | G-02/G-03 |
+| G-05 | 回收、恢复、提前删除与清理 | G-03/G-04 |
+| G-06 | 记录、表单及回收站三端界面 | G-04/G-05 |
+| G-07 | SVG 趋势与 WHO 展示 | G-02/G-04 |
+| G-08 | 绑定候选提交的 Review | G-05/G-06/G-07 |
+| G-09 | 独立 Regression 与容器运行 | G-08 |
+| G-10 | 人工验收、授权集成、复验与归档 | G-09/对应授权 |
