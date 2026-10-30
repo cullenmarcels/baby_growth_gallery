@@ -14,3 +14,5 @@
 - H-01 知识库：重新生成 `docs/INDEX.md` 后，`update-indexes.ps1 -Check` 与 `validate-project.ps1 -Check` 均通过。Project validation 是知识库/仓库验证，不替代应用质量结果。
 - `repository-preflight.ps1 -Remote` 显示远端新鲜、无活动 Plan 重叠；工具默认报告 `origin/main` 为集成目标，但本计划依项目规则和已确认计划固定 `origin/develop`，尚未 push。
 - H-05 跨平台验证修订：Windows 下原 Jest `testMatch` 使用 `<rootDir>` 绝对路径无法匹配 API spec；显式 glob 可运行全部 293 项。为满足本 Plan 的完整验证条件，将 `apps/api/jest.config.mjs` 纳入唯一 owned_paths 并改为跨平台 glob `**/test/**/*.spec.ts`，不改变测试范围。因 Plan 状态解析器要求 owned_paths 为行内列表，state 使用受支持格式；此前候选 Review 作废，需重新绑定新候选。
+- 修订候选 `93238cbed35c545d9ef82a7531a5b9931a86d0f7` 已完成全量 `pnpm validate`、Plan H E2E 3/3 和 Review；Review/Regression 绑定 v2 摘要 `9DF55045C23C6705A0D36141B503AE7A8A594706365585B9CADB453788C0323C`。Regression passed，状态为 `acceptance_pending`。候选未 push；本地 stack 继续运行供用户人工验收。
+- 用户于 `2026-10-30T17:45:36+08:00` 明确验收通过；Acceptance Record 绑定候选 SHA `93238cbed35c545d9ef82a7531a5b9931a86d0f7` 与摘要 `9DF55045C23C6705A0D36141B503AE7A8A594706365585B9CADB453788C0323C`。随后只读 preflight 报告 `remote_unverified`，因此当前记录为 `integration_pending`；未 push/创建 PR/merge/归档。
