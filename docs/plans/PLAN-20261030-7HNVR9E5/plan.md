@@ -102,6 +102,7 @@ applicable_rules:
 - 只读共享的 `docs/INDEX.md` 由索引生成器更新，不纳入 v2 owned-scope 摘要；本计划及其 Design/Spec 正文、产品代码和测试纳入摘要。mutable Plan State、Execution、Review、Regression、Acceptance 文件不纳入摘要。
 - 无活动 Plan 路径重叠；Plan G 已归档。产品路径由本计划唯一拥有：
   - `apps/web/src/app/BabyApp.tsx`
+  - `apps/api/jest.config.mjs`（为 Windows/Unix 统一匹配既有 API 测试的跨平台 glob；不改变测试范围）
   - `apps/web/src/app/BabyApp.test.tsx`
   - `apps/web/src/app/BabyHomeDashboard.tsx`
   - `apps/web/src/app/BabyHomeDashboard.module.css`

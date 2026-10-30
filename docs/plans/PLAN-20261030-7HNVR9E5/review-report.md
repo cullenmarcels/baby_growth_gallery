@@ -1,14 +1,20 @@
 ---
-plan_id: PLAN-20261030-7HNVR9E5
-type: review
+id: PLAN-20261030-7HNVR9E5-REVIEW
+type: review_report
+title: 'Plan H 候选 Review'
 status: pending
-created_at: 2026-10-30T15:27:00+08:00
-updated_at: 2026-10-30T15:27:00+08:00
+created_at: 2026-10-30T16:35:00+08:00
+updated_at: 2026-10-30T16:35:00+08:00
+plan_id: PLAN-20261030-7HNVR9E5
 repository_mode: git_remote
 reviewed_commit: null
 reviewed_scope_digest: null
+ci_status: pending
+related_ids: [SPEC-20261030-VJ05H0TV, DES-20261030-TSASQH7P]
+supersedes: []
+superseded_by: []
 ---
 
-# 候选 Review
+# Review Report
 
-待形成并提交 H 候选后填写。须固定候选 SHA 和 v2 owned-scope digest；逐条覆盖 Plan `applicable_rules` 中的 Rule ID，并核对本 Plan 与 Spec/Design/API/测试一致。当前状态为 `pending`，不代表 Review 已执行或通过。
+候选发生实施范围修订（增加跨平台 Jest 测试 glob），此前候选 Review 不再适用。待本次修订提交并重新计算 v2 owned-scope 摘要后重新 Review。

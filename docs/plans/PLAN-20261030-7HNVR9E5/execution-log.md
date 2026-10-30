@@ -10,6 +10,7 @@
 - H-04 工程修正：将日期窗口筛选抽至独立 `baby-home-utils.ts`，避免非组件导出影响 React Fast Refresh；撤权状态由受当前家庭/宝宝键控的 React Query 门闩保存，使摘要缓存清除后页面仍维持访问阻断。
 - H-04/H-05 验证：首页组件测试 4/4；全量 Web 单测 81/81；Web TypeScript 检查通过；首页 owned-path ESLint 通过；API 293/293（Windows 下使用显式 Jest glob 与 `NODE_OPTIONS=--experimental-vm-modules`）；全仓 typecheck、build 通过。
 - H-05 容器与 E2E：`pnpm stack:up` 的 API/Web readiness 均 healthy，镜像构建通过。第一次 E2E 使用 API IP 与页面 localhost 不同主机，浏览器未带 Cookie；改用 `STACK_BASE_URL=http://localhost:8080` 和 `E2E_API_BASE_URL=http://localhost:3000` 后 `pnpm e2e tests/e2e/home.spec.ts` 3/3 通过，覆盖 375/834/1440、双合成家庭切换与摘要隔离。
-- H-05 聚合校验：全仓 `pnpm validate` 首次在未生成 Prisma Client 的 ESLint 阶段失败；生成 client 后 ESLint 通过，但全仓 Prettier 检查仍报告 132 个现有文件不符合当前 Prettier 输出。未批量格式化无关文件。H owned paths Prettier 检查通过；单独 `pnpm test` 在 Windows 默认 Jest glob 下未发现 API 测试，显式 glob + ESM VM 参数后 293 项通过。其余分项命令均已验证。
+- H-05 聚合校验问题已修正：首次全仓 Prettier 报 132 文件是 Windows `core.autocrlf=true` 检出 CRLF 所致。仅对这些文件规范化换行符为 LF、不改变内容，并刷新 Git 索引后，`pnpm format:check` 全仓通过。API Jest 默认 `<rootDir>` glob 在 Windows 未发现测试；将匹配改为跨平台相对 glob，默认 `pnpm test` 已运行 API 293 项与 Web 81 项并通过。
 - H-01 知识库：重新生成 `docs/INDEX.md` 后，`update-indexes.ps1 -Check` 与 `validate-project.ps1 -Check` 均通过。Project validation 是知识库/仓库验证，不替代应用质量结果。
 - `repository-preflight.ps1 -Remote` 显示远端新鲜、无活动 Plan 重叠；工具默认报告 `origin/main` 为集成目标，但本计划依项目规则和已确认计划固定 `origin/develop`，尚未 push。
+- H-05 跨平台验证修订：Windows 下原 Jest `testMatch` 使用 `<rootDir>` 绝对路径无法匹配 API spec；显式 glob 可运行全部 293 项。为满足本 Plan 的完整验证条件，将 `apps/api/jest.config.mjs` 纳入唯一 owned_paths 并改为跨平台 glob `**/test/**/*.spec.ts`，不改变测试范围。因 Plan 状态解析器要求 owned_paths 为行内列表，state 使用受支持格式；此前候选 Review 作废，需重新绑定新候选。
