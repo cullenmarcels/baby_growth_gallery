@@ -2,7 +2,7 @@
 id: PLAN-20261022-707KSVG3-STATE
 type: plan_state
 plan_id: PLAN-20261022-707KSVG3
-status: acceptance_pending
+status: archived
 repository_mode: git_remote
 remote_name: origin
 integration_target: origin/develop
@@ -17,8 +17,8 @@ reviewed_commit: f3fae9c259827b4533c4b1264e77cffd8a8fe925
 reviewed_scope_digest: E8A7CDDD2A70AF903214F670F36E630B1E849C6E5FBA5884420A15EF705CDA53
 accepted_commit: f3fae9c259827b4533c4b1264e77cffd8a8fe925
 accepted_scope_digest: E8A7CDDD2A70AF903214F670F36E630B1E849C6E5FBA5884420A15EF705CDA53
-integrated_commit: null
-integrated_scope_digest: null
+integrated_commit: 2d28593497494d442609f5f931edff85fc40b1b3
+integrated_scope_digest: E8A7CDDD2A70AF903214F670F36E630B1E849C6E5FBA5884420A15EF705CDA53
 ---
 
 远端 fetch 验证 develop 与基线一致；新建授权分支。state 的 working_tree_state 为最近正式预检快照，执行中在日志记录实际状态。
