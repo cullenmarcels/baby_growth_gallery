@@ -4,12 +4,12 @@ type: review_report
 title: 'Plan H 候选 Review'
 status: passed
 created_at: 2026-10-30T16:50:00+08:00
-updated_at: 2026-10-30T16:50:00+08:00
+updated_at: 2026-11-06T17:05:00+08:00
 plan_id: PLAN-20261030-7HNVR9E5
 repository_mode: git_remote
-reviewed_commit: 93238cbed35c545d9ef82a7531a5b9931a86d0f7
-reviewed_scope_digest: 9DF55045C23C6705A0D36141B503AE7A8A594706365585B9CADB453788C0323C
-ci_status: not_run
+reviewed_commit: e9294217fa1b1740b1c706fbc89398225471f99f
+reviewed_scope_digest: BE8669467FF3B190686243C3F44EE6BC2A44B7C6992AA5754D4E43AA81D06F7E
+ci_status: pending
 related_ids: [SPEC-20261030-VJ05H0TV, DES-20261030-TSASQH7P]
 supersedes: []
 superseded_by: []
@@ -19,7 +19,7 @@ superseded_by: []
 
 ## 结论与候选
 
-Review 绑定候选提交 `93238cbed35c545d9ef82a7531a5b9931a86d0f7`，v2 owned-scope 摘要为 `9DF55045C23C6705A0D36141B503AE7A8A594706365585B9CADB453788C0323C`。摘要按 Plan 的 `owned_paths` 在该提交上重算。Review 结论 `passed`，无阻断发现；候选未推送，远端 CI 未运行。
+复审绑定候选提交 `e9294217fa1b1740b1c706fbc89398225471f99f`，v2 owned-scope 摘要为 `BE8669467FF3B190686243C3F44EE6BC2A44B7C6992AA5754D4E43AA81D06F7E`，按 Plan `owned_paths` 从该提交重算。相对已复审实现仅修改 `BabyHomeDashboard.test.tsx`：固定上海日期为 2026-10-30，防止 reminder 日期随真实日历推进而过期；恢复真实时钟由 `afterEach` 保证。复审结论 `passed`，无阻断发现。`pnpm validate` 本地通过；PR #31 上一个 Head 的 Quality 失败已定位为该日期夹具，当前候选的远端 CI 尚未运行。
 
 ## 适用规则核对矩阵
 
@@ -44,26 +44,26 @@ Review 绑定候选提交 `93238cbed35c545d9ef82a7531a5b9931a86d0f7`，v2 owned-
 | REPO-005 | PASS | 隔离 worktree 与 owned_paths；保留原工作区改动，无敏感数据或构建产物。 |
 | REPO-006 | PASS | 隔离 worktree 与 owned_paths；保留原工作区改动，无敏感数据或构建产物。 |
 | REPO-007 | PASS | 隔离 worktree 与 owned_paths；保留原工作区改动，无敏感数据或构建产物。 |
-| GIT-001 | PASS | origin/develop 基线、无重叠、候选 SHA 与 v2 摘要已固定；未推送。 |
-| GIT-002 | PASS | origin/develop 基线、无重叠、候选 SHA 与 v2 摘要已固定；未推送。 |
-| GIT-003 | PASS | origin/develop 基线、无重叠、候选 SHA 与 v2 摘要已固定；未推送。 |
-| GIT-004 | PASS | origin/develop 基线、无重叠、候选 SHA 与 v2 摘要已固定；未推送。 |
-| GIT-005 | PASS | origin/develop 基线、无重叠、候选 SHA 与 v2 摘要已固定；未推送。 |
-| GIT-006 | PASS | origin/develop 基线、无重叠、候选 SHA 与 v2 摘要已固定；未推送。 |
-| GIT-007 | PASS | origin/develop 基线、无重叠、候选 SHA 与 v2 摘要已固定；未推送。 |
-| GIT-008 | PASS | origin/develop 基线、无重叠、候选 SHA 与 v2 摘要已固定；未推送。 |
-| GIT-009 | PASS | origin/develop 基线、无重叠、候选 SHA 与 v2 摘要已固定；未推送。 |
-| GIT-010 | PASS | origin/develop 基线、无重叠、候选 SHA 与 v2 摘要已固定；未推送。 |
-| BRANCH-001 | PASS | 功能分支和 develop 目标符合既有流向；远端 CI 等推送授权后验证。 |
-| BRANCH-002 | PASS | 功能分支和 develop 目标符合既有流向；远端 CI 等推送授权后验证。 |
-| BRANCH-003 | PASS | 功能分支和 develop 目标符合既有流向；远端 CI 等推送授权后验证。 |
-| BRANCH-004 | PASS | 功能分支和 develop 目标符合既有流向；远端 CI 等推送授权后验证。 |
-| BRANCH-005 | PASS | 功能分支和 develop 目标符合既有流向；远端 CI 等推送授权后验证。 |
-| BRANCH-006 | PASS | 功能分支和 develop 目标符合既有流向；远端 CI 等推送授权后验证。 |
-| BRANCH-007 | PASS | 功能分支和 develop 目标符合既有流向；远端 CI 等推送授权后验证。 |
-| BRANCH-008 | PASS | 功能分支和 develop 目标符合既有流向；远端 CI 等推送授权后验证。 |
-| BRANCH-009 | PASS | 功能分支和 develop 目标符合既有流向；远端 CI 等推送授权后验证。 |
-| BRANCH-010 | PASS | 功能分支和 develop 目标符合既有流向；远端 CI 等推送授权后验证。 |
+| GIT-001 | PASS | origin/develop 基线、无重叠、修订候选 SHA 与 v2 摘要已固定。 |
+| GIT-002 | PASS | origin/develop 基线、无重叠、修订候选 SHA 与 v2 摘要已固定。 |
+| GIT-003 | PASS | origin/develop 基线、无重叠、修订候选 SHA 与 v2 摘要已固定。 |
+| GIT-004 | PASS | origin/develop 基线、无重叠、修订候选 SHA 与 v2 摘要已固定。 |
+| GIT-005 | PASS | origin/develop 基线、无重叠、修订候选 SHA 与 v2 摘要已固定。 |
+| GIT-006 | PASS | origin/develop 基线、无重叠、修订候选 SHA 与 v2 摘要已固定。 |
+| GIT-007 | PASS | origin/develop 基线、无重叠、修订候选 SHA 与 v2 摘要已固定。旧候选接受已失效。 |
+| GIT-008 | PASS | 仍需合入 origin/develop 并复验后方可归档。 |
+| GIT-009 | PASS | 分支推送和 PR 创建均有用户先前明确授权；未合并。 |
+| GIT-010 | PASS | 旧 Head Quality 失败如实记录；当前候选远端 CI 待重跑。 |
+| BRANCH-001 | PASS | PR #31 旧 Head 的 branch-flow-develop 已通过；修订候选推送后需重新确认。 |
+| BRANCH-002 | PASS | PR #31 旧 Head 的 branch-flow-develop 已通过；修订候选推送后需重新确认。 |
+| BRANCH-003 | PASS | PR #31 旧 Head 的 branch-flow-develop 已通过；修订候选推送后需重新确认。 |
+| BRANCH-004 | PASS | PR #31 旧 Head 的 branch-flow-develop 已通过；修订候选推送后需重新确认。 |
+| BRANCH-005 | PASS | PR #31 旧 Head 的 branch-flow-develop 已通过；修订候选推送后需重新确认。 |
+| BRANCH-006 | PASS | PR #31 旧 Head 的 branch-flow-develop 已通过；修订候选推送后需重新确认。 |
+| BRANCH-007 | PASS | PR #31 旧 Head 的 branch-flow-develop 已通过；修订候选推送后需重新确认。 |
+| BRANCH-008 | PASS | PR #31 旧 Head 的 branch-flow-develop 已通过；修订候选推送后需重新确认。 |
+| BRANCH-009 | PASS | PR #31 旧 Head 的 branch-flow-develop 已通过；修订候选推送后需重新确认。 |
+| BRANCH-010 | PASS | PR #31 旧 Head 的 branch-flow-develop 已通过；修订候选推送后需重新确认。 |
 | IMPL-001 | PASS | 独立区块/缓存/撤权逻辑通过代码核对、lint、类型和构建。 |
 | IMPL-002 | PASS | 独立区块/缓存/撤权逻辑通过代码核对、lint、类型和构建。 |
 | IMPL-003 | PASS | 独立区块/缓存/撤权逻辑通过代码核对、lint、类型和构建。 |
