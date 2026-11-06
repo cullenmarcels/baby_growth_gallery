@@ -4,7 +4,7 @@ type: acceptance_record
 status: invalidated
 acceptance_status: invalidated
 created_at: 2026-10-30T15:27:00+08:00
-updated_at: 2026-11-06T17:00:00+08:00
+updated_at: 2026-11-06T17:30:10+08:00
 plan_id: PLAN-20261030-7HNVR9E5
 confirmed_by: user
 confirmed_at: 2026-10-30T17:45:36+08:00

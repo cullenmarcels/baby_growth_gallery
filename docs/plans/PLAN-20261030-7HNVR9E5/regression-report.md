@@ -10,7 +10,7 @@ repository_mode: git_remote
 phase: candidate
 reviewed_commit: e9294217fa1b1740b1c706fbc89398225471f99f
 reviewed_scope_digest: BE8669467FF3B190686243C3F44EE6BC2A44B7C6992AA5754D4E43AA81D06F7E
-ci_status: pending
+ci_status: passed
 related_ids: [PLAN-20261030-7HNVR9E5-REVIEW]
 supersedes: []
 superseded_by: []
@@ -20,7 +20,7 @@ superseded_by: []
 
 ## 结果
 
-候选 `e9294217fa1b1740b1c706fbc89398225471f99f` 的 v2 owned-scope 摘要 `BE8669467FF3B190686243C3F44EE6BC2A44B7C6992AA5754D4E43AA81D06F7E` 通过本地 `pnpm validate`。此前 PR #31 Head `35c81d2283d7fa429ed688f52a9501f239a5f86c` 的 Quality 失败，仅因组件测试固定提醒日已早于当前上海日期；修复候选固定测试时钟，首页组件 4/4、全量 Web 81/81、API 293/293 及构建均通过。新候选尚待推送并获得远端 CI 结果；状态为 `in_regression`。
+候选 `e9294217fa1b1740b1c706fbc89398225471f99f` 的 v2 owned-scope 摘要 `BE8669467FF3B190686243C3F44EE6BC2A44B7C6992AA5754D4E43AA81D06F7E` 通过本地 `pnpm validate`。此前 PR #31 Head `35c81d2283d7fa429ed688f52a9501f239a5f86c` 的 Quality 失败，仅因组件测试固定提醒日已早于当前上海日期；修复候选固定测试时钟，首页组件 4/4、全量 Web 81/81、API 293/293 及构建均通过。修订候选随后进入 PR #31 Head `b233a9443dedac76c59c7e6b8e53ab32e310903c`；远端 Quality Run `42193831976`（含全量单测、OpenAPI、构建、Alpine 镜像与知识库校验）、`e2e-auth` 和 `branch-flow-develop` 均 SUCCESS。Plan 状态进入 `acceptance_pending`，旧候选接受无效，需用户对本候选重新验收。
 
 ## 命令与结果
 
@@ -40,4 +40,4 @@ superseded_by: []
 - 首页各区块独立加载/空/失败/重试由组件级用例覆盖；新建的合成家庭有不同真实成长摘要，浏览器切换后旧宝宝数据消失。
 - 既有 API、照片、宝宝、里程碑、成长能力由相关 API/Web 全量测试覆盖；没有新增持久化或公共契约。
 - E2E 使用开发容器中的合成账号和家庭数据，已留在本地开发数据库；不含用户真实数据。此前该 E2E 对应的应用代码未变化；当前修订候选的远端 CI 尚待运行。
-- PR #31 已创建并指向 `develop`；之前 Head 的 `branch-flow-develop` 成功、Quality 因上述测试日期失败。修订候选推送后需确认新 Head 的 Quality 成功。旧候选人工验收现标记 invalidated，修订候选需重新人工验收。
+- PR #31 指向 `develop`；此前失败只属于旧 Head，当前 PR Head 所有检查均通过。旧候选人工验收现标记 invalidated，修订候选需重新人工验收。

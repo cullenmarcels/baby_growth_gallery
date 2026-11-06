@@ -2,7 +2,7 @@
 id: PLAN-20261030-7HNVR9E5-STATE
 type: plan_state
 plan_id: PLAN-20261030-7HNVR9E5
-status: in_regression
+status: acceptance_pending
 repository_mode: git_remote
 remote_name: origin
 integration_target: origin/develop
