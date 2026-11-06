@@ -19,7 +19,7 @@ superseded_by: []
 
 ## 结论与候选
 
-复审绑定候选提交 `e9294217fa1b1740b1c706fbc89398225471f99f`，v2 owned-scope 摘要为 `BE8669467FF3B190686243C3F44EE6BC2A44B7C6992AA5754D4E43AA81D06F7E`，按 Plan `owned_paths` 从该提交重算。相对已复审实现仅修改 `BabyHomeDashboard.test.tsx`：固定上海日期为 2026-10-30，防止 reminder 日期随真实日历推进而过期；恢复真实时钟由 `afterEach` 保证。复审结论 `passed`，无阻断发现。`pnpm validate` 本地通过。PR #31 最新已验证 Head `b233a9443dedac76c59c7e6b8e53ab32e310903c` 的 Quality、`e2e-auth` 与 `branch-flow-develop` 均成功；该 Head 相比候选仅增加 Plan 证据文档，owned-scope 摘要未改变。
+复审绑定候选提交 `e9294217fa1b1740b1c706fbc89398225471f99f`，v2 owned-scope 摘要为 `BE8669467FF3B190686243C3F44EE6BC2A44B7C6992AA5754D4E43AA81D06F7E`，按 Plan `owned_paths` 从该提交重算。相对已复审实现仅修改 `BabyHomeDashboard.test.tsx`：固定上海日期为 2026-10-30，防止 reminder 日期随真实日历推进而过期；恢复真实时钟由 `afterEach` 保证。复审结论 `passed`，无阻断发现。`pnpm validate` 本地通过。PR #31 最新已验证 Head `8b4a5f93cf5a2445c478c3ae365062461531372d` 的 Quality、`e2e-auth` 与 `branch-flow-develop` 均成功；该 Head 相比候选仅增加 Plan 证据文档，owned-scope 摘要未改变。
 
 ## 适用规则核对矩阵
 

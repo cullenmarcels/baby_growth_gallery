@@ -20,7 +20,7 @@ superseded_by: []
 
 ## 结果
 
-候选 `e9294217fa1b1740b1c706fbc89398225471f99f` 的 v2 owned-scope 摘要 `BE8669467FF3B190686243C3F44EE6BC2A44B7C6992AA5754D4E43AA81D06F7E` 通过本地 `pnpm validate`。此前 PR #31 Head `35c81d2283d7fa429ed688f52a9501f239a5f86c` 的 Quality 失败，仅因组件测试固定提醒日已早于当前上海日期；修复候选固定测试时钟，首页组件 4/4、全量 Web 81/81、API 293/293 及构建均通过。修订候选随后进入 PR #31 Head `b233a9443dedac76c59c7e6b8e53ab32e310903c`；远端 Quality Run `42193831976`（含全量单测、OpenAPI、构建、Alpine 镜像与知识库校验）、`e2e-auth` 和 `branch-flow-develop` 均 SUCCESS。Plan 状态进入 `acceptance_pending`，旧候选接受无效，需用户对本候选重新验收。
+候选 `e9294217fa1b1740b1c706fbc89398225471f99f` 的 v2 owned-scope 摘要 `BE8669467FF3B190686243C3F44EE6BC2A44B7C6992AA5754D4E43AA81D06F7E` 通过本地 `pnpm validate`。此前 PR #31 Head `35c81d2283d7fa429ed688f52a9501f239a5f86c` 的 Quality 失败，仅因组件测试固定提醒日已早于当前上海日期；修复候选固定测试时钟，首页组件 4/4、全量 Web 81/81、API 293/293 及构建均通过。修订候选随后进入 PR #31 Head `8b4a5f93cf5a2445c478c3ae365062461531372d`；远端 Quality Run `42195970015`（含全量单测、OpenAPI、构建、Alpine 镜像与知识库校验）、`e2e-auth` 和 `branch-flow-develop` 均 SUCCESS。Plan 状态进入 `acceptance_pending`，旧候选接受无效，需用户对本候选重新验收。
 
 ## 命令与结果
 

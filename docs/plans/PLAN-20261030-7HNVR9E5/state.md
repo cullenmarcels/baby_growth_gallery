@@ -2,7 +2,7 @@
 id: PLAN-20261030-7HNVR9E5-STATE
 type: plan_state
 plan_id: PLAN-20261030-7HNVR9E5
-status: acceptance_pending
+status: integration_pending
 repository_mode: git_remote
 remote_name: origin
 integration_target: origin/develop
@@ -15,8 +15,8 @@ owned_paths: [apps/api/jest.config.mjs, apps/web/src/app/BabyApp.tsx, apps/web/s
 overlapping_plan_ids: []
 reviewed_commit: e9294217fa1b1740b1c706fbc89398225471f99f
 reviewed_scope_digest: BE8669467FF3B190686243C3F44EE6BC2A44B7C6992AA5754D4E43AA81D06F7E
-accepted_commit: null
-accepted_scope_digest: null
+accepted_commit: e9294217fa1b1740b1c706fbc89398225471f99f
+accepted_scope_digest: BE8669467FF3B190686243C3F44EE6BC2A44B7C6992AA5754D4E43AA81D06F7E
 integrated_commit: null
 integrated_scope_digest: null
 ---
