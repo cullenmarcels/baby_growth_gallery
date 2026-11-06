@@ -1,0 +1,290 @@
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-top: 26px;
+}
+.section {
+  min-width: 0;
+  padding: clamp(16px, 2vw, 22px);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.sectionHeader h2 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  margin: 0;
+  color: var(--color-text-strong);
+  font-size: 18px;
+}
+.sectionHeader h2 svg {
+  flex: 0 0 auto;
+  color: var(--color-primary);
+}
+.sectionLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 40px;
+  color: var(--color-primary);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.sectionLink:hover,
+.photo:hover .photoTitle,
+.reminderList a:hover > span {
+  text-decoration: underline;
+}
+.sectionLink:focus-visible,
+.actionLink:focus-visible,
+.photo:focus-visible,
+.reminderList a:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+.photoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.photo {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--color-text-strong);
+  text-decoration: none;
+}
+.photoImage {
+  display: block;
+  overflow: hidden;
+  aspect-ratio: 1.15;
+  background: var(--color-border-light);
+  border-radius: var(--radius-md);
+}
+.thumbnailImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.thumbnailFallback {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  color: var(--color-text-sub);
+  font-size: 12px;
+  text-align: center;
+}
+.photoTitle {
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.photo time,
+.growthValue time {
+  color: var(--color-text-sub);
+  font-size: 12px;
+}
+.state,
+.error,
+.accessError {
+  display: flex;
+  min-height: 92px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--color-text-sub);
+  font-size: 14px;
+  text-align: center;
+}
+.state p,
+.error p,
+.accessError p,
+.progress p {
+  margin: 0;
+}
+.error {
+  color: var(--color-error);
+}
+.accessError {
+  grid-column: 1 / -1;
+  padding: 24px;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+.actionLink {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  color: var(--color-primary);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+.spinner {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: home-spin 0.8s linear infinite;
+}
+.progress {
+  display: grid;
+  gap: 12px;
+  padding: 10px 2px;
+}
+.progress strong {
+  color: var(--color-primary);
+  font-size: 34px;
+  line-height: 1;
+}
+.progress span,
+.progress p {
+  color: var(--color-text-sub);
+  font-size: 14px;
+}
+.progress progress {
+  width: 100%;
+  height: 10px;
+  overflow: hidden;
+  appearance: none;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-border-light);
+}
+.progress progress::-webkit-progress-bar {
+  background: var(--color-border-light);
+  border-radius: var(--radius-pill);
+}
+.progress progress::-webkit-progress-value {
+  background: var(--color-primary);
+  border-radius: var(--radius-pill);
+}
+.progress progress::-moz-progress-bar {
+  background: var(--color-primary);
+  border-radius: var(--radius-pill);
+}
+.reminderList {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.reminderList li + li {
+  border-top: 1px solid var(--color-border-light);
+}
+.reminderList a {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 2px;
+  color: var(--color-text-strong);
+  text-decoration: none;
+}
+.reminderList a > span {
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.reminderList time {
+  flex: 0 0 auto;
+  color: var(--color-text-sub);
+  font-size: 12px;
+}
+.growthGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.growthValue {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 5px;
+  padding: 12px;
+  background: color-mix(in srgb, var(--color-primary) 5%, var(--color-card));
+  border-radius: var(--radius-md);
+}
+.growthLabel {
+  color: var(--color-text-sub);
+  font-size: 12px;
+}
+.growthValue strong {
+  overflow-wrap: anywhere;
+  color: var(--color-text-strong);
+  font-size: 18px;
+}
+.percentile {
+  color: var(--color-primary);
+  font-size: 12px;
+}
+@keyframes home-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (max-width: 900px) {
+  .dashboard {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+}
+@media (max-width: 420px) {
+  .section {
+    padding: 15px;
+  }
+  .sectionHeader {
+    gap: 5px;
+  }
+  .sectionHeader h2 {
+    font-size: 16px;
+  }
+  .photoGrid {
+    gap: 7px;
+  }
+  .photoTitle {
+    font-size: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+}

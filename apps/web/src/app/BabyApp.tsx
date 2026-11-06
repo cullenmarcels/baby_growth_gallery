@@ -1,6 +1,6 @@
 import type { BabySummary, FamilySummary } from '@baby-growth-gallery/api-client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArchiveRestore, Baby, CalendarDays, Camera, Pencil, Plus, Trash2 } from 'lucide-react';
+import { ArchiveRestore, Baby, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { useAuth } from './AuthContext';
 import { api } from './api';
 import { BabyAvatar } from './BabyAvatar';
+import { BabyHomeDashboard } from './BabyHomeDashboard';
 import { babyKeys } from './baby-query';
 import { ConfirmDialog } from './FamilyApp';
 import { DropdownSelect } from './DropdownSelect';
@@ -162,24 +163,7 @@ export function BabyHomePage(): React.JSX.Element {
           <Pencil size={16} /> 查看与管理
         </Link>
       </section>
-      <section className={styles.foundationGrid} aria-label="成长功能进度">
-        <FeatureCard
-          title="珍贵照片"
-          text="浏览当前宝宝已发布的家庭照片。"
-          to="/app/gallery"
-          icon="photo"
-        />
-        <FeatureCard
-          title="成长里程碑"
-          text="管理当前宝宝的里程碑清单、提醒与完成记录。"
-          to="/app/milestones"
-        />
-        <FeatureCard
-          title="成长数据"
-          text="记录身高、体重与头围，查看成长趋势与 WHO 参考。"
-          to="/app/growth"
-        />
-      </section>
+      <BabyHomeDashboard familyId={familyId} baby={baby.data} />
     </div>
   );
 }
@@ -527,27 +511,6 @@ function BabyForm({
       </div>
     </form>
   );
-}
-
-function FeatureCard({
-  title,
-  text,
-  to,
-  icon = 'calendar',
-}: {
-  title: string;
-  text: string;
-  to?: string;
-  icon?: 'calendar' | 'photo';
-}): React.JSX.Element {
-  const content = (
-    <article className={styles.featureCard}>
-      {icon === 'photo' ? <Camera size={22} /> : <CalendarDays size={22} />}
-      <h2>{title}</h2>
-      <p>{text}</p>
-    </article>
-  );
-  return to ? <Link to={to}>{content}</Link> : content;
 }
 
 function BabyPageState({

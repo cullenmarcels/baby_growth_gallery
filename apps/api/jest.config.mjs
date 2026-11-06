@@ -2,7 +2,7 @@ export default {
   extensionsToTreatAsEsm: ['.ts'],
   moduleFileExtensions: ['js', 'json', 'ts'],
   rootDir: '.',
-  testMatch: ['<rootDir>/test/**/*spec.ts'],
+  testMatch: ['**/test/**/*.spec.ts'],
   transform: {
     '^.+\\.(t|j)s$': [
       '@swc/jest',
