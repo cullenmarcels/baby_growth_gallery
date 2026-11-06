@@ -141,7 +141,10 @@ function renderDashboard(props = { familyId, baby }) {
   return { ...view, client, router };
 }
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.useRealTimers();
+  vi.restoreAllMocks();
+});
 
 describe('baby home data dashboard', () => {
   it('filters reminders inclusively to 30 Shanghai calendar days and keeps nearest three', () => {
@@ -162,6 +165,8 @@ describe('baby home data dashboard', () => {
   });
 
   it('shows each independent summary, latest metrics, photo detail links and section navigation', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-10-29T16:00:00.000Z'));
     vi.spyOn(api, 'listPublishedPhotos').mockResolvedValue({
       items: [photo('photo-a', '2026-10-22'), photo('photo-b', '2026-10-20')],
       nextCursor: null,
