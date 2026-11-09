@@ -40,6 +40,8 @@
 | `SPEC-20260923-Y0XZXEM0` | `spec` | 照片浏览上传者与来源导航修订规格 | `active` | `[SPEC-20260923-SN5XW196]` | `[]` | [source](./specs/SPEC-20260923-Y0XZXEM0-photo-detail-uploader/spec.md) |
 | `DES-20261022-EM2SND6K` | `design` | 成长数据、趋势与回收站界面设计 | `active` | `[]` | `[]` | [source](./designs/DES-20261022-EM2SND6K-growth-records/design.md) |
 | `SPEC-20261022-17HX5RTZ` | `spec` | 成长数据、WHO 228 月参考与记录回收站规格 | `active` | `[]` | `[]` | [source](./specs/SPEC-20261022-17HX5RTZ-growth-records/spec.md) |
+| `DES-20261030-TSASQH7P` | `design` | '宝宝首页数据聚合界面设计' | `active` | `[]` | `[]` | [source](./designs/DES-20261030-TSASQH7P-homepage-aggregation/design.md) |
+| `SPEC-20261030-VJ05H0TV` | `spec` | '宝宝首页数据聚合规格' | `active` | `[]` | `[]` | [source](./specs/SPEC-20261030-VJ05H0TV-homepage-aggregation/spec.md) |
 <!-- GENERATED:END DESIGNS_SPECS -->
 
 ## Plan 台账
@@ -48,7 +50,8 @@
 | ------- | ---- | ---- | -------- | -------- | -------- | -------- | ------ | ---------- | ---------- | ----------- |
 
 <!-- GENERATED:BEGIN PLANS -->
-| [PLAN-20261022-707KSVG3](./plans/PLAN-20261022-707KSVG3/plan.md) | 实现成长数据、WHO 参考与记录回收站 | `acceptance_pending` | `git_remote` | `4a0132090d746f59c9512bcdc78881f7fe475c7c` | `f3fae9c259827b4533c4b1264e77cffd8a8fe925` | `-` | [passed](./plans/PLAN-20261022-707KSVG3/review-report.md) | [passed](./plans/PLAN-20261022-707KSVG3/regression-report.md) | recorded | - |
+| [PLAN-20261030-7HNVR9E5](./plans/PLAN-20261030-7HNVR9E5/plan.md) | '宝宝首页数据聚合' | `integration_pending` | `git_remote` | `2d28593497494d442609f5f931edff85fc40b1b3` | `e9294217fa1b1740b1c706fbc89398225471f99f` | `-` | [passed](./plans/PLAN-20261030-7HNVR9E5/review-report.md) | [passed](./plans/PLAN-20261030-7HNVR9E5/regression-report.md) | recorded | - |
+| [PLAN-20261022-707KSVG3](./plans/PLAN-20261022-707KSVG3/plan.md) | 实现成长数据、WHO 参考与记录回收站 | `archived` | `git_remote` | `4a0132090d746f59c9512bcdc78881f7fe475c7c` | `f3fae9c259827b4533c4b1264e77cffd8a8fe925` | `2d28593497494d442609f5f931edff85fc40b1b3` | [passed](./plans/PLAN-20261022-707KSVG3/review-report.md) | [passed](./plans/PLAN-20261022-707KSVG3/regression-report.md) | confirmed 2026-10-29T10:00:00+08:00 | [ACH-20261022-707KSVG3](./achievements/ACH-20261022-707KSVG3-growth-records.md) |
 | [PLAN-20260923-1FC2B42D](./plans/PLAN-20260923-1FC2B42D/plan.md) | 补充照片详情上传者信息 | `archived` | `git_remote` | `99d0adc02aa01572601e58f4fa03ea936ce6488f` | `e6c67158fac997e7be6236149a4b2cf9a58ad582` | `fd70c6b629fcd0696c8526dcae1b1ea83d6a3e34` | [passed](./plans/PLAN-20260923-1FC2B42D/review-report.md) | [passed](./plans/PLAN-20260923-1FC2B42D/regression-report.md) | confirmed 2026-10-14T09:49:50+08:00 | [ACH-20260923-1FC2B42D](./achievements/ACH-20260923-1FC2B42D-photo-browse-experience.md) |
 | [PLAN-20260923-NF3S35VD](./plans/PLAN-20260923-NF3S35VD/plan.md) | 修订照片卡片信息与详情来源导航 | `superseded` | `git_remote` | `99d0adc02aa01572601e58f4fa03ea936ce6488f` | `-` | `-` | [pending](./plans/PLAN-20260923-NF3S35VD/review-report.md) | [pending](./plans/PLAN-20260923-NF3S35VD/regression-report.md) | pending | - |
 | [PLAN-20260920-BR79695D](./plans/PLAN-20260920-BR79695D/plan.md) | 实现成长里程碑、清单提醒与时间轴整合 | `archived` | `git_remote` | `77c602c58f7f266e4fbee979b21e82b5de7b8085` | `dfd2aebe667eea19b8ece3e0d00c53c5affc7086` | `860be884287e8875f380e1dade3b38e629f4b8d5` | [passed](./plans/PLAN-20260920-BR79695D/review-report.md) | [passed](./plans/PLAN-20260920-BR79695D/regression-report.md) | confirmed 2026-09-23T10:53:05+08:00 | [ACH-20260920-BR79695D](./achievements/ACH-20260920-BR79695D-baby-milestones.md) |
@@ -78,6 +81,7 @@
 | -------------- | ------- | ---- | -------- | -------- |
 
 <!-- GENERATED:BEGIN ACHIEVEMENTS -->
+| `ACH-20261022-707KSVG3` | [PLAN-20261022-707KSVG3](./plans/PLAN-20261022-707KSVG3/plan.md) | Plan G：成长数据、WHO 参考与记录回收站 | 2026-10-29T10:00:00+08:00 | [archive](./achievements/ACH-20261022-707KSVG3-growth-records.md) |
 | `ACH-20260923-1FC2B42D` | [PLAN-20260923-1FC2B42D](./plans/PLAN-20260923-1FC2B42D/plan.md) | '照片卡片上传者与三来源返回修订：完成归档' | 2026-10-14T09:49:50+08:00 | [archive](./achievements/ACH-20260923-1FC2B42D-photo-browse-experience.md) |
 | `ACH-20260920-BR79695D` | [PLAN-20260920-BR79695D](./plans/PLAN-20260920-BR79695D/plan.md) | 成长里程碑、清单提醒与混合时间轴：完成归档 | 2026-09-23T10:53:05+08:00 | [archive](./achievements/ACH-20260920-BR79695D-baby-milestones.md) |
 | `ACH-20260918-RC0Y5QH3` | [PLAN-20260918-RC0Y5QH3](./plans/PLAN-20260918-RC0Y5QH3/plan.md) | 图集、时间轴、照片详情、宝宝头像与界面修订：完成归档 | 2026-09-20T13:32:50+08:00 | [archive](./achievements/ACH-20260918-RC0Y5QH3-photo-gallery-timeline-ui.md) |

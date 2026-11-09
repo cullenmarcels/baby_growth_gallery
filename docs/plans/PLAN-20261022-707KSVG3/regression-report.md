@@ -5,10 +5,12 @@ status: passed
 created_at: 2026-10-29T10:00:00+08:00
 updated_at: 2026-10-29T10:00:00+08:00
 repository_mode: git_remote
-phase: candidate
+phase: candidate_and_integration
 reviewed_commit: f3fae9c259827b4533c4b1264e77cffd8a8fe925
 reviewed_scope_digest: E8A7CDDD2A70AF903214F670F36E630B1E849C6E5FBA5884420A15EF705CDA53
-ci_status: pending
+integrated_commit: 2d28593497494d442609f5f931edff85fc40b1b3
+integrated_scope_digest: E8A7CDDD2A70AF903214F670F36E630B1E849C6E5FBA5884420A15EF705CDA53
+ci_status: passed
 ---
 
 # 候选 Regression
@@ -21,4 +23,4 @@ ci_status: pending
 
 全量当前候选串行 Playwright：84 total，53 passed、31 skipped、0 failed（跳过项按 viewport/environment 条件设计）；包括认证、宝宝、家庭、照片、里程碑与成长。并发运行曾出现一次照片批量编辑失败；对应 2 项串行复跑通过，全量串行也通过，保留为非复现不稳定信号。首次容器 E2E 因共享注册速率限制有 1 个 429；使用隔离 Redis 前缀和测试代理后通过，测试后恢复默认容器配置。
 
-远端 CI pending，需在 PR 创建后检查；目标分支集成复验尚未发生，不能据此归档。候选范围回归通过。详细命令和偏差见 `execution-log.md`。
+集成验证：PR #30 已合并至 `develop`，集成提交 `2d28593497494d442609f5f931edff85fc40b1b3`。刷新后的 `origin/develop` 指向该提交；集成 tree 与候选工作 tree 完全一致，v2 owned-scope 摘要仍为 `E8A7CDDD2A70AF903214F670F36E630B1E849C6E5FBA5884420A15EF705CDA53`。集成后重新运行 `pnpm validate` 通过，301 API、77 Web 测试通过；GitHub `quality`、`e2e-auth`、`branch-flow-develop` 均通过。回归状态为 `passed`，集成复验完成。
