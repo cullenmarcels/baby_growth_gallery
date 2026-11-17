@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { AccountSummaryDto } from '../auth/auth.dto.js';
 
-export const familyRoles = ['OWNER', 'ADMIN', 'MEMBER'] as const;
+export const familyRoles = ['ADMIN', 'MEMBER'] as const;
 export const familyActivityTypes = [
   'FAMILY_CREATED',
   'MEMBER_JOINED',
@@ -13,11 +12,6 @@ export const familyActivityTypes = [
   'MILESTONE_RECORDED',
   'GROWTH_RECORDED',
 ] as const;
-
-export class CreateFamilyRequestDto {
-  @ApiProperty({ type: String, minLength: 1, maxLength: 40 }) name!: string;
-  @ApiProperty({ type: String, minLength: 1, maxLength: 30 }) displayName!: string;
-}
 
 export class FamilyMembershipSummaryDto {
   @ApiProperty({ type: String, format: 'uuid' }) id!: string;
@@ -48,42 +42,6 @@ export class FamilyMemberDto {
 
 export class FamilyMemberListResponseDto {
   @ApiProperty({ type: () => [FamilyMemberDto] }) items!: FamilyMemberDto[];
-}
-
-export class ChangeMemberRoleRequestDto {
-  @ApiProperty({ type: String, enum: ['ADMIN', 'MEMBER'] }) role!: 'ADMIN' | 'MEMBER';
-}
-
-export class InvitationCreatorDto {
-  @ApiProperty({ type: String, format: 'uuid' }) membershipId!: string;
-  @ApiProperty({ type: String }) displayName!: string;
-}
-
-export class ActiveInvitationDto {
-  @ApiProperty({ type: String, format: 'uuid' }) id!: string;
-  @ApiProperty({ type: String, format: 'date-time' }) expiresAt!: string;
-  @ApiProperty({ type: String, format: 'date-time' }) createdAt!: string;
-  @ApiProperty({ type: () => InvitationCreatorDto }) createdBy!: InvitationCreatorDto;
-}
-
-export class CreatedInvitationDto {
-  @ApiProperty({ type: () => ActiveInvitationDto }) invitation!: ActiveInvitationDto;
-  @ApiProperty({ type: String, pattern: '^[0-9A-HJKMNP-TV-Z]{4}(?:-[0-9A-HJKMNP-TV-Z]{4}){2}$' })
-  token!: string;
-}
-
-export class InvitationListResponseDto {
-  @ApiProperty({ type: () => [ActiveInvitationDto] }) items!: ActiveInvitationDto[];
-}
-
-export class AcceptInvitationRequestDto {
-  @ApiProperty({ type: String, minLength: 12, maxLength: 32 }) token!: string;
-  @ApiProperty({ type: String, minLength: 1, maxLength: 30 }) displayName!: string;
-}
-
-export class AcceptInvitationResponseDto {
-  @ApiProperty({ type: () => FamilySummaryDto }) family!: FamilySummaryDto;
-  @ApiProperty({ type: () => AccountSummaryDto }) account!: AccountSummaryDto;
 }
 
 export class ActivityActorDto {

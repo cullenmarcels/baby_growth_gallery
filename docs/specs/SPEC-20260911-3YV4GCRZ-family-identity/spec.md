@@ -2,12 +2,12 @@
 id: SPEC-20260911-3YV4GCRZ
 type: spec
 title: "家庭身份、成员权限、单次邀请与家庭动态规格"
-status: active
+status: superseded
 created_at: 2026-09-11T10:21:26+08:00
-updated_at: 2026-09-11T10:21:26+08:00
+updated_at: 2026-11-11T13:30:00+08:00
 related_ids: [DES-20260908-ZVZKM07B, DES-20260911-9Z3KRKCQ, SPEC-20260910-VP1CDG7N, PLAN-20260911-X27F6QNT]
 supersedes: []
-superseded_by: []
+superseded_by: [SPEC-20261111-5ZY6HCR3]
 ---
 
 # 家庭身份、成员权限、单次邀请与家庭动态规格

@@ -1,541 +1,216 @@
+import { expect, test } from '@playwright/test';
 import {
-  expect,
-  request as playwrightRequest,
-  test,
-  type APIRequestContext,
-} from '@playwright/test';
-import { randomInt } from 'node:crypto';
+  accountContext,
+  login,
+  adminContext,
+  assignMember,
+  changeMemberRole,
+  createManagedFamily,
+  csrf,
+  loginInBrowser,
+  post,
+  provisionAccount,
+  syntheticUsername,
+  webOrigin,
+} from './managed-fixtures';
 
-const apiBaseUrl = process.env.E2E_API_BASE_URL ?? 'http://127.0.0.1:3000';
-const webOrigin = process.env.STACK_BASE_URL ?? 'http://127.0.0.1:5173';
-
-function syntheticPhone(): string {
-  return `136${randomInt(10_000_000, 100_000_000)}`;
-}
-
-async function csrf(context: APIRequestContext): Promise<string> {
-  const response = await context.get('/api/v1/auth/csrf');
-  expect(response.ok()).toBe(true);
-  return ((await response.json()) as { csrfToken: string }).csrfToken;
-}
-
-async function registerAccount(): Promise<{ context: APIRequestContext; csrf: string }> {
-  const context = await playwrightRequest.newContext({
-    baseURL: apiBaseUrl,
-    extraHTTPHeaders: {
-      'X-Forwarded-For': `198.18.${randomInt(0, 256)}.${randomInt(1, 255)}`,
-    },
-  });
-  const phone = syntheticPhone();
-  const firstCsrf = await csrf(context);
-  const challenge = await context.post('/api/v1/auth/verification-challenges', {
-    headers: { Origin: webOrigin, 'x-csrf-token': firstCsrf },
-    data: { phone, purpose: 'REGISTER' },
-  });
-  expect(challenge.status()).toBe(202);
-  const challengeId = ((await challenge.json()) as { challengeId: string }).challengeId;
-  const registration = await context.post('/api/v1/auth/register', {
-    headers: { Origin: webOrigin, 'x-csrf-token': firstCsrf },
-    data: {
-      phone,
-      challengeId,
-      code: '246810',
-      password: 'abcdef',
-      termsVersion: 'draft-2026-09-10',
-      privacyVersion: 'draft-2026-09-10',
-    },
-  });
-  expect(registration.status()).toBe(201);
-  return { context, csrf: await csrf(context) };
-}
-
-async function post(context: APIRequestContext, path: string, token: string, data?: unknown) {
-  return context.post(path, {
-    headers: { Origin: webOrigin, 'x-csrf-token': token },
-    ...(data === undefined ? {} : { data }),
-  });
-}
-
-test('creates a family, consumes an invitation once, enforces roles, and records activity', async ({
+test('enforces global and family administration boundaries and keeps family roles independent', async ({
   request: _request,
 }, testInfo) => {
   void _request;
-  test.skip(testInfo.project.name !== 'chromium-1440', 'API contract is viewport-independent');
-  const owner = await registerAccount();
-  const member = await registerAccount();
-
-  const created = await post(owner.context, '/api/v1/families', owner.csrf, {
-    name: '  星光小家  ',
-    displayName: '  创建者甲  ',
-  });
-  expect(created.status()).toBe(201);
-  const family = (await created.json()) as {
-    id: string;
-    name: string;
-    currentMembership: { id: string; role: string; displayName: string };
-  };
-  expect(family).toMatchObject({
-    name: '星光小家',
-    currentMembership: { role: 'OWNER', displayName: '创建者甲' },
-  });
-
-  const invitationResponse = await post(
-    owner.context,
-    `/api/v1/families/${family.id}/invitations`,
-    owner.csrf,
-  );
-  expect(invitationResponse.status()).toBe(201);
-  const invitation = (await invitationResponse.json()) as { token: string };
-  expect(invitation.token).toMatch(/^[0-9A-HJKMNP-TV-Z]{4}(?:-[0-9A-HJKMNP-TV-Z]{4}){2}$/);
-  const invitationList = await owner.context.get(`/api/v1/families/${family.id}/invitations`);
-  expect(await invitationList.text()).not.toContain(invitation.token);
-
-  const ownerCannotJoinAgain = await post(
-    owner.context,
-    '/api/v1/family-invitations/accept',
-    owner.csrf,
-    {
-      token: invitation.token,
-      displayName: '重复创建者',
-    },
-  );
-  expect(ownerCannotJoinAgain.status()).toBe(409);
-  expect(((await ownerCannotJoinAgain.json()) as { code: string }).code).toBe(
-    'ALREADY_FAMILY_MEMBER',
-  );
-
-  const accepted = await post(member.context, '/api/v1/family-invitations/accept', member.csrf, {
-    token: invitation.token.toLowerCase().replaceAll('-', ' '),
-    displayName: '成员乙',
-  });
-  expect(accepted.status()).toBe(200);
-  const acceptedBody = (await accepted.json()) as { account: { activeFamilyId: string } };
-  expect(acceptedBody.account.activeFamilyId).toBe(family.id);
-
-  const replay = await post(member.context, '/api/v1/family-invitations/accept', member.csrf, {
-    token: invitation.token,
-    displayName: '成员乙',
-  });
-  expect(replay.status()).toBe(400);
-  expect(((await replay.json()) as { code: string }).code).toBe('INVITATION_INVALID');
-
-  const membersResponse = await owner.context.get(`/api/v1/families/${family.id}/members`);
-  const members = (await membersResponse.json()) as {
-    items: Array<{ id: string; role: string; displayName: string }>;
-  };
-  const joined = members.items.find((item) => item.displayName === '成员乙');
-  expect(joined?.role).toBe('MEMBER');
-
-  const promote = await owner.context.patch(
-    `/api/v1/families/${family.id}/members/${joined?.id}/role`,
-    {
-      headers: { Origin: webOrigin, 'x-csrf-token': owner.csrf },
-      data: { role: 'ADMIN' },
-    },
-  );
-  expect(promote.status()).toBe(200);
-
-  const adminCannotRemoveOwner = await member.context.delete(
-    `/api/v1/families/${family.id}/members/${family.currentMembership.id}`,
-    { headers: { Origin: webOrigin, 'x-csrf-token': member.csrf } },
-  );
-  expect(adminCannotRemoveOwner.status()).toBe(409);
-  expect(((await adminCannotRemoveOwner.json()) as { code: string }).code).toBe(
-    'FAMILY_OWNER_REQUIRED',
-  );
-
-  const activitiesResponse = await owner.context.get(
-    `/api/v1/families/${family.id}/activities?limit=2`,
-  );
-  expect(activitiesResponse.status()).toBe(200);
-  const firstPage = (await activitiesResponse.json()) as {
-    items: Array<{ type: string }>;
-    nextCursor: string | null;
-  };
-  expect(firstPage.items).toHaveLength(2);
-  expect(firstPage.nextCursor).toBeTruthy();
-  expect(firstPage.items.map((item) => item.type)).toEqual([
-    'MEMBER_ROLE_CHANGED',
-    'MEMBER_JOINED',
-  ]);
-  const secondPage = await owner.context.get(
-    `/api/v1/families/${family.id}/activities?limit=2&cursor=${encodeURIComponent(firstPage.nextCursor!)}`,
-  );
-  expect((await secondPage.json()) as { items: Array<{ type: string }> }).toMatchObject({
-    items: [{ type: 'FAMILY_CREATED' }],
-  });
-
-  await owner.context.dispose();
-  await member.context.dispose();
-});
-
-test('revokes invitations after privilege loss and restores a prior membership as MEMBER', async ({
-  request: _request,
-}, testInfo) => {
-  void _request;
-  test.skip(testInfo.project.name !== 'chromium-1440', 'API contract is viewport-independent');
-  const owner = await registerAccount();
-  const returningMember = await registerAccount();
-  const outsider = await registerAccount();
-  const created = await post(owner.context, '/api/v1/families', owner.csrf, {
-    name: '重逢之家',
-    displayName: '创建者',
-  });
-  const family = (await created.json()) as { id: string };
-
-  const firstInvitation = await post(
-    owner.context,
-    `/api/v1/families/${family.id}/invitations`,
-    owner.csrf,
-  );
-  const firstToken = ((await firstInvitation.json()) as { token: string }).token;
-  expect(
-    (
-      await post(
-        returningMember.context,
-        '/api/v1/family-invitations/accept',
-        returningMember.csrf,
-        { token: firstToken, displayName: '归来成员' },
-      )
-    ).status(),
-  ).toBe(200);
-  const memberList = (await (
-    await owner.context.get(`/api/v1/families/${family.id}/members`)
-  ).json()) as { items: Array<{ id: string; displayName: string }> };
-  const originalMembership = memberList.items.find((item) => item.displayName === '归来成员')!;
-
-  const promoted = await owner.context.patch(
-    `/api/v1/families/${family.id}/members/${originalMembership.id}/role`,
-    {
-      headers: { Origin: webOrigin, 'x-csrf-token': owner.csrf },
-      data: { role: 'ADMIN' },
-    },
-  );
-  expect(promoted.status()).toBe(200);
-  const adminInvitation = await post(
-    returningMember.context,
-    `/api/v1/families/${family.id}/invitations`,
-    returningMember.csrf,
-  );
-  const adminToken = ((await adminInvitation.json()) as { token: string }).token;
-  const demoted = await owner.context.patch(
-    `/api/v1/families/${family.id}/members/${originalMembership.id}/role`,
-    {
-      headers: { Origin: webOrigin, 'x-csrf-token': owner.csrf },
-      data: { role: 'MEMBER' },
-    },
-  );
-  expect(demoted.status()).toBe(200);
-  const invalidAfterDemotion = await post(
-    outsider.context,
-    '/api/v1/family-invitations/accept',
-    outsider.csrf,
-    { token: adminToken, displayName: '外部成员' },
-  );
-  expect(invalidAfterDemotion.status()).toBe(400);
-  expect(((await invalidAfterDemotion.json()) as { code: string }).code).toBe('INVITATION_INVALID');
-
-  const left = await returningMember.context.delete(`/api/v1/families/${family.id}/membership`, {
-    headers: { Origin: webOrigin, 'x-csrf-token': returningMember.csrf },
-  });
-  expect(left.status()).toBe(200);
-  const rejoinInvitation = await post(
-    owner.context,
-    `/api/v1/families/${family.id}/invitations`,
-    owner.csrf,
-  );
-  const rejoinToken = ((await rejoinInvitation.json()) as { token: string }).token;
-  const rejoined = await post(
-    returningMember.context,
-    '/api/v1/family-invitations/accept',
-    returningMember.csrf,
-    { token: rejoinToken, displayName: '重新加入' },
-  );
-  expect(rejoined.status()).toBe(200);
-  const restoredMembers = (await (
-    await owner.context.get(`/api/v1/families/${family.id}/members`)
-  ).json()) as { items: Array<{ id: string; displayName: string; role: string }> };
-  expect(restoredMembers.items.find((item) => item.id === originalMembership.id)).toMatchObject({
-    displayName: '重新加入',
-    role: 'MEMBER',
-  });
-  const activities = (await (
-    await owner.context.get(`/api/v1/families/${family.id}/activities?limit=20`)
-  ).json()) as { items: Array<{ type: string; summary: { joinKind?: string } }> };
-  expect(
-    activities.items.some(
-      (item) => item.type === 'MEMBER_JOINED' && item.summary.joinKind === 'REJOINED',
-    ),
-  ).toBe(true);
-
-  await owner.context.dispose();
-  await returningMember.context.dispose();
-  await outsider.context.dispose();
-});
-
-test('reconciles an invalid current family to the most recently joined active membership', async ({
-  request: _request,
-}, testInfo) => {
-  void _request;
-  test.skip(testInfo.project.name !== 'chromium-1440', 'API contract is viewport-independent');
-  const owner = await registerAccount();
-  const multiFamilyMember = await registerAccount();
-
-  const firstFamilyResponse = await post(owner.context, '/api/v1/families', owner.csrf, {
-    name: '第一家庭',
-    displayName: '主人',
-  });
-  const firstFamily = (await firstFamilyResponse.json()) as { id: string };
-  const inviteResponse = await post(
-    owner.context,
-    `/api/v1/families/${firstFamily.id}/invitations`,
-    owner.csrf,
-  );
-  const token = ((await inviteResponse.json()) as { token: string }).token;
-  const joined = await post(
-    multiFamilyMember.context,
-    '/api/v1/family-invitations/accept',
-    multiFamilyMember.csrf,
-    {
-      token,
-      displayName: '访客',
-    },
-  );
-  expect(joined.status()).toBe(200);
-
-  const secondFamilyResponse = await post(
-    multiFamilyMember.context,
-    '/api/v1/families',
-    multiFamilyMember.csrf,
-    { name: '第二家庭', displayName: '主人乙' },
-  );
-  expect(secondFamilyResponse.status()).toBe(201);
-  const secondFamily = (await secondFamilyResponse.json()) as { id: string };
-  const activateFirst = await post(
-    multiFamilyMember.context,
-    `/api/v1/families/${firstFamily.id}/activate`,
-    multiFamilyMember.csrf,
-  );
-  expect(activateFirst.status()).toBe(200);
-  expect(((await activateFirst.json()) as { activeFamilyId: string }).activeFamilyId).toBe(
-    firstFamily.id,
-  );
-
-  const memberList = (await (
-    await owner.context.get(`/api/v1/families/${firstFamily.id}/members`)
-  ).json()) as { items: Array<{ id: string; isCurrentAccount: boolean }> };
-  const target = memberList.items.find((item) => !item.isCurrentAccount)!;
-  const removed = await owner.context.delete(
-    `/api/v1/families/${firstFamily.id}/members/${target.id}`,
-    { headers: { Origin: webOrigin, 'x-csrf-token': owner.csrf } },
-  );
-  expect(removed.status()).toBe(204);
-
-  const session = await multiFamilyMember.context.get('/api/v1/auth/session');
-  expect(((await session.json()) as { activeFamilyId: string }).activeFamilyId).toBe(
-    secondFamily.id,
-  );
-
-  await owner.context.dispose();
-  await multiFamilyMember.context.dispose();
-});
-
-test('consumes one invitation exactly once under concurrency and enforces API permission boundaries', async ({
-  request: _request,
-}, testInfo) => {
-  void _request;
-  test.skip(testInfo.project.name !== 'chromium-1440', 'API contract is viewport-independent');
-  const owner = await registerAccount();
-  const firstInvitee = await registerAccount();
-  const secondInvitee = await registerAccount();
-  const created = await post(owner.context, '/api/v1/families', owner.csrf, {
-    name: '并发家庭',
-    displayName: '创建者',
-  });
-  const family = (await created.json()) as { id: string };
-  const invitationResponse = await post(
-    owner.context,
-    `/api/v1/families/${family.id}/invitations`,
-    owner.csrf,
-  );
-  const token = ((await invitationResponse.json()) as { token: string }).token;
-
-  const results = await Promise.all([
-    post(firstInvitee.context, '/api/v1/family-invitations/accept', firstInvitee.csrf, {
-      token,
-      displayName: '并发成员甲',
-    }),
-    post(secondInvitee.context, '/api/v1/family-invitations/accept', secondInvitee.csrf, {
-      token,
-      displayName: '并发成员乙',
-    }),
-  ]);
-  expect(results.map((response) => response.status()).sort()).toEqual([200, 400]);
-  const winner = results[0]!.status() === 200 ? firstInvitee : secondInvitee;
-  const outsider = results[0]!.status() === 200 ? secondInvitee : firstInvitee;
-
-  const members = (await (
-    await owner.context.get(`/api/v1/families/${family.id}/members`)
-  ).json()) as { items: Array<{ id: string; isCurrentAccount: boolean }> };
-  expect(members.items).toHaveLength(2);
-  const joinedMember = members.items.find((item) => !item.isCurrentAccount)!;
-
-  const memberCannotInvite = await post(
-    winner.context,
-    `/api/v1/families/${family.id}/invitations`,
-    winner.csrf,
-  );
-  expect(memberCannotInvite.status()).toBe(403);
-  expect(((await memberCannotInvite.json()) as { code: string }).code).toBe(
-    'FAMILY_PERMISSION_DENIED',
-  );
-  const hiddenFamily = await outsider.context.get(`/api/v1/families/${family.id}`);
-  expect(hiddenFamily.status()).toBe(404);
-  expect(((await hiddenFamily.json()) as { code: string }).code).toBe('FAMILY_NOT_FOUND');
-
-  const promote = await owner.context.patch(
-    `/api/v1/families/${family.id}/members/${joinedMember.id}/role`,
-    {
-      headers: { Origin: webOrigin, 'x-csrf-token': owner.csrf },
-      data: { role: 'ADMIN' },
-    },
-  );
-  expect(promote.status()).toBe(200);
-  const beforeNoOp = (await (
-    await owner.context.get(`/api/v1/families/${family.id}/activities?limit=20`)
-  ).json()) as { items: unknown[] };
-  const noOp = await owner.context.patch(
-    `/api/v1/families/${family.id}/members/${joinedMember.id}/role`,
-    {
-      headers: { Origin: webOrigin, 'x-csrf-token': owner.csrf },
-      data: { role: 'ADMIN' },
-    },
-  );
-  expect(noOp.status()).toBe(200);
-  const afterNoOp = (await (
-    await owner.context.get(`/api/v1/families/${family.id}/activities?limit=20`)
-  ).json()) as { items: unknown[] };
-  expect(afterNoOp.items).toHaveLength(beforeNoOp.items.length);
-
-  const invalidCursor = await owner.context.get(
-    `/api/v1/families/${family.id}/activities?cursor=not%2Ba%2Bcursor`,
-  );
-  expect(invalidCursor.status()).toBe(400);
-  expect(((await invalidCursor.json()) as { code: string }).code).toBe('CURSOR_INVALID');
-
-  const revokedInvitation = await post(
-    owner.context,
-    `/api/v1/families/${family.id}/invitations`,
-    owner.csrf,
-  );
-  const revoked = (await revokedInvitation.json()) as {
-    token: string;
-    invitation: { id: string };
-  };
-  const revoke = await owner.context.delete(
-    `/api/v1/families/${family.id}/invitations/${revoked.invitation.id}`,
-    { headers: { Origin: webOrigin, 'x-csrf-token': owner.csrf } },
-  );
-  expect(revoke.status()).toBe(204);
-  const invitationsAfterRevoke = (await (
-    await owner.context.get(`/api/v1/families/${family.id}/invitations`)
-  ).json()) as { items: Array<{ id: string }> };
-  expect(invitationsAfterRevoke.items.some((item) => item.id === revoked.invitation.id)).toBe(
-    false,
-  );
-  const repeatedRevoke = await owner.context.delete(
-    `/api/v1/families/${family.id}/invitations/${revoked.invitation.id}`,
-    { headers: { Origin: webOrigin, 'x-csrf-token': owner.csrf } },
-  );
-  expect(repeatedRevoke.status()).toBe(204);
-  const invalidAfterRevoke = await post(
-    outsider.context,
-    '/api/v1/family-invitations/accept',
-    outsider.csrf,
-    { token: revoked.token, displayName: '外部成员' },
-  );
-  expect(invalidAfterRevoke.status()).toBe(400);
-  expect(((await invalidAfterRevoke.json()) as { code: string }).code).toBe('INVITATION_INVALID');
-
-  await owner.context.dispose();
-  await firstInvitee.context.dispose();
-  await secondInvitee.context.dispose();
-});
-
-test('rate-limits invitation acceptance per account after ten attempts', async ({
-  request: _request,
-}, testInfo) => {
-  void _request;
-  test.skip(testInfo.project.name !== 'chromium-1440', 'API contract is viewport-independent');
-  const account = await registerAccount();
-  for (let attempt = 0; attempt < 10; attempt += 1) {
-    const response = await post(
-      account.context,
-      '/api/v1/family-invitations/accept',
-      account.csrf,
-      { token: '0000-0000-0000', displayName: '限流测试' },
-    );
-    expect(response.status()).toBe(400);
-    expect(((await response.json()) as { code: string }).code).toBe('INVITATION_INVALID');
+  test.skip(testInfo.project.name !== 'chromium-1440', 'API contract is viewport independent');
+  const admin = await adminContext();
+  const owner = await provisionAccount();
+  const member = await provisionAccount();
+  try {
+    const first = await createManagedFamily(owner, '权限家庭一', '首位家管');
+    const second = await createManagedFamily(member, '权限家庭二', '第二家管');
+    expect(await assignMember(first.id, member.username, '跨家庭成员')).toBe(204);
+    const manageFirst = `/api/v1/management/families/${first.id}`;
+    const manageSecond = `/api/v1/management/families/${second.id}`;
+    const detail = (await (await owner.context.get(manageFirst)).json()) as {
+      members: { id: string; username: string; role: string }[];
+    };
+    const memberId = detail.members.find((entry) => entry.username === member.username)!.id;
+    const ownerMembershipId = detail.members.find((entry) => entry.username === owner.username)!.id;
+    expect((await admin.get(`/api/v1/families/${first.id}/babies`)).status()).toBe(404);
+    expect((await member.context.get(manageFirst)).status()).toBe(403);
+    expect((await owner.context.get(manageSecond)).status()).toBe(404);
+    expect(
+      (
+        await post(owner.context, '/api/v1/management/families', owner.csrf, { name: '越权家庭' })
+      ).status(),
+    ).toBe(403);
+    expect(
+      (
+        await owner.context.patch(`${manageFirst}/members/${memberId}`, {
+          headers: { Origin: webOrigin, 'x-csrf-token': owner.csrf },
+          data: { role: 'ADMIN' },
+        })
+      ).status(),
+    ).toBe(403);
+    expect(await changeMemberRole(first.id, ownerMembershipId, 'MEMBER')).toBe(409);
+    const token = await csrf(admin);
+    expect(
+      (
+        await admin.delete(`${manageFirst}/members/${ownerMembershipId}`, {
+          headers: { Origin: webOrigin, 'x-csrf-token': token },
+        })
+      ).status(),
+    ).toBe(409);
+    const accounts = (await (await admin.get('/api/v1/management/accounts')).json()) as {
+      id: string;
+      username: string;
+    }[];
+    const ownerId = accounts.find((entry) => entry.username === owner.username)!.id;
+    expect(
+      (
+        await admin.patch(`/api/v1/management/accounts/${ownerId}/status`, {
+          headers: { Origin: webOrigin, 'x-csrf-token': token },
+          data: { status: 'DISABLED' },
+        })
+      ).status(),
+    ).toBe(409);
+    expect(
+      (
+        await owner.context.delete(`${manageFirst}/members/${memberId}`, {
+          headers: { Origin: webOrigin, 'x-csrf-token': owner.csrf },
+        })
+      ).status(),
+    ).toBe(204);
+    expect((await member.context.get(`/api/v1/families/${first.id}`)).status()).toBe(404);
+    expect((await member.context.get(manageSecond)).status()).toBe(200);
+    const page = await owner.context.get(`/api/v1/families/${first.id}/activities?limit=2`);
+    expect(page.status()).toBe(200);
+    const activity = (await page.json()) as { items: { type: string }[]; nextCursor: string };
+    expect(activity.items.map(({ type }) => type)).toEqual(['MEMBER_LEFT', 'MEMBER_JOINED']);
+    expect(activity.nextCursor).toBeTruthy();
+    expect(
+      (
+        await owner.context.get(
+          `/api/v1/families/${first.id}/activities?cursor=${encodeURIComponent(activity.nextCursor)}`,
+        )
+      ).status(),
+    ).toBe(200);
+  } finally {
+    await Promise.all([admin.dispose(), owner.context.dispose(), member.context.dispose()]);
   }
-  const limited = await post(account.context, '/api/v1/family-invitations/accept', account.csrf, {
-    token: '0000-0000-0000',
-    displayName: '限流测试',
-  });
-  expect(limited.status()).toBe(429);
-  expect(((await limited.json()) as { code: string }).code).toBe('RATE_LIMITED');
-  await account.context.dispose();
 });
 
-test('creates a real family from onboarding without horizontal overflow', async ({ page }) => {
-  const phone = syntheticPhone();
-  await page.goto('/register');
-  await page.getByLabel('手机号').fill(phone);
-  await page.getByRole('button', { name: '获取验证码' }).click();
-  await page.getByLabel('验证码').fill('246810');
-  await page.getByLabel('设置密码').fill('abcdef');
-  await page.getByLabel('确认密码').fill('abcdef');
-  await page.getByLabel(/我已阅读并同意/).check();
-  await page.getByRole('button', { name: '注册并登录' }).click();
-  await expect(page.getByRole('heading', { name: '把珍贵时刻分享给最亲近的人' })).toBeVisible();
-  await page.getByLabel('家庭名称').fill('晨光之家');
-  await page.getByLabel('你在家庭中的称呼').fill('家人甲');
-  await page.getByRole('button', { name: '创建家庭', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '晨光之家' })).toBeVisible();
-  await expect(page.getByText('家人甲 · 创建者')).toBeVisible();
-  await expect(page.getByText(/创建了家庭/)).toBeVisible();
+test('family-issued credentials prevent promotion and cross-family assignment until changed', async ({
+  request: _request,
+}, testInfo) => {
+  void _request;
+  test.skip(testInfo.project.name !== 'chromium-1440', 'API contract is viewport independent');
+  const owner = await provisionAccount();
+  const admin = await adminContext();
+  try {
+    const family = await createManagedFamily(owner, '开户家庭', '家管');
+    const other = await createManagedFamily(owner, '其它家庭', '家管');
+    const base = `/api/v1/management/families/${family.id}`;
+    const username = syntheticUsername();
+    const result = await post(owner.context, `${base}/accounts`, owner.csrf, {
+      username,
+      displayName: '新成员',
+    });
+    expect(result.status()).toBe(201);
+    expect(await assignMember(other.id, username, '异家成员')).toBe(409);
+    const detail = (await (await owner.context.get(base)).json()) as {
+      members: { username: string; id: string }[];
+    };
+    const id = detail.members.find((entry) => entry.username === username)!.id;
+    expect(await changeMemberRole(family.id, id, 'ADMIN')).toBe(409);
+
+    const reset = await post(owner.context, `${base}/members/${id}/password`, owner.csrf);
+    expect(reset.status()).toBe(200);
+    const member = await accountContext();
+    try {
+      const { temporaryPassword } = (await reset.json()) as { temporaryPassword: string };
+      await login(member, username, temporaryPassword);
+      expect(
+        (
+          await post(member, '/api/v1/auth/password/change', await csrf(member), {
+            currentPassword: temporaryPassword,
+            newPassword: 'member-private-password',
+            acceptTerms: true,
+          })
+        ).status(),
+      ).toBe(200);
+      expect(await assignMember(other.id, username, '异家成员')).toBe(204);
+      expect(
+        (await post(owner.context, `${base}/members/${id}/password`, owner.csrf)).status(),
+      ).toBe(403);
+      const accounts = (await (await admin.get('/api/v1/management/accounts')).json()) as {
+        username: string;
+        id: string;
+      }[];
+      const accountId = accounts.find((entry) => entry.username === username)!.id;
+      for (const status of ['DISABLED', 'DISABLED']) {
+        const changed = await admin.patch(`/api/v1/management/accounts/${accountId}/status`, {
+          headers: { Origin: webOrigin, 'x-csrf-token': await csrf(admin) },
+          data: { status },
+        });
+        expect(changed.status()).toBe(200);
+        expect(Object.keys(await changed.json()).sort()).toEqual([
+          'displayName',
+          'id',
+          'status',
+          'username',
+        ]);
+      }
+      expect((await member.get('/api/v1/auth/session')).status()).toBe(401);
+    } finally {
+      await member.dispose();
+    }
+    expect(
+      (
+        await post(admin, '/api/v1/management/accounts', await csrf(admin), {
+          username: username.toUpperCase(),
+          displayName: '重复名',
+        })
+      ).status(),
+    ).toBe(409);
+  } finally {
+    await Promise.all([admin.dispose(), owner.context.dispose()]);
+  }
+});
+
+test('family administrator provisions a member who changes their password in the browser', async ({
+  page,
+  browser,
+}) => {
+  const manager = await provisionAccount();
+  const family = await createManagedFamily(manager, '三视口开户家庭', '合成家管');
+  await loginInBrowser(page, manager.username, manager.password);
+  await manager.context.dispose();
+  await expect(page).toHaveURL(/\/app\/babies\/new$/);
+  await page.goto(`/app/families/${family.id}/manage`);
+  await expect(page.getByRole('heading', { name: '家庭管理' })).toBeVisible();
+  const username = syntheticUsername();
+  await page.getByLabel('账户名', { exact: true }).first().fill(username);
+  await page.getByLabel('显示名', { exact: true }).first().fill('开户成员');
+  await page.getByRole('button', { name: '开户入户' }).click();
+  const credential = page.getByRole('region', { name: '临时密码' });
+  const password = await credential.locator('code').innerText();
+  await credential.getByRole('button', { name: '关闭' }).click();
+  await expect(credential).toHaveCount(0);
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
     ),
   ).toBe(true);
-  if ((page.viewportSize()?.width ?? 1440) < 1024) {
-    await expect(page.getByRole('navigation', { name: '移动端主导航' })).toBeVisible();
-  } else {
-    await expect(page.getByRole('navigation', { name: '主导航' })).toBeVisible();
-  }
-  if (process.platform === 'win32') {
-    await expect(page).toHaveScreenshot('family-space.png', {
-      animations: 'disabled',
-      mask: [page.locator('time'), page.getByText(/^加入于 /)],
-      maxDiffPixels: 20,
-    });
-  }
-  await page.getByRole('button', { name: '生成一次性邀请' }).click();
-  const token = page.getByText(/^[0-9A-HJKMNP-TV-Z]{4}(?:-[0-9A-HJKMNP-TV-Z]{4}){2}$/);
-  await expect(token).toBeVisible();
-  const tokenValue = await token.textContent();
-  await page.getByRole('button', { name: '关闭一次性邀请口令' }).click();
-  await expect(page.getByText(tokenValue ?? 'token-missing')).toHaveCount(0);
 
-  await page.getByRole('button', { name: '撤销' }).click();
-  await expect(page.getByRole('dialog', { name: '确认撤销邀请？' })).toBeVisible();
-  await expect(page.getByText('撤销后该邀请口令会立即失效，且无法恢复。')).toBeVisible();
-  await page.getByRole('button', { name: '取消' }).click();
-  await expect(page.getByRole('button', { name: '撤销' })).toBeVisible();
-
-  await page.getByRole('button', { name: '撤销' }).click();
-  await page.getByRole('button', { name: '确认' }).click();
-  await expect(page.getByRole('status')).toContainText('邀请已撤销。');
-  await expect(page.getByRole('button', { name: '撤销' })).toHaveCount(0);
+  const user = await browser.newContext({ baseURL: page.url(), viewport: page.viewportSize() });
+  try {
+    const memberPage = await user.newPage();
+    await loginInBrowser(memberPage, username, password);
+    await expect(memberPage).toHaveURL(/\/change-password$/);
+    await memberPage.getByLabel('当前密码').fill(password);
+    await memberPage.getByLabel('新密码').fill('private-new-password');
+    await memberPage.getByLabel('我已阅读并同意条款').check();
+    await memberPage.getByRole('button', { name: '保存密码' }).click();
+    await expect(memberPage).toHaveURL(/\/app\/babies\/waiting$/);
+  } finally {
+    await user.close();
+  }
 });

@@ -2,44 +2,32 @@ import { z } from 'zod';
 import { ApiProblemException } from '../common/api-problem.exception.js';
 
 export const LEGAL_DRAFT_VERSION = 'draft-2026-09-10';
+const invalidAccountCharacter = /[^\p{Script=Han}a-zA-Z0-9_-]/u;
+const meaningfulCharacter = /[\p{Script=Han}a-zA-Z0-9]/u;
 
-const phone = z.string().trim().min(1).max(32);
-const challengeId = z.uuid();
-const code = z.string().regex(/^\d{6}$/);
-const password = z.string().min(6).max(128);
+export const usernameSchema = z
+  .string()
+  .transform((value) =>
+    value.normalize('NFC').replace(/[A-Z]/g, (character) => character.toLowerCase()),
+  )
+  .refine(
+    (value) =>
+      [...value].length <= 32 &&
+      !invalidAccountCharacter.test(value) &&
+      meaningfulCharacter.test(value),
+  );
 
-export const verificationChallengeSchema = z.object({
-  phone,
-  purpose: z.enum(['REGISTER', 'LOGIN', 'RESET_PASSWORD']),
-});
-
-export const registerSchema = z.object({
-  phone,
-  challengeId,
-  code,
-  password,
-  termsVersion: z.literal(LEGAL_DRAFT_VERSION),
-  privacyVersion: z.literal(LEGAL_DRAFT_VERSION),
-});
-
-export const passwordLoginSchema = z.object({
-  phone,
-  password,
+export const passwordSchema = z.string().min(6).max(128);
+export const passwordLoginSchema = z.strictObject({
+  username: usernameSchema,
+  password: passwordSchema,
   remember: z.boolean().default(false),
 });
 
-export const codeLoginSchema = z.object({
-  phone,
-  challengeId,
-  code,
-  remember: z.boolean().default(false),
-});
-
-export const passwordResetSchema = z.object({
-  phone,
-  challengeId,
-  code,
-  newPassword: password,
+export const passwordChangeSchema = z.strictObject({
+  currentPassword: passwordSchema,
+  newPassword: passwordSchema,
+  acceptTerms: z.boolean().default(false),
 });
 
 export function parseBody<T>(schema: z.ZodType<T>, body: unknown): T {

@@ -1,0 +1,671 @@
+.layout {
+  --admin-sidebar: var(--color-text-strong);
+  --admin-sidebar-hover: color-mix(in srgb, var(--color-primary) 18%, var(--admin-sidebar));
+  --admin-action: color-mix(in srgb, var(--color-primary) 40%, var(--color-text-strong));
+  --admin-on-primary: color-mix(in srgb, var(--color-text-strong) 78%, black);
+  --admin-success-text: color-mix(in srgb, var(--color-success) 75%, var(--color-text-strong));
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  background: var(--color-bg);
+  color: var(--color-text-strong);
+  font-family: Inter, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+.layout :is(button, input, select, a):focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.sidebar :is(a, button):focus-visible,
+.dialog:has(.drawer) :is(a, button):focus-visible {
+  outline-color: var(--color-primary);
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  background: var(--admin-sidebar);
+  color: var(--color-bg);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 24px 22px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.brand svg {
+  color: var(--color-accent);
+}
+
+.navigation {
+  display: grid;
+  gap: 6px;
+  padding: 8px 12px;
+}
+
+.navigation a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border-radius: 7px;
+  color: var(--color-border-light);
+  text-decoration: none;
+}
+
+.navigation a:hover,
+.navigation a[aria-current='page'] {
+  background: var(--admin-sidebar-hover);
+  color: var(--color-card);
+}
+
+.navigation a[aria-current='page'] {
+  box-shadow: inset 3px 0 var(--color-primary);
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 8px clamp(16px, 3vw, 42px);
+  background: var(--color-card);
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.875rem;
+}
+
+.breadcrumb,
+.accountToggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.breadcrumb {
+  font-weight: 600;
+}
+
+.menuToggle {
+  display: none;
+}
+
+.accountMenu {
+  position: relative;
+  min-width: 0;
+}
+
+.accountToggle {
+  max-width: 100%;
+  min-height: 40px;
+  color: var(--color-text-strong);
+  background: var(--color-card);
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.accountToggle span {
+  max-width: min(38vw, 240px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.accountMenu > div {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  min-width: max-content;
+  padding: 4px;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-menu);
+}
+
+.accountMenu > div :is(a, button) {
+  display: block;
+  width: 100%;
+  border: 0;
+  padding: 8px 12px;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--color-text-strong);
+  text-align: start;
+  text-decoration: none;
+}
+
+.accountMenu > div :is(a, button):hover {
+  background: var(--color-menu-hover);
+}
+
+.content {
+  max-width: 1460px;
+  margin-inline: auto;
+  padding: 30px clamp(16px, 3vw, 42px) 42px;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.pageHeader h1 {
+  margin: 0;
+  font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.primary,
+.secondary,
+.menuToggle,
+.pagination :is(a, button) {
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-card);
+  color: var(--color-text-strong);
+  padding: 8px 13px;
+  min-height: 40px;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.primary,
+.secondary,
+.pagination :is(a, button) {
+  display: inline-flex;
+}
+
+.primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--admin-on-primary);
+}
+
+.primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-primary) 76%, var(--color-accent));
+}
+
+.secondary:hover:not(:disabled),
+.pagination a:hover {
+  background: var(--color-bg);
+}
+
+.layout button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.panel,
+.details,
+.content > .empty {
+  border: 1px solid var(--color-border);
+  border-radius: 9px;
+  background: var(--color-card);
+}
+
+.filters {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 17px 18px;
+}
+
+.filters label:first-child {
+  flex: 1 1 200px;
+  max-width: 360px;
+}
+
+.filters label,
+.dialogForm label {
+  display: grid;
+  gap: 6px;
+  color: var(--color-text-default);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.search {
+  position: relative;
+  display: block;
+}
+
+.search svg {
+  position: absolute;
+  top: 11px;
+  left: 11px;
+  pointer-events: none;
+}
+
+.filters :is(input, select),
+.dialogForm input {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 7px 10px;
+  background: var(--color-card);
+  color: var(--color-text-strong);
+}
+
+.filters input {
+  padding-left: 34px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: start;
+  font-size: 0.875rem;
+}
+
+.table :is(th, td) {
+  padding: 13px 18px;
+  text-align: start;
+  border-top: 1px solid var(--color-border);
+  overflow-wrap: anywhere;
+}
+
+.table th {
+  background: var(--color-menu-bg);
+  color: var(--color-text-default);
+  font-weight: 600;
+}
+
+.table a,
+.rowActions button,
+.back {
+  color: var(--admin-action);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.table a:hover,
+.rowActions button:hover:not(:disabled),
+.back:hover {
+  text-decoration: underline;
+}
+
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 14px;
+}
+
+.rowActions :is(a, button) {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  white-space: nowrap;
+}
+
+.rowActions button {
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.positive,
+.neutral {
+  display: inline-flex;
+  width: max-content;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.positive {
+  background: var(--color-success-soft);
+  color: var(--admin-success-text);
+}
+
+.neutral {
+  background: var(--color-menu-hover);
+  color: var(--color-text-default);
+}
+
+.cellLabel {
+  display: none;
+}
+
+.pagination,
+.pagination nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pagination {
+  justify-content: space-between;
+  padding: 12px 18px;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-default);
+  font-size: 0.875rem;
+}
+
+.pagination :is(a, button) {
+  padding: 0;
+  width: 40px;
+}
+
+.empty {
+  margin: 0;
+  padding: 32px 18px;
+  text-align: center;
+  color: var(--color-text-default);
+}
+
+.empty > p {
+  margin: 0 0 12px;
+}
+
+.empty > p:only-child {
+  margin: 0;
+}
+
+.notice,
+.error {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--color-success-soft);
+  color: var(--admin-success-text);
+}
+
+.error {
+  background: var(--color-error-soft);
+  color: var(--color-error);
+}
+
+.backLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  font-size: 0.875rem;
+}
+
+.details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 40px;
+  margin: 0 0 18px;
+  padding: 16px 18px;
+  overflow-wrap: anywhere;
+}
+
+.details dt {
+  color: var(--color-text-default);
+  font-size: 0.875rem;
+}
+
+.details dd {
+  margin: 5px 0 0;
+  font-weight: 600;
+}
+
+.sectionTitle {
+  margin: 0;
+  padding: 16px 18px;
+  font-size: 1rem;
+}
+
+.familyRoster {
+  margin-top: 18px;
+}
+
+.dialog {
+  width: min(440px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  color: var(--color-text-strong);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-card);
+  box-shadow: var(--shadow-menu);
+}
+
+.dialog::backdrop {
+  background: color-mix(in srgb, var(--color-text-strong) 56%, transparent);
+}
+
+.dialog > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px 12px 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.dialog > header h2 {
+  margin: 0;
+  font-size: 1.12rem;
+}
+
+.dialog > header button {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--color-bg);
+  color: var(--color-text-strong);
+}
+
+.dialogForm,
+.credential {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.dialogForm p,
+.credential p {
+  margin: 0;
+}
+
+.credential code {
+  padding: 10px;
+  background: var(--color-bg);
+  border-radius: 6px;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.credential .primary {
+  justify-self: end;
+}
+
+.drawer {
+  padding-bottom: 14px;
+  background: var(--admin-sidebar);
+  color: var(--color-bg);
+}
+
+@media (max-width: 1023px) {
+  .layout {
+    display: block;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .menuToggle {
+    display: inline-flex;
+    width: 40px;
+    padding: 0;
+  }
+}
+
+@media (max-width: 620px) {
+  .content {
+    padding-top: 20px;
+  }
+
+  .filters {
+    padding: 12px;
+  }
+
+  .filters label:first-child {
+    max-width: none;
+  }
+
+  .table {
+    display: block;
+    padding: 0 12px 12px;
+  }
+
+  .table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .table tbody {
+    display: grid;
+    gap: 8px;
+  }
+
+  .table tbody tr {
+    display: grid;
+    gap: 6px;
+    padding: 11px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 7px;
+  }
+
+  .table tbody td {
+    display: grid;
+    grid-template-columns: minmax(76px, auto) minmax(0, 1fr);
+    align-items: baseline;
+    gap: 8px;
+    padding: 0;
+    border: 0;
+  }
+
+  .cellLabel {
+    display: inline;
+    font-size: 0.8125rem;
+    color: var(--color-text-default);
+  }
+
+  .pagination {
+    padding: 10px 12px;
+  }
+
+  .rowActions {
+    gap: 0 9px;
+  }
+}
+
+.familyForm {
+  padding: 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 9px;
+  background: var(--color-card);
+}
+
+.familyForm h3 {
+  margin: 0 0 4px;
+  font-size: 1rem;
+}
+
+.familyForm p {
+  margin-top: 0;
+}
+
+.familyForm label {
+  display: grid;
+  gap: 5px;
+  color: var(--color-text-default);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.familyForm :is(input, select, button) {
+  width: 100%;
+  min-height: 40px;
+  min-width: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 7px 10px;
+  background: var(--color-card);
+  color: var(--color-text-strong);
+}
+
+.familyForm button {
+  width: fit-content;
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--admin-on-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.dialog:has(.drawer) {
+  inset: 0 auto 0 0;
+  width: min(290px, calc(100vw - 48px));
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--admin-sidebar);
+  color: var(--color-bg);
+}
+
+.dialog:has(.drawer) > header {
+  border-bottom-color: var(--admin-sidebar-hover);
+}
+
+.dialog:has(.drawer) > header button {
+  background: var(--admin-sidebar-hover);
+  color: var(--color-bg);
+}
+
+.drawer .brand {
+  display: none;
+}

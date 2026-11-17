@@ -1,18 +1,5 @@
+import { Controller, Delete, Get, HttpCode, Inject, Param, Post, Query, Req } from '@nestjs/common';
 import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  Inject,
-  Param,
-  Patch,
-  Post,
-  Query,
-  Req,
-} from '@nestjs/common';
-import {
-  ApiBody,
   ApiCookieAuth,
   ApiExtraModels,
   getSchemaPath,
@@ -28,15 +15,9 @@ import { parseBody } from '../auth/auth.schemas.js';
 import { AuthSessionService } from '../auth/session.service.js';
 import { ApiProblemDto } from '../health/health.dto.js';
 import {
-  AcceptInvitationRequestDto,
-  AcceptInvitationResponseDto,
   ActiveFamilyActivityItemDto,
-  ActiveInvitationDto,
   ActivityActorDto,
   ActivitySubjectDto,
-  ChangeMemberRoleRequestDto,
-  CreatedInvitationDto,
-  CreateFamilyRequestDto,
   FamilyActivityPageDto,
   FamilyCreatedSummaryDto,
   FamilyListResponseDto,
@@ -44,8 +25,6 @@ import {
   FamilyMemberListResponseDto,
   FamilyMembershipSummaryDto,
   FamilySummaryDto,
-  InvitationCreatorDto,
-  InvitationListResponseDto,
   MemberJoinedSummaryDto,
   MemberLeftSummaryDto,
   MemberRoleChangedSummaryDto,
@@ -53,14 +32,7 @@ import {
   MilestoneRecordedActivitySummaryV1Dto,
   TombstonedFamilyActivityItemDto,
 } from './family.dto.js';
-import { FamilyRateLimitService } from './family-rate-limit.service.js';
-import {
-  acceptInvitationSchema,
-  activityQuerySchema,
-  changeMemberRoleSchema,
-  createFamilySchema,
-  familyIdSchema,
-} from './family.schemas.js';
+import { activityQuerySchema, familyIdSchema } from './family.schemas.js';
 import { FamilyService } from './family.service.js';
 
 const extraModels = [
@@ -69,8 +41,6 @@ const extraModels = [
   FamilyMembershipSummaryDto,
   FamilySummaryDto,
   FamilyMemberDto,
-  InvitationCreatorDto,
-  ActiveInvitationDto,
   FamilyCreatedSummaryDto,
   MemberJoinedSummaryDto,
   MemberRoleChangedSummaryDto,
@@ -103,17 +73,6 @@ export class FamilyController {
     @Inject(FamilyService) private readonly families: FamilyService,
     @Inject(AuthSessionService) private readonly sessions: AuthSessionService,
   ) {}
-
-  @Post()
-  @ApiBody({ type: CreateFamilyRequestDto })
-  @ApiResponse({ status: 201, type: FamilySummaryDto })
-  async create(@Body() body: unknown, @Req() request: Request): Promise<FamilySummaryDto> {
-    const account = await this.sessions.current(request);
-    const input = parseBody(createFamilySchema, body);
-    const family = await this.families.createFamily(account.id, input);
-    await this.sessions.setActiveFamily(request, family.id, account.id);
-    return family;
-  }
 
   @Get()
   @ApiResponse({ status: 200, type: FamilyListResponseDto })
@@ -161,40 +120,6 @@ export class FamilyController {
     return { items: await this.families.listMembers(account.id, familyId) };
   }
 
-  @Patch(':familyId/members/:membershipId/role')
-  @ApiParam({ name: 'familyId', type: String, format: 'uuid' })
-  @ApiParam({ name: 'membershipId', type: String, format: 'uuid' })
-  @ApiBody({ type: ChangeMemberRoleRequestDto })
-  @ApiResponse({ status: 200, type: FamilyMemberDto })
-  async changeRole(
-    @Param('familyId') rawFamilyId: string,
-    @Param('membershipId') rawMembershipId: string,
-    @Body() body: unknown,
-    @Req() request: Request,
-  ): Promise<FamilyMemberDto> {
-    const familyId = parseBody(familyIdSchema, rawFamilyId);
-    const membershipId = parseBody(familyIdSchema, rawMembershipId);
-    const input = parseBody(changeMemberRoleSchema, body);
-    const account = await this.sessions.current(request);
-    return this.families.changeMemberRole(account.id, familyId, membershipId, input.role);
-  }
-
-  @Delete(':familyId/members/:membershipId')
-  @ApiParam({ name: 'familyId', type: String, format: 'uuid' })
-  @ApiParam({ name: 'membershipId', type: String, format: 'uuid' })
-  @HttpCode(204)
-  @ApiResponse({ status: 204 })
-  async removeMember(
-    @Param('familyId') rawFamilyId: string,
-    @Param('membershipId') rawMembershipId: string,
-    @Req() request: Request,
-  ): Promise<void> {
-    const familyId = parseBody(familyIdSchema, rawFamilyId);
-    const membershipId = parseBody(familyIdSchema, rawMembershipId);
-    const account = await this.sessions.current(request);
-    await this.families.removeMember(account.id, familyId, membershipId);
-  }
-
   @Delete(':familyId/membership')
   @ApiParam({ name: 'familyId', type: String, format: 'uuid' })
   @HttpCode(200)
@@ -209,46 +134,6 @@ export class FamilyController {
     const fallback = await this.sessions.reconcileActiveFamily(request, account.id);
     await this.sessions.setActiveFamily(request, fallback, account.id);
     return this.sessions.summaryForRequest(request, account);
-  }
-
-  @Post(':familyId/invitations')
-  @ApiParam({ name: 'familyId', type: String, format: 'uuid' })
-  @ApiResponse({ status: 201, type: CreatedInvitationDto })
-  async createInvitation(
-    @Param('familyId') rawFamilyId: string,
-    @Req() request: Request,
-  ): Promise<CreatedInvitationDto> {
-    const familyId = parseBody(familyIdSchema, rawFamilyId);
-    const account = await this.sessions.current(request);
-    return this.families.createInvitation(account.id, familyId);
-  }
-
-  @Get(':familyId/invitations')
-  @ApiParam({ name: 'familyId', type: String, format: 'uuid' })
-  @ApiResponse({ status: 200, type: InvitationListResponseDto })
-  async invitations(
-    @Param('familyId') rawFamilyId: string,
-    @Req() request: Request,
-  ): Promise<InvitationListResponseDto> {
-    const familyId = parseBody(familyIdSchema, rawFamilyId);
-    const account = await this.sessions.current(request);
-    return { items: await this.families.listInvitations(account.id, familyId) };
-  }
-
-  @Delete(':familyId/invitations/:invitationId')
-  @ApiParam({ name: 'familyId', type: String, format: 'uuid' })
-  @ApiParam({ name: 'invitationId', type: String, format: 'uuid' })
-  @HttpCode(204)
-  @ApiResponse({ status: 204 })
-  async revokeInvitation(
-    @Param('familyId') rawFamilyId: string,
-    @Param('invitationId') rawInvitationId: string,
-    @Req() request: Request,
-  ): Promise<void> {
-    const familyId = parseBody(familyIdSchema, rawFamilyId);
-    const invitationId = parseBody(familyIdSchema, rawInvitationId);
-    const account = await this.sessions.current(request);
-    await this.families.revokeInvitation(account.id, familyId, invitationId);
   }
 
   @Get(':familyId/activities')
@@ -266,38 +151,5 @@ export class FamilyController {
     const query = parseBody(activityQuerySchema, rawQuery);
     const account = await this.sessions.current(request);
     return this.families.listActivities(account.id, familyId, query);
-  }
-}
-
-@ApiTags('family-invitations')
-@ApiCookieAuth()
-@ApiExtraModels(...extraModels)
-@ApiResponse({ status: 400, content: problemContent })
-@ApiResponse({ status: 401, content: problemContent })
-@ApiResponse({ status: 409, content: problemContent })
-@ApiResponse({ status: 429, content: problemContent })
-@ApiResponse({ status: 503, content: problemContent })
-@Controller('family-invitations')
-export class FamilyInvitationController {
-  constructor(
-    @Inject(FamilyService) private readonly families: FamilyService,
-    @Inject(FamilyRateLimitService) private readonly rateLimits: FamilyRateLimitService,
-    @Inject(AuthSessionService) private readonly sessions: AuthSessionService,
-  ) {}
-
-  @Post('accept')
-  @HttpCode(200)
-  @ApiBody({ type: AcceptInvitationRequestDto })
-  @ApiResponse({ status: 200, type: AcceptInvitationResponseDto })
-  async accept(
-    @Body() body: unknown,
-    @Req() request: Request,
-  ): Promise<AcceptInvitationResponseDto> {
-    const account = await this.sessions.current(request);
-    await this.rateLimits.consumeInvitationAttempt(account.id, request.ip ?? 'unknown');
-    const input = parseBody(acceptInvitationSchema, body);
-    const family = await this.families.acceptInvitation(account.id, input.token, input.displayName);
-    await this.sessions.setActiveFamily(request, family.id, account.id);
-    return { family, account: this.sessions.summaryForRequest(request, account) };
   }
 }

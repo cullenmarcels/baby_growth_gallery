@@ -5,11 +5,15 @@ export type ReadinessResponse =
   paths['/api/v1/health/ready']['get']['responses'][200]['content']['application/json'];
 export type ApiProblem =
   paths['/api/v1/health/ready']['get']['responses'][503]['content']['application/problem+json'];
+export type ManagedAccount = components['schemas']['ManagedAccountDto'];
+export type ManagedAccountDetail = components['schemas']['ManagedAccountDetailDto'];
+export type ManagedFamilyListItem = components['schemas']['ManagedFamilyListItemDto'];
+export type ManagedFamily = components['schemas']['ManagedFamilyDto'];
+export type ManagedFamilyDetail = components['schemas']['ManagedFamilyDetailDto'];
+export type IssuedPassword = components['schemas']['IssuedPasswordDto'];
 export type AccountSummary = components['schemas']['AccountSummaryDto'];
-export type VerificationChallenge = components['schemas']['VerificationChallengeResponseDto'];
 export type FamilySummary = components['schemas']['FamilySummaryDto'];
 export type FamilyMember = components['schemas']['FamilyMemberDto'];
-export type ActiveInvitation = components['schemas']['ActiveInvitationDto'];
 export type FamilyActivityPage = components['schemas']['FamilyActivityPageDto'];
 export type PhotoUploadedActivitySummaryV1 =
   components['schemas']['PhotoUploadedActivitySummaryV1Dto'];
@@ -113,25 +117,6 @@ export function createApiClient({ baseUrl, fetchImpl }: ApiClientOptions) {
       const result = await client.GET('/api/v1/auth/session');
       return requireData<AccountSummary>(result.data, result.error, result.response);
     },
-    async requestChallenge(
-      body: components['schemas']['VerificationChallengeRequestDto'],
-    ): Promise<VerificationChallenge> {
-      const result = await client.POST('/api/v1/auth/verification-challenges', {
-        body,
-        headers: await mutationHeaders(),
-      });
-      return requireData<VerificationChallenge>(result.data, result.error, result.response);
-    },
-    async register(body: components['schemas']['RegisterRequestDto']): Promise<AccountSummary> {
-      const result = await client.POST('/api/v1/auth/register', {
-        body,
-        headers: await mutationHeaders(),
-      });
-      const account = requireData<AccountSummary>(result.data, result.error, result.response);
-      csrfToken = undefined;
-      await getCsrfToken();
-      return account;
-    },
     async loginPassword(
       body: components['schemas']['PasswordLoginRequestDto'],
     ): Promise<AccountSummary> {
@@ -144,23 +129,16 @@ export function createApiClient({ baseUrl, fetchImpl }: ApiClientOptions) {
       await getCsrfToken();
       return account;
     },
-    async loginCode(body: components['schemas']['CodeLoginRequestDto']): Promise<AccountSummary> {
-      const result = await client.POST('/api/v1/auth/login/code', {
+    async changePassword(
+      body: components['schemas']['PasswordChangeRequestDto'],
+    ): Promise<AccountSummary> {
+      const result = await client.POST('/api/v1/auth/password/change', {
         body,
         headers: await mutationHeaders(),
       });
       const account = requireData<AccountSummary>(result.data, result.error, result.response);
       csrfToken = undefined;
-      await getCsrfToken();
       return account;
-    },
-    async resetPassword(body: components['schemas']['PasswordResetRequestDto']): Promise<void> {
-      const result = await client.POST('/api/v1/auth/password/reset', {
-        body,
-        headers: await mutationHeaders(),
-      });
-      if (!result.response.ok) requireData(result.data, result.error, result.response);
-      csrfToken = undefined;
     },
     async logout(): Promise<void> {
       const result = await client.POST('/api/v1/auth/logout', {
@@ -177,14 +155,108 @@ export function createApiClient({ baseUrl, fetchImpl }: ApiClientOptions) {
         result.response,
       );
     },
-    async createFamily(
-      body: components['schemas']['CreateFamilyRequestDto'],
-    ): Promise<FamilySummary> {
-      const result = await client.POST('/api/v1/families', {
+    async listManagedAccounts(): Promise<ManagedAccount[]> {
+      const result = await client.GET('/api/v1/management/accounts');
+      return requireData<ManagedAccount[]>(result.data, result.error, result.response);
+    },
+    async getManagedAccount(accountId: string): Promise<ManagedAccountDetail> {
+      const result = await client.GET('/api/v1/management/accounts/{accountId}', {
+        params: { path: { accountId } },
+      });
+      return requireData<ManagedAccountDetail>(result.data, result.error, result.response);
+    },
+    async createManagedAccount(
+      body: components['schemas']['ManagedAccountInputDto'],
+    ): Promise<IssuedPassword> {
+      const result = await client.POST('/api/v1/management/accounts', {
         body,
         headers: await mutationHeaders(),
       });
-      return requireData<FamilySummary>(result.data, result.error, result.response);
+      return requireData<IssuedPassword>(result.data, result.error, result.response);
+    },
+    async setManagedAccountStatus(
+      accountId: string,
+      body: components['schemas']['AccountStatusInputDto'],
+    ): Promise<ManagedAccount> {
+      const result = await client.PATCH('/api/v1/management/accounts/{accountId}/status', {
+        params: { path: { accountId } },
+        body,
+        headers: await mutationHeaders(),
+      });
+      return requireData<ManagedAccount>(result.data, result.error, result.response);
+    },
+    async resetManagedAccount(accountId: string): Promise<IssuedPassword> {
+      const result = await client.POST('/api/v1/management/accounts/{accountId}/password', {
+        params: { path: { accountId } },
+        headers: await mutationHeaders(),
+      });
+      return requireData<IssuedPassword>(result.data, result.error, result.response);
+    },
+    async listManagedFamilies(): Promise<ManagedFamilyListItem[]> {
+      const result = await client.GET('/api/v1/management/families');
+      return requireData<ManagedFamilyListItem[]>(result.data, result.error, result.response);
+    },
+    async createManagedFamily(
+      body: components['schemas']['ManagedFamilyInputDto'],
+    ): Promise<ManagedFamily> {
+      const result = await client.POST('/api/v1/management/families', {
+        body,
+        headers: await mutationHeaders(),
+      });
+      return requireData<ManagedFamily>(result.data, result.error, result.response);
+    },
+    async getManagedFamily(familyId: string): Promise<ManagedFamilyDetail> {
+      const result = await client.GET('/api/v1/management/families/{familyId}', {
+        params: { path: { familyId } },
+      });
+      return requireData<ManagedFamilyDetail>(result.data, result.error, result.response);
+    },
+    async createFamilyAccount(
+      familyId: string,
+      body: components['schemas']['ManagedAccountInputDto'],
+    ): Promise<IssuedPassword> {
+      const result = await client.POST('/api/v1/management/families/{familyId}/accounts', {
+        params: { path: { familyId } },
+        body,
+        headers: await mutationHeaders(),
+      });
+      return requireData<IssuedPassword>(result.data, result.error, result.response);
+    },
+    async addManagedFamilyMember(
+      familyId: string,
+      body: components['schemas']['AddMemberDto'],
+    ): Promise<void> {
+      const result = await client.POST('/api/v1/management/families/{familyId}/members', {
+        params: { path: { familyId } },
+        body,
+        headers: await mutationHeaders(),
+      });
+      if (!result.response.ok) requireData(result.data, result.error, result.response);
+    },
+    async setManagedMemberRole(
+      familyId: string,
+      membershipId: string,
+      body: components['schemas']['MemberRoleInputDto'],
+    ): Promise<void> {
+      const result = await client.PATCH(
+        '/api/v1/management/families/{familyId}/members/{membershipId}',
+        { params: { path: { familyId, membershipId } }, body, headers: await mutationHeaders() },
+      );
+      if (!result.response.ok) requireData(result.data, result.error, result.response);
+    },
+    async removeManagedMember(familyId: string, membershipId: string): Promise<void> {
+      const result = await client.DELETE(
+        '/api/v1/management/families/{familyId}/members/{membershipId}',
+        { params: { path: { familyId, membershipId } }, headers: await mutationHeaders() },
+      );
+      if (!result.response.ok) requireData(result.data, result.error, result.response);
+    },
+    async resetManagedMember(familyId: string, membershipId: string): Promise<IssuedPassword> {
+      const result = await client.POST(
+        '/api/v1/management/families/{familyId}/members/{membershipId}/password',
+        { params: { path: { familyId, membershipId } }, headers: await mutationHeaders() },
+      );
+      return requireData<IssuedPassword>(result.data, result.error, result.response);
     },
     async activateFamily(familyId: string): Promise<AccountSummary> {
       const result = await client.POST('/api/v1/families/{familyId}/activate', {
@@ -211,76 +283,12 @@ export function createApiClient({ baseUrl, fetchImpl }: ApiClientOptions) {
         result.response,
       );
     },
-    async changeFamilyMemberRole(
-      familyId: string,
-      membershipId: string,
-      body: components['schemas']['ChangeMemberRoleRequestDto'],
-    ): Promise<FamilyMember> {
-      const result = await client.PATCH('/api/v1/families/{familyId}/members/{membershipId}/role', {
-        params: { path: { familyId, membershipId } },
-        body,
-        headers: await mutationHeaders(),
-      });
-      return requireData<FamilyMember>(result.data, result.error, result.response);
-    },
-    async removeFamilyMember(familyId: string, membershipId: string): Promise<void> {
-      const result = await client.DELETE('/api/v1/families/{familyId}/members/{membershipId}', {
-        params: { path: { familyId, membershipId } },
-        headers: await mutationHeaders(),
-      });
-      if (!result.response.ok) requireData(result.data, result.error, result.response);
-    },
     async leaveFamily(familyId: string): Promise<AccountSummary> {
       const result = await client.DELETE('/api/v1/families/{familyId}/membership', {
         params: { path: { familyId } },
         headers: await mutationHeaders(),
       });
       return requireData<AccountSummary>(result.data, result.error, result.response);
-    },
-    async createFamilyInvitation(
-      familyId: string,
-    ): Promise<components['schemas']['CreatedInvitationDto']> {
-      const result = await client.POST('/api/v1/families/{familyId}/invitations', {
-        params: { path: { familyId } },
-        headers: await mutationHeaders(),
-      });
-      return requireData<components['schemas']['CreatedInvitationDto']>(
-        result.data,
-        result.error,
-        result.response,
-      );
-    },
-    async listFamilyInvitations(
-      familyId: string,
-    ): Promise<components['schemas']['InvitationListResponseDto']> {
-      const result = await client.GET('/api/v1/families/{familyId}/invitations', {
-        params: { path: { familyId } },
-      });
-      return requireData<components['schemas']['InvitationListResponseDto']>(
-        result.data,
-        result.error,
-        result.response,
-      );
-    },
-    async revokeFamilyInvitation(familyId: string, invitationId: string): Promise<void> {
-      const result = await client.DELETE('/api/v1/families/{familyId}/invitations/{invitationId}', {
-        params: { path: { familyId, invitationId } },
-        headers: await mutationHeaders(),
-      });
-      if (!result.response.ok) requireData(result.data, result.error, result.response);
-    },
-    async acceptFamilyInvitation(
-      body: components['schemas']['AcceptInvitationRequestDto'],
-    ): Promise<components['schemas']['AcceptInvitationResponseDto']> {
-      const result = await client.POST('/api/v1/family-invitations/accept', {
-        body,
-        headers: await mutationHeaders(),
-      });
-      return requireData<components['schemas']['AcceptInvitationResponseDto']>(
-        result.data,
-        result.error,
-        result.response,
-      );
     },
     async listFamilyActivities(
       familyId: string,

@@ -32,7 +32,7 @@ export class BabyPolicyService {
   }
 
   requireManager(membership: FamilyMembership): void {
-    if (!['OWNER', 'ADMIN'].includes(membership.role)) {
+    if (!(membership.role === 'ADMIN')) {
       throw new ApiProblemException(
         403,
         'You do not have permission to manage baby profiles.',

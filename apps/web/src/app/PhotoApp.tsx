@@ -774,9 +774,7 @@ export function PhotoManagePage(): React.JSX.Element {
     queryFn: () => api.getFamily(familyId),
     enabled: Boolean(familyId),
   });
-  const canManageFamily = Boolean(
-    family.data && ['OWNER', 'ADMIN'].includes(family.data.currentMembership.role),
-  );
+  const canManageFamily = Boolean(family.data && family.data.currentMembership.role === 'ADMIN');
   const photos = useInfiniteQuery({
     queryKey: photoKeys.manage(familyId, babyId, scope, status),
     queryFn: ({ pageParam }) =>

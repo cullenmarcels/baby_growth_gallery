@@ -1,17 +1,5 @@
-import {
-  expect,
-  request as playwrightRequest,
-  test,
-  type APIRequestContext,
-} from '@playwright/test';
-import { randomInt } from 'node:crypto';
-
-const apiBaseUrl = process.env.E2E_API_BASE_URL ?? 'http://127.0.0.1:3000';
-const webOrigin = process.env.STACK_BASE_URL ?? 'http://127.0.0.1:5173';
-
-function syntheticPhone(): string {
-  return `137${randomInt(10_000_000, 100_000_000)}`;
-}
+import { expect, test } from '@playwright/test';
+import { createManagedFamily, post, provisionAccount, type TestAccount } from './managed-fixtures';
 
 function shanghaiToday(): string {
   return new Date(Date.now() + 8 * 3_600_000).toISOString().slice(0, 10);
@@ -21,61 +9,14 @@ function shanghaiTomorrow(): string {
   return new Date(Date.now() + 8 * 3_600_000 + 86_400_000).toISOString().slice(0, 10);
 }
 
-async function csrf(context: APIRequestContext): Promise<string> {
-  const response = await context.get('/api/v1/auth/csrf');
-  expect(response.ok()).toBe(true);
-  return ((await response.json()) as { csrfToken: string }).csrfToken;
-}
-
-async function registerAccount(): Promise<{ context: APIRequestContext; csrf: string }> {
-  const context = await playwrightRequest.newContext({
-    baseURL: apiBaseUrl,
-    extraHTTPHeaders: {
-      'X-Forwarded-For': `198.24.${randomInt(0, 256)}.${randomInt(1, 255)}`,
-    },
-  });
-  const phone = syntheticPhone();
-  const token = await csrf(context);
-  const challenge = await context.post('/api/v1/auth/verification-challenges', {
-    headers: { Origin: webOrigin, 'x-csrf-token': token },
-    data: { phone, purpose: 'REGISTER' },
-  });
-  expect(challenge.status()).toBe(202);
-  const registration = await context.post('/api/v1/auth/register', {
-    headers: { Origin: webOrigin, 'x-csrf-token': token },
-    data: {
-      phone,
-      challengeId: ((await challenge.json()) as { challengeId: string }).challengeId,
-      code: '246810',
-      password: 'abcdef',
-      termsVersion: 'draft-2026-09-10',
-      privacyVersion: 'draft-2026-09-10',
-    },
-  });
-  expect(registration.status()).toBe(201);
-  return { context, csrf: await csrf(context) };
-}
-
-async function post(context: APIRequestContext, path: string, token: string, data: unknown) {
-  return context.post(path, {
-    headers: { Origin: webOrigin, 'x-csrf-token': token },
-    data,
-  });
-}
-
 async function createFamily(
-  owner: { context: APIRequestContext; csrf: string },
+  owner: TestAccount,
   name: string,
   babyName: string,
   birthDate: string,
   weight: number,
 ): Promise<{ familyId: string; babyId: string }> {
-  const familyResponse = await post(owner.context, '/api/v1/families', owner.csrf, {
-    name,
-    displayName: '合成创建者',
-  });
-  expect(familyResponse.status()).toBe(201);
-  const familyId = ((await familyResponse.json()) as { id: string }).id;
+  const familyId = (await createManagedFamily(owner, name, '合成创建者')).id;
   const babyResponse = await post(
     owner.context,
     `/api/v1/families/${familyId}/babies`,
@@ -100,7 +41,7 @@ async function createFamily(
 }
 
 test('home shows live summaries and keeps two family contexts separate', async ({ page }) => {
-  const owner = await registerAccount();
+  const owner = await provisionAccount();
   try {
     const first = await createFamily(owner, '合成家庭一', '合成宝宝一', '2024-01-01', 12.34);
     const second = await createFamily(owner, '合成家庭二', '合成宝宝二', '2025-01-01', 9.87);

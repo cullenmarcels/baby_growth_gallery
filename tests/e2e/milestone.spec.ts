@@ -1,84 +1,26 @@
+import { expect, test } from '@playwright/test';
 import {
-  expect,
-  request as playwrightRequest,
-  test,
-  type APIRequestContext,
-} from '@playwright/test';
-import { randomInt, randomUUID } from 'node:crypto';
-
-const apiBaseUrl = process.env.E2E_API_BASE_URL ?? 'http://127.0.0.1:3000';
-const webOrigin = process.env.STACK_BASE_URL ?? 'http://127.0.0.1:5173';
-
-function syntheticPhone(): string {
-  return `137${randomInt(10_000_000, 100_000_000)}`;
-}
+  assignMember,
+  changeMemberRole,
+  createManagedFamily,
+  post,
+  provisionAccount,
+  type TestAccount,
+  webOrigin,
+} from './managed-fixtures';
+import { randomUUID } from 'node:crypto';
 
 function localToday(): string {
   return new Date(Date.now() + 8 * 3_600_000).toISOString().slice(0, 10);
 }
 
-async function csrf(context: APIRequestContext): Promise<string> {
-  const response = await context.get('/api/v1/auth/csrf');
-  expect(response.ok()).toBe(true);
-  return ((await response.json()) as { csrfToken: string }).csrfToken;
-}
-
-async function registerAccount(): Promise<{ context: APIRequestContext; csrf: string }> {
-  const context = await playwrightRequest.newContext({
-    baseURL: apiBaseUrl,
-    extraHTTPHeaders: {
-      'X-Forwarded-For': `198.23.${randomInt(0, 256)}.${randomInt(1, 255)}`,
-    },
-  });
-  const phone = syntheticPhone();
-  const token = await csrf(context);
-  const challenge = await context.post('/api/v1/auth/verification-challenges', {
-    headers: { Origin: webOrigin, 'x-csrf-token': token },
-    data: { phone, purpose: 'REGISTER' },
-  });
-  const challengeId = ((await challenge.json()) as { challengeId: string }).challengeId;
-  const registration = await context.post('/api/v1/auth/register', {
-    headers: { Origin: webOrigin, 'x-csrf-token': token },
-    data: {
-      phone,
-      challengeId,
-      code: '246810',
-      password: 'abcdef',
-      termsVersion: 'draft-2026-09-10',
-      privacyVersion: 'draft-2026-09-10',
-    },
-  });
-  expect(registration.status()).toBe(201);
-  return { context, csrf: await csrf(context) };
-}
-
-async function post(context: APIRequestContext, path: string, token: string, data?: unknown) {
-  return context.post(path, {
-    headers: { Origin: webOrigin, 'x-csrf-token': token },
-    ...(data === undefined ? {} : { data }),
-  });
-}
-
 async function joinFamily(
-  owner: { context: APIRequestContext; csrf: string },
-  member: { context: APIRequestContext; csrf: string },
+  _owner: TestAccount,
+  member: TestAccount,
   familyId: string,
   displayName: string,
 ): Promise<void> {
-  const invitation = await post(
-    owner.context,
-    `/api/v1/families/${familyId}/invitations`,
-    owner.csrf,
-  );
-  const token = ((await invitation.json()) as { token: string }).token;
-  expect(
-    (
-      await post(member.context, '/api/v1/family-invitations/accept', member.csrf, {
-        token,
-        displayName,
-      })
-    ).status(),
-  ).toBe(200);
+  expect(await assignMember(familyId, member.username, displayName)).toBe(204);
 }
 
 test('shares milestones, enforces author management, and updates progress and timeline', async ({
@@ -86,14 +28,10 @@ test('shares milestones, enforces author management, and updates progress and ti
 }, testInfo) => {
   void _request;
   test.skip(testInfo.project.name !== 'chromium-1440', 'API contract is viewport-independent');
-  const owner = await registerAccount();
-  const author = await registerAccount();
-  const reader = await registerAccount();
-  const familyResponse = await post(owner.context, '/api/v1/families', owner.csrf, {
-    name: '合成里程碑家庭',
-    displayName: '创建者',
-  });
-  const familyId = ((await familyResponse.json()) as { id: string }).id;
+  const owner = await provisionAccount();
+  const author = await provisionAccount();
+  const reader = await provisionAccount();
+  const familyId = (await createManagedFamily(owner, '合成里程碑家庭', '创建者')).id;
   const babyResponse = await post(
     owner.context,
     `/api/v1/families/${familyId}/babies`,
@@ -188,14 +126,7 @@ test('shares milestones, enforces author management, and updates progress and ti
     (await members.json()) as { items: Array<{ id: string; displayName: string }> }
   ).items.find((item) => item.displayName === '只读成员')?.id;
   expect(readerMembershipId).toBeTruthy();
-  const promoted = await owner.context.patch(
-    `/api/v1/families/${familyId}/members/${readerMembershipId}/role`,
-    {
-      headers: { Origin: webOrigin, 'x-csrf-token': owner.csrf },
-      data: { role: 'ADMIN' },
-    },
-  );
-  expect(promoted.status()).toBe(200);
+  expect(await changeMemberRole(familyId, readerMembershipId!, 'ADMIN')).toBe(204);
   const adminUpdate = await reader.context.patch(`${base}/milestones/${created.id}`, {
     headers: { Origin: webOrigin, 'x-csrf-token': reader.csrf },
     data: { expectedVersion: ownerUpdated.version, title: '管理员修改' },
@@ -284,13 +215,8 @@ test('rejects invalid milestone dates and photo selections', async ({
 }, testInfo) => {
   void _request;
   test.skip(testInfo.project.name !== 'chromium-1440', 'API contract is viewport-independent');
-  const owner = await registerAccount();
-  const familyResponse = await post(owner.context, '/api/v1/families', owner.csrf, {
-    name: '里程碑校验家庭',
-    displayName: '创建者',
-  });
-  expect(familyResponse.status()).toBe(201);
-  const familyId = ((await familyResponse.json()) as { id: string }).id;
+  const owner = await provisionAccount();
+  const familyId = (await createManagedFamily(owner, '里程碑校验家庭', '创建者')).id;
   const babyResponse = await post(
     owner.context,
     `/api/v1/families/${familyId}/babies`,

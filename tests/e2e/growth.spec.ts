@@ -1,95 +1,29 @@
+import { expect, test } from '@playwright/test';
 import {
-  expect,
-  request as playwrightRequest,
-  test,
-  type APIRequestContext,
-} from '@playwright/test';
-import { randomInt } from 'node:crypto';
-
-const apiBaseUrl = process.env.E2E_API_BASE_URL ?? 'http://127.0.0.1:3000';
-const webOrigin = process.env.STACK_BASE_URL ?? 'http://127.0.0.1:5173';
-
-function syntheticPhone(): string {
-  return `134${randomInt(10_000_000, 100_000_000)}`;
-}
+  assignMember,
+  createManagedFamily,
+  post,
+  provisionAccount,
+  type TestAccount,
+  webOrigin,
+} from './managed-fixtures';
 
 function localToday(): string {
   return new Date(Date.now() + 8 * 3_600_000).toISOString().slice(0, 10);
 }
 
-async function csrf(context: APIRequestContext): Promise<string> {
-  const response = await context.get('/api/v1/auth/csrf');
-  expect(response.ok()).toBe(true);
-  return ((await response.json()) as { csrfToken: string }).csrfToken;
-}
-
-async function registerAccount(): Promise<{ context: APIRequestContext; csrf: string }> {
-  const context = await playwrightRequest.newContext({
-    baseURL: apiBaseUrl,
-    extraHTTPHeaders: {
-      'X-Forwarded-For': `198.23.${randomInt(0, 256)}.${randomInt(1, 255)}`,
-    },
-  });
-  const phone = syntheticPhone();
-  const token = await csrf(context);
-  const challenge = await context.post('/api/v1/auth/verification-challenges', {
-    headers: { Origin: webOrigin, 'x-csrf-token': token },
-    data: { phone, purpose: 'REGISTER' },
-  });
-  expect(challenge.status()).toBe(202);
-  const challengeId = ((await challenge.json()) as { challengeId: string }).challengeId;
-  const registration = await context.post('/api/v1/auth/register', {
-    headers: { Origin: webOrigin, 'x-csrf-token': token },
-    data: {
-      phone,
-      challengeId,
-      code: '246810',
-      password: 'abcdef',
-      termsVersion: 'draft-2026-09-10',
-      privacyVersion: 'draft-2026-09-10',
-    },
-  });
-  expect(registration.status()).toBe(201);
-  return { context, csrf: await csrf(context) };
-}
-
-async function post(context: APIRequestContext, path: string, token: string, data?: unknown) {
-  return context.post(path, {
-    headers: { Origin: webOrigin, 'x-csrf-token': token },
-    ...(data === undefined ? {} : { data }),
-  });
-}
-
 async function joinFamily(
-  owner: { context: APIRequestContext; csrf: string },
-  member: { context: APIRequestContext; csrf: string },
+  _owner: TestAccount,
+  member: TestAccount,
   familyId: string,
   displayName: string,
 ): Promise<void> {
-  const invitation = await post(
-    owner.context,
-    `/api/v1/families/${familyId}/invitations`,
-    owner.csrf,
-  );
-  const token = ((await invitation.json()) as { token: string }).token;
-  expect(
-    (
-      await post(member.context, '/api/v1/family-invitations/accept', member.csrf, {
-        token,
-        displayName,
-      })
-    ).status(),
-  ).toBe(200);
+  expect(await assignMember(familyId, member.username, displayName)).toBe(204);
 }
 
 async function setupGrowth() {
-  const owner = await registerAccount();
-  const created = await post(owner.context, '/api/v1/families', owner.csrf, {
-    name: '合成成长家庭',
-    displayName: '成长家长',
-  });
-  expect(created.status()).toBe(201);
-  const familyId = ((await created.json()) as { id: string }).id;
+  const owner = await provisionAccount();
+  const familyId = (await createManagedFamily(owner, '合成成长家庭', '成长家长')).id;
   const birthDate = new Date(Date.now() - 366 * 86400000).toISOString().slice(0, 10);
   const babyResponse = await post(
     owner.context,
@@ -277,9 +211,9 @@ test('growth UI supports partial entry, real curves, recycle, recovery and admin
 
 test('growth authorization isolates families, authors and administrator recycle restrictions', async () => {
   const { owner, familyId, babyId, base } = await setupGrowth();
-  const author = await registerAccount(),
-    reader = await registerAccount(),
-    outsider = await registerAccount();
+  const author = await provisionAccount(),
+    reader = await provisionAccount(),
+    outsider = await provisionAccount();
   try {
     await joinFamily(owner, author, familyId, '合成记录者');
     await joinFamily(owner, reader, familyId, '合成观察者');

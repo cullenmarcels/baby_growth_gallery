@@ -90,7 +90,8 @@ export class FamilyActivityService {
         occurredAt: row.occurredAt.toISOString(),
         actor: {
           membershipId: row.actor?.id ?? null,
-          displayName: row.actor?.displayName ?? '已退出成员',
+          displayName:
+            row.actor?.displayName ?? (row.actorMembershipId === null ? '系统管理' : '已退出成员'),
         },
         ...(row.subjectType && row.subjectId
           ? { subject: { type: row.subjectType, id: row.subjectId } }

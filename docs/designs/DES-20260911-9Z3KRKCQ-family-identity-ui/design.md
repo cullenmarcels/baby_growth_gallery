@@ -2,12 +2,12 @@
 id: DES-20260911-9Z3KRKCQ
 type: design
 title: "家庭身份、成员权限与动态界面补充设计"
-status: active
+status: superseded
 created_at: 2026-09-11T10:21:26+08:00
-updated_at: 2026-09-11T10:21:26+08:00
+updated_at: 2026-11-11T13:30:00+08:00
 related_ids: [DES-20260908-ZVZKM07B, SPEC-20260911-3YV4GCRZ, PLAN-20260911-X27F6QNT]
 supersedes: []
-superseded_by: []
+superseded_by: [DES-20261111-Q14HTQJ4]
 ---
 
 # 家庭身份、成员权限与动态界面补充设计

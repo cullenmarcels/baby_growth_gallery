@@ -7,7 +7,10 @@ const auth = vi.hoisted(() => ({
   account: {
     id: '00000000-0000-4000-8000-000000000001',
     displayName: null,
-    phoneMasked: '+86 136****0000',
+    username: 'fixture-user',
+    siteRole: 'USER' as const,
+    mustChangePassword: false,
+    mustAcceptTerms: false,
     activeFamilyId: '00000000-0000-4000-8000-000000000010',
     activeBabyId: '00000000-0000-4000-8000-000000000020',
   },
@@ -197,7 +200,7 @@ describe('photo upload application states', () => {
       currentMembership: {
         id: '00000000-0000-4000-8000-000000000011',
         displayName: '合成成员',
-        role: 'OWNER',
+        role: 'ADMIN',
       },
     });
     const first = {

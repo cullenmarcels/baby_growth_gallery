@@ -1,6 +1,6 @@
 # baby_growth_gallery
 
-小福宝成长记的前后端分离 Monorepo。工程基础及 Plan A–E 已归档；Plan E 已通过 PR #25 集成到 `develop`，提供已发布照片图集、按月时间轴、照片详情、宝宝头像选择、照片管理瀑布流与相关界面修订。项目现已具备手机号认证、Redis 服务端会话、多家庭与多宝宝身份，以及私有照片直传、真实内容校验、去元数据 WebP 变体、创建者私有草稿、家庭发布和 30 天回收站。时间轴目前只展示照片，尚未接入里程碑。
+小福宝成长记是家庭使用的成长记录网站。由超管和家庭管理员开户，家人使用账户名与密码登录，可在所属家庭中使用宝宝档案、照片、时间轴、里程碑和成长记录。
 
 ## 环境要求
 
@@ -15,6 +15,8 @@ pnpm install --frozen-lockfile
 pnpm infra:up
 Copy-Item apps/api/.env.example apps/api/.env
 Copy-Item apps/web/.env.example apps/web/.env
+pnpm --filter @baby-growth-gallery/api exec prisma migrate deploy
+pnpm --filter @baby-growth-gallery/api super-admin create
 pnpm dev
 ```
 
@@ -26,7 +28,7 @@ pnpm dev
 - Swagger UI：<http://localhost:3000/api/docs>
 - MinIO Console：<http://localhost:9001>
 
-默认开发凭据和固定验证码 `246810` 只用于本机开发，不会由 API 或页面回显，也不可用于生产。生产环境禁止启用固定验证码，并要求单独配置足够强度的 Session 与 HMAC 秘密。所有运行参数和占位值见根目录及各应用的 `.env.example`。
+首次使用空数据库时，先迁移再在终端初始化超管，密码输入隐藏。首位超管登录后更换临时密码，再从 /admin 开户和创建家庭。运行参数见根目录和各应用的 .env.example。已有本地旧版数据时，先按[重建与回退手册](docs/specs/SPEC-20261111-5ZY6HCR3-managed-family-accounts/spec.md#本地开发环境重建与回退)备份和演练。
 
 照片原图只直传私有 MinIO/S3 隔离前缀，处理后删除；浏览器签名端点通过 `S3_PUBLIC_ENDPOINT` 单独配置。本地 MinIO API 不直接暴露，浏览器经存储网关访问；网关把 CORS Origin 固定为 `WEB_ORIGIN`，且只允许 `POST/GET/HEAD`。真实 S3 部署必须在私有 Bucket 配置等价 CORS。HEIC/HEIF 的 LGPL WASM 依赖当前只获准用于封闭测试，公开发布前必须按 [`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md) 完成许可复核。
 
@@ -48,7 +50,7 @@ pnpm dev
 | `pnpm stack:up` / `pnpm stack:down`                         | 构建并启停完整容器栈            |
 | `pnpm api:generate`                                         | 从 OpenAPI 确定性生成客户端类型 |
 | `pnpm lint` / `pnpm typecheck` / `pnpm test` / `pnpm build` | 工程质量检查                    |
-| `pnpm e2e`                                                  | Playwright 端到端检查           |
+| `pnpm e2e` | Playwright 端到端检查，需设置隔离的 E2E_DATABASE_URL |
 | `pnpm validate`                                             | 聚合工程检查与项目知识库验证    |
 
 ## 目录

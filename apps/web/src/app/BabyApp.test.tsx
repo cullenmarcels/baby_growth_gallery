@@ -8,7 +8,10 @@ const auth = vi.hoisted(() => ({
   account: {
     id: '00000000-0000-4000-8000-000000000001',
     displayName: null,
-    phoneMasked: '+86 136****0000',
+    username: 'fixture-user',
+    siteRole: 'USER' as const,
+    mustChangePassword: false,
+    mustAcceptTerms: false,
     activeFamilyId: '00000000-0000-4000-8000-000000000010' as string | null,
     activeBabyId: null as string | null,
   },
@@ -24,7 +27,7 @@ import { BabyCreatePage, BabyEntryRedirect, BabyHomePage, BabyManagePage } from 
 const familyId = '00000000-0000-4000-8000-000000000010';
 const babyId = '00000000-0000-4000-8000-000000000020';
 
-function family(role: 'OWNER' | 'ADMIN' | 'MEMBER' = 'OWNER') {
+function family(role: 'ADMIN' | 'MEMBER' = 'ADMIN') {
   return {
     id: familyId,
     name: '合成家庭',

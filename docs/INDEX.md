@@ -18,11 +18,11 @@
 | `DES-20260908-ZVZKM07B` | `design` | 小福宝成长记 UI 设计基线 | `active` | `[]` | `[]` | [source](./designs/DES-20260908-ZVZKM07B-baby-growth-ui/design.md) |
 | `SPEC-20260908-5BD26QCA` | `spec` | 前后端分离 Monorepo 工程基础规格 | `active` | `[]` | `[]` | [source](./specs/SPEC-20260908-5BD26QCA-project-foundation/spec.md) |
 | `SPEC-20260909-ASMC5N7Z` | `spec` | 五层分支治理与晋升保护规格 | `active` | `[]` | `[]` | [source](./specs/SPEC-20260909-ASMC5N7Z-branch-governance/spec.md) |
-| `DES-20260910-V9P4SBX8` | `design` | 账号认证与会话界面补充设计 | `active` | `[]` | `[]` | [source](./designs/DES-20260910-V9P4SBX8-auth-session-ui/design.md) |
+| `DES-20260910-V9P4SBX8` | `design` | 账号认证与会话界面补充设计 | `superseded` | `[]` | `[DES-20261111-Q14HTQJ4]` | [source](./designs/DES-20260910-V9P4SBX8-auth-session-ui/design.md) |
 | `SPEC-20260910-TAMMQYAH` | `spec` | 手机号认证与 Redis 会话规格 | `superseded` | `[]` | `[SPEC-20260910-VP1CDG7N]` | [source](./specs/SPEC-20260910-TAMMQYAH-auth-session/spec.md) |
-| `SPEC-20260910-VP1CDG7N` | `spec` | 手机号认证与 Redis 会话规格（密码长度修订） | `active` | `[SPEC-20260910-TAMMQYAH]` | `[]` | [source](./specs/SPEC-20260910-VP1CDG7N-auth-session-password-revision/spec.md) |
-| `DES-20260911-9Z3KRKCQ` | `design` | 家庭身份、成员权限与动态界面补充设计 | `active` | `[]` | `[]` | [source](./designs/DES-20260911-9Z3KRKCQ-family-identity-ui/design.md) |
-| `SPEC-20260911-3YV4GCRZ` | `spec` | 家庭身份、成员权限、单次邀请与家庭动态规格 | `active` | `[]` | `[]` | [source](./specs/SPEC-20260911-3YV4GCRZ-family-identity/spec.md) |
+| `SPEC-20260910-VP1CDG7N` | `spec` | 手机号认证与 Redis 会话规格（密码长度修订） | `superseded` | `[SPEC-20260910-TAMMQYAH]` | `[SPEC-20261111-5ZY6HCR3]` | [source](./specs/SPEC-20260910-VP1CDG7N-auth-session-password-revision/spec.md) |
+| `DES-20260911-9Z3KRKCQ` | `design` | 家庭身份、成员权限与动态界面补充设计 | `superseded` | `[]` | `[DES-20261111-Q14HTQJ4]` | [source](./designs/DES-20260911-9Z3KRKCQ-family-identity-ui/design.md) |
+| `SPEC-20260911-3YV4GCRZ` | `spec` | 家庭身份、成员权限、单次邀请与家庭动态规格 | `superseded` | `[]` | `[SPEC-20261111-5ZY6HCR3]` | [source](./specs/SPEC-20260911-3YV4GCRZ-family-identity/spec.md) |
 | `DES-20260915-S2PV4FM8` | `design` | 宝宝成长业务闭环界面补充设计 | `active` | `[]` | `[]` | [source](./designs/DES-20260915-S2PV4FM8-baby-growth-mvp-ui/design.md) |
 | `SPEC-20260915-8RKJ7RGM` | `spec` | 首个宝宝成长记录业务里程碑规格 | `active` | `[]` | `[]` | [source](./specs/SPEC-20260915-8RKJ7RGM-baby-growth-mvp/spec.md) |
 | `DES-20260916-4XCFYD80` | `design` | 照片上传流程与管理中心界面补充设计 | `superseded` | `[]` | `[DES-20260917-8EVTR3RJ]` | [source](./designs/DES-20260916-4XCFYD80-photo-upload-ui/design.md) |
@@ -42,6 +42,10 @@
 | `SPEC-20261022-17HX5RTZ` | `spec` | 成长数据、WHO 228 月参考与记录回收站规格 | `active` | `[]` | `[]` | [source](./specs/SPEC-20261022-17HX5RTZ-growth-records/spec.md) |
 | `DES-20261030-TSASQH7P` | `design` | '宝宝首页数据聚合界面设计' | `active` | `[]` | `[]` | [source](./designs/DES-20261030-TSASQH7P-homepage-aggregation/design.md) |
 | `SPEC-20261030-VJ05H0TV` | `spec` | '宝宝首页数据聚合规格' | `active` | `[]` | `[]` | [source](./specs/SPEC-20261030-VJ05H0TV-homepage-aggregation/spec.md) |
+| `DES-20261111-Q14HTQJ4` | `design` | 家庭专用登录和管理界面 | `superseded` | `[DES-20260910-V9P4SBX8, DES-20260911-9Z3KRKCQ]` | `[DES-20261111-9KTXT0TA]` | [source](./designs/DES-20261111-Q14HTQJ4-managed-family-accounts/design.md) |
+| `SPEC-20261111-5ZY6HCR3` | `spec` | 家庭专用账号与三级权限 | `superseded` | `[SPEC-20260910-VP1CDG7N, SPEC-20260911-3YV4GCRZ]` | `[SPEC-20261111-H7J6WEKD]` | [source](./specs/SPEC-20261111-5ZY6HCR3-managed-family-accounts/spec.md) |
+| `DES-20261111-9KTXT0TA` | `design` | 家庭专用账号与超管后台 | `active` | `[DES-20261111-Q14HTQJ4]` | `[]` | [source](./designs/DES-20261111-9KTXT0TA-managed-admin/design.md) |
+| `SPEC-20261111-H7J6WEKD` | `spec` | 家庭专用账号与超管后台 | `active` | `[SPEC-20261111-5ZY6HCR3]` | `[]` | [source](./specs/SPEC-20261111-H7J6WEKD-managed-admin/spec.md) |
 <!-- GENERATED:END DESIGNS_SPECS -->
 
 ## Plan 台账
@@ -50,6 +54,8 @@
 | ------- | ---- | ---- | -------- | -------- | -------- | -------- | ------ | ---------- | ---------- | ----------- |
 
 <!-- GENERATED:BEGIN PLANS -->
+| [PLAN-20261111-V6ACAR8T](./plans/PLAN-20261111-V6ACAR8T/plan.md) | 超管后台改版 | `in_review` | `git_remote` | `2bf30dc30d55ded801b6332efbba991b8f296543` | `-` | `-` | [pending](./plans/PLAN-20261111-V6ACAR8T/review-report.md) | [pending](./plans/PLAN-20261111-V6ACAR8T/regression-report.md) | pending | - |
+| [PLAN-20261111-4TX2SW6A](./plans/PLAN-20261111-4TX2SW6A/plan.md) | 家庭专用账号与三级权限修订 | `in_review` | `git_remote` | `2bf30dc30d55ded801b6332efbba991b8f296543` | `-` | `-` | [pending](./plans/PLAN-20261111-4TX2SW6A/review-report.md) | [pending](./plans/PLAN-20261111-4TX2SW6A/regression-report.md) | pending | - |
 | [PLAN-20261030-7HNVR9E5](./plans/PLAN-20261030-7HNVR9E5/plan.md) | '宝宝首页数据聚合' | `archived` | `git_remote` | `2d28593497494d442609f5f931edff85fc40b1b3` | `e9294217fa1b1740b1c706fbc89398225471f99f` | `2bf30dc30d55ded801b6332efbba991b8f296543` | [passed](./plans/PLAN-20261030-7HNVR9E5/review-report.md) | [passed](./plans/PLAN-20261030-7HNVR9E5/regression-report.md) | confirmed 2026-11-06T17:46:38+08:00 | [ACH-20261030-7HNVR9E5](./achievements/ACH-20261030-7HNVR9E5-homepage-aggregation.md) |
 | [PLAN-20261022-707KSVG3](./plans/PLAN-20261022-707KSVG3/plan.md) | 实现成长数据、WHO 参考与记录回收站 | `archived` | `git_remote` | `4a0132090d746f59c9512bcdc78881f7fe475c7c` | `f3fae9c259827b4533c4b1264e77cffd8a8fe925` | `2d28593497494d442609f5f931edff85fc40b1b3` | [passed](./plans/PLAN-20261022-707KSVG3/review-report.md) | [passed](./plans/PLAN-20261022-707KSVG3/regression-report.md) | confirmed 2026-10-29T10:00:00+08:00 | [ACH-20261022-707KSVG3](./achievements/ACH-20261022-707KSVG3-growth-records.md) |
 | [PLAN-20260923-1FC2B42D](./plans/PLAN-20260923-1FC2B42D/plan.md) | 补充照片详情上传者信息 | `archived` | `git_remote` | `99d0adc02aa01572601e58f4fa03ea936ce6488f` | `e6c67158fac997e7be6236149a4b2cf9a58ad582` | `fd70c6b629fcd0696c8526dcae1b1ea83d6a3e34` | [passed](./plans/PLAN-20260923-1FC2B42D/review-report.md) | [passed](./plans/PLAN-20260923-1FC2B42D/regression-report.md) | confirmed 2026-10-14T09:49:50+08:00 | [ACH-20260923-1FC2B42D](./achievements/ACH-20260923-1FC2B42D-photo-browse-experience.md) |

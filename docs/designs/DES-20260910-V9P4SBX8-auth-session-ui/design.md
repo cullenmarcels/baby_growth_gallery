@@ -2,12 +2,12 @@
 id: DES-20260910-V9P4SBX8
 type: design
 title: "账号认证与会话界面补充设计"
-status: active
+status: superseded
 created_at: 2026-09-10T13:23:11+08:00
-updated_at: 2026-09-10T13:23:11+08:00
+updated_at: 2026-11-11T13:30:00+08:00
 related_ids: [DES-20260908-ZVZKM07B, SPEC-20260910-TAMMQYAH, PLAN-20260910-GK1XDGCG]
 supersedes: []
-superseded_by: []
+superseded_by: [DES-20261111-Q14HTQJ4]
 ---
 
 # 账号认证与会话界面补充设计

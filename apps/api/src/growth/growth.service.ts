@@ -45,8 +45,7 @@ const cursorSchema = z.object({
   createdAt: z.iso.datetime(),
   id: z.uuid(),
 });
-export const isManager = (member: Pick<FamilyMembership, 'role'>) =>
-  member.role === 'OWNER' || member.role === 'ADMIN';
+export const isManager = (member: Pick<FamilyMembership, 'role'>) => member.role === 'ADMIN';
 export function canRestoreGrowth(
   member: FamilyMembership,
   row: GrowthRecord,
