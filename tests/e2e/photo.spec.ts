@@ -1,69 +1,24 @@
+import { expect, request as playwrightRequest, test } from '@playwright/test';
 import {
-  expect,
-  request as playwrightRequest,
-  test,
-  type APIRequestContext,
-} from '@playwright/test';
-import { randomInt, randomUUID } from 'node:crypto';
+  assignMember,
+  changeMemberRole,
+  createManagedFamily,
+  loginInBrowser,
+  post,
+  provisionAccount,
+  webOrigin,
+} from './managed-fixtures';
+import { randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-const apiBaseUrl = process.env.E2E_API_BASE_URL ?? 'http://127.0.0.1:3000';
-const webOrigin = process.env.STACK_BASE_URL ?? 'http://127.0.0.1:5173';
 const syntheticPng = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
   'base64',
 );
 
-function syntheticPhone(): string {
-  return `136${randomInt(10_000_000, 100_000_000)}`;
-}
-
 function localToday(): string {
   return new Date(Date.now() + 8 * 3_600_000).toISOString().slice(0, 10);
-}
-
-async function csrf(context: APIRequestContext): Promise<string> {
-  const response = await context.get('/api/v1/auth/csrf');
-  expect(response.ok()).toBe(true);
-  return ((await response.json()) as { csrfToken: string }).csrfToken;
-}
-
-async function registerAccount(): Promise<{ context: APIRequestContext; csrf: string }> {
-  const context = await playwrightRequest.newContext({
-    baseURL: apiBaseUrl,
-    extraHTTPHeaders: {
-      'X-Forwarded-For': `198.20.${randomInt(0, 256)}.${randomInt(1, 255)}`,
-    },
-  });
-  const phone = syntheticPhone();
-  const firstCsrf = await csrf(context);
-  const challenge = await context.post('/api/v1/auth/verification-challenges', {
-    headers: { Origin: webOrigin, 'x-csrf-token': firstCsrf },
-    data: { phone, purpose: 'REGISTER' },
-  });
-  expect(challenge.status()).toBe(202);
-  const challengeId = ((await challenge.json()) as { challengeId: string }).challengeId;
-  const registration = await context.post('/api/v1/auth/register', {
-    headers: { Origin: webOrigin, 'x-csrf-token': firstCsrf },
-    data: {
-      phone,
-      challengeId,
-      code: '246810',
-      password: 'abcdef',
-      termsVersion: 'draft-2026-09-10',
-      privacyVersion: 'draft-2026-09-10',
-    },
-  });
-  expect(registration.status()).toBe(201);
-  return { context, csrf: await csrf(context) };
-}
-
-async function post(context: APIRequestContext, path: string, token: string, data?: unknown) {
-  return context.post(path, {
-    headers: { Origin: webOrigin, 'x-csrf-token': token },
-    ...(data === undefined ? {} : { data }),
-  });
 }
 
 test('uploads to private storage, isolates drafts, publishes an activity, and restores trash', async ({
@@ -74,15 +29,10 @@ test('uploads to private storage, isolates drafts, publishes an activity, and re
     testInfo.project.name !== 'chromium-1440',
     'API and storage contract is viewport-independent',
   );
-  const owner = await registerAccount();
-  const member = await registerAccount();
-  const spectator = await registerAccount();
-  const familyResponse = await post(owner.context, '/api/v1/families', owner.csrf, {
-    name: '合成照片家庭',
-    displayName: '合成创建者',
-  });
-  expect(familyResponse.status()).toBe(201);
-  const familyId = ((await familyResponse.json()) as { id: string }).id;
+  const owner = await provisionAccount();
+  const member = await provisionAccount();
+  const spectator = await provisionAccount();
+  const familyId = (await createManagedFamily(owner, '合成照片家庭', '合成创建者')).id;
   const babyResponse = await post(
     owner.context,
     `/api/v1/families/${familyId}/babies`,
@@ -95,34 +45,8 @@ test('uploads to private storage, isolates drafts, publishes an activity, and re
     path.resolve(process.cwd(), 'apps/api/test/fixtures/synthetic-grid.heic'),
   );
 
-  const invitation = await post(
-    owner.context,
-    `/api/v1/families/${familyId}/invitations`,
-    owner.csrf,
-  );
-  const invitationToken = ((await invitation.json()) as { token: string }).token;
-  expect(
-    (
-      await post(member.context, '/api/v1/family-invitations/accept', member.csrf, {
-        token: invitationToken,
-        displayName: '合成成员',
-      })
-    ).status(),
-  ).toBe(200);
-  const spectatorInvitation = await post(
-    owner.context,
-    `/api/v1/families/${familyId}/invitations`,
-    owner.csrf,
-  );
-  expect(spectatorInvitation.status()).toBe(201);
-  expect(
-    (
-      await post(spectator.context, '/api/v1/family-invitations/accept', spectator.csrf, {
-        token: ((await spectatorInvitation.json()) as { token: string }).token,
-        displayName: '合成旁观成员',
-      })
-    ).status(),
-  ).toBe(200);
+  expect(await assignMember(familyId, member.username, '合成成员')).toBe(204);
+  expect(await assignMember(familyId, spectator.username, '合成旁观成员')).toBe(204);
 
   const createBatch = await post(
     member.context,
@@ -405,21 +329,13 @@ test('uploads to private storage, isolates drafts, publishes an activity, and re
     (await members.json()) as { items: Array<{ id: string; displayName: string }> }
   ).items.find((item) => item.displayName === '合成旁观成员')?.id;
   expect(spectatorMembershipId).toBeTruthy();
-  const promote = await owner.context.patch(
-    `/api/v1/families/${familyId}/members/${spectatorMembershipId}/role`,
-    { headers: { Origin: webOrigin, 'x-csrf-token': owner.csrf }, data: { role: 'ADMIN' } },
-  );
-  expect(promote.status()).toBe(200);
+  expect(await changeMemberRole(familyId, spectatorMembershipId!, 'ADMIN')).toBe(204);
   expect(
     (await (await spectator.context.get(`${galleryBase}/photos/${photoId}`)).json()) as {
       canManage: boolean;
     },
   ).toMatchObject({ canManage: true });
-  const demote = await owner.context.patch(
-    `/api/v1/families/${familyId}/members/${spectatorMembershipId}/role`,
-    { headers: { Origin: webOrigin, 'x-csrf-token': owner.csrf }, data: { role: 'MEMBER' } },
-  );
-  expect(demote.status()).toBe(200);
+  expect(await changeMemberRole(familyId, spectatorMembershipId!, 'MEMBER')).toBe(204);
   expect(
     (await (await spectator.context.get(`${galleryBase}/photos/${photoId}`)).json()) as {
       canManage: boolean;
@@ -528,18 +444,11 @@ test('uploads to private storage, isolates drafts, publishes an activity, and re
 test('uploads and publishes a synthetic photo in the responsive flow', async ({
   page,
 }, testInfo) => {
-  await page.goto('/register');
-  await page.getByLabel('手机号').fill(syntheticPhone());
-  await page.getByRole('button', { name: '获取验证码' }).click();
-  await page.getByLabel('验证码').fill('246810');
-  await page.getByLabel('设置密码').fill('abcdef');
-  await page.getByLabel('确认密码').fill('abcdef');
-  await page.getByLabel(/我已阅读并同意/).check();
-  await page.getByRole('button', { name: '注册并登录' }).click();
-  await page.getByLabel('家庭名称').fill('响应式照片家庭');
-  await page.getByLabel('你在家庭中的称呼').fill('合成创建者');
-  await page.getByRole('button', { name: '创建家庭', exact: true }).click();
-  await expect(page).toHaveURL(/\/app\/families\//);
+  const owner = await provisionAccount();
+  await createManagedFamily(owner, '响应式照片家庭', '合成家管');
+  await loginInBrowser(page, owner.username, owner.password);
+  await owner.context.dispose();
+  await expect(page).toHaveURL(/\/app\/babies\/new$/);
   await page.goto('/app/babies/new');
   await page.getByLabel('宝宝昵称').fill('合成宝宝');
   await page.getByLabel('出生日期').fill('2026-01-02');

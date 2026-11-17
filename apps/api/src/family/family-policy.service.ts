@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type { FamilyMembership, FamilyRole, Prisma } from '../generated/prisma/client.js';
+import type { FamilyMembership, Prisma } from '../generated/prisma/client.js';
 import { ApiProblemException } from '../common/api-problem.exception.js';
 import { PrismaService } from '../infrastructure/prisma.service.js';
 
@@ -14,27 +14,41 @@ export class FamilyPolicyService {
     familyId: string,
     database: DatabaseClient = this.prisma,
   ): Promise<FamilyMembership> {
-    const membership = await database.familyMembership.findUnique({
-      where: { familyId_accountId: { familyId, accountId } },
+    const membership = await database.familyMembership.findFirst({
+      where: { familyId, accountId, status: 'ACTIVE', account: { status: 'ACTIVE' } },
     });
-    if (!membership || membership.status !== 'ACTIVE') {
+    if (!membership) {
       throw new ApiProblemException(404, 'The family could not be found.', 'FAMILY_NOT_FOUND');
     }
     return membership;
   }
 
-  requireInvitationManager(membership: FamilyMembership): void {
-    if (!this.hasRole(membership.role, ['OWNER', 'ADMIN'])) this.permissionDenied();
+  requireAdmin(membership: FamilyMembership): void {
+    if (membership.role !== 'ADMIN') this.permissionDenied();
   }
 
-  requireOwner(membership: FamilyMembership): void {
-    if (membership.role !== 'OWNER') this.permissionDenied();
-  }
-
-  canRemove(actor: FamilyMembership, target: FamilyMembership): boolean {
-    if (target.role === 'OWNER' || actor.id === target.id) return false;
-    if (actor.role === 'OWNER') return true;
-    return actor.role === 'ADMIN' && target.role === 'MEMBER';
+  async requireOtherAdmin(
+    database: DatabaseClient,
+    familyId: string,
+    exceptAccountId: string,
+  ): Promise<void> {
+    const admin = await database.familyMembership.findFirst({
+      where: {
+        familyId,
+        accountId: { not: exceptAccountId },
+        status: 'ACTIVE',
+        role: 'ADMIN',
+        account: { status: 'ACTIVE' },
+      },
+      select: { id: true },
+    });
+    if (!admin) {
+      throw new ApiProblemException(
+        409,
+        'The family needs an active administrator.',
+        'FAMILY_ADMIN_REQUIRED',
+      );
+    }
   }
 
   permissionDenied(): never {
@@ -51,17 +65,5 @@ export class FamilyPolicyService {
       'The family membership has changed. Please refresh and try again.',
       'FAMILY_STATE_CONFLICT',
     );
-  }
-
-  ownerRequired(): never {
-    throw new ApiProblemException(
-      409,
-      'The family owner must remain active.',
-      'FAMILY_OWNER_REQUIRED',
-    );
-  }
-
-  private hasRole(role: FamilyRole, roles: FamilyRole[]): boolean {
-    return roles.includes(role);
   }
 }

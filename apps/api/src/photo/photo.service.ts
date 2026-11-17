@@ -421,8 +421,7 @@ export class PhotoService {
     query: ManagePhotosQuery,
   ): Promise<PhotoManagementPageDto> {
     const { membership } = await this.policy.requireActiveBaby(accountId, familyId, babyId);
-    if (query.scope === 'family' && !['OWNER', 'ADMIN'].includes(membership.role))
-      this.policy.permissionDenied();
+    if (query.scope === 'family' && !(membership.role === 'ADMIN')) this.policy.permissionDenied();
     const cursor = query.cursor ? this.decodeCursor(query.cursor) : undefined;
     const familyStatuses = ['PUBLISHED', 'TRASHED'] as const;
     if (
@@ -575,8 +574,7 @@ export class PhotoService {
               displayName: milestone.createdBy.displayName,
             },
             canManage:
-              ['OWNER', 'ADMIN'].includes(membership.role) ||
-              milestone.createdByMembershipId === membership.id,
+              membership.role === 'ADMIN' || milestone.createdByMembershipId === membership.id,
             version: milestone.version,
             createdAt: milestone.createdAt.toISOString(),
             updatedAt: milestone.updatedAt.toISOString(),
@@ -740,7 +738,7 @@ export class PhotoService {
     if (!photo.purgeAfter || photo.purgeAfter <= now)
       throw new ApiProblemException(409, '照片恢复期限已过。', 'PHOTO_RESTORE_EXPIRED');
     if (!this.policy.canRestore(membership, photo)) this.policy.restoreRequiresAdmin();
-    const privileged = membership.role === 'OWNER' || membership.role === 'ADMIN';
+    const privileged = membership.role === 'ADMIN';
     const result = await this.prisma.photo.updateMany({
       where: {
         id: photoId,

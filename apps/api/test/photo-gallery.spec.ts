@@ -94,8 +94,7 @@ function serviceWith(rows: Photo[], role: FamilyMembership['role'] = 'MEMBER') {
     requirePhoto: jest.fn().mockResolvedValue({ membership: member(role), photo: published() }),
     canManagePublished: jest.fn(
       (membership: FamilyMembership, photo: Photo) =>
-        ['OWNER', 'ADMIN'].includes(membership.role) ||
-        membership.id === photo.createdByMembershipId,
+        ['ADMIN'].includes(membership.role) || membership.id === photo.createdByMembershipId,
     ),
     canRestore: jest.fn().mockReturnValue(false),
     notFound: jest.fn(() => {
@@ -270,10 +269,10 @@ describe('published gallery and avatar boundaries', () => {
   });
 
   it('rejects recycling if manager authority is revoked before the membership lock', async () => {
-    const { service, transaction, policy } = serviceWith([], 'OWNER');
+    const { service, transaction, policy } = serviceWith([], 'ADMIN');
     transaction.$queryRaw.mockResolvedValue([{ role: 'MEMBER', status: 'ACTIVE' }]);
     policy.requirePhoto.mockResolvedValue({
-      membership: member('OWNER'),
+      membership: member('ADMIN'),
       photo: { ...published(), createdByMembershipId: '00000000-0000-4000-8000-000000000099' },
     });
     await expect(service.trash(accountId, familyId, babyId, photoId)).rejects.toThrow(
@@ -301,7 +300,7 @@ describe('published gallery and avatar boundaries', () => {
     const transaction = {
       $queryRaw: jest
         .fn()
-        .mockResolvedValueOnce([{ role: 'OWNER', status: 'ACTIVE' }])
+        .mockResolvedValueOnce([{ role: 'ADMIN', status: 'ACTIVE' }])
         .mockResolvedValueOnce([{ id: babyId }])
         .mockResolvedValueOnce([{ status: 'PUBLISHED' }]),
       babyProfile: {
@@ -315,7 +314,7 @@ describe('published gallery and avatar boundaries', () => {
       ),
     };
     const policy = {
-      requireBaby: jest.fn().mockResolvedValue({ membership: member('OWNER'), baby }),
+      requireBaby: jest.fn().mockResolvedValue({ membership: member('ADMIN'), baby }),
       requireManager: jest.fn(),
       notFound: jest.fn(() => {
         throw new Error('BABY_NOT_FOUND');

@@ -3,20 +3,18 @@
  */
 export interface components {
   schemas: {
-    "AcceptInvitationRequestDto": {
-      "displayName": string;
-      "token": string;
-    };
-    "AcceptInvitationResponseDto": {
-      "account": components['schemas']['AccountSummaryDto'];
-      "family": components['schemas']['FamilySummaryDto'];
+    "AccountStatusInputDto": {
+      "status": "ACTIVE" | "DISABLED";
     };
     "AccountSummaryDto": {
       "activeBabyId": string | null;
       "activeFamilyId": string | null;
       "displayName": string | null;
       "id": string;
-      "phoneMasked": string;
+      "mustAcceptTerms": boolean;
+      "mustChangePassword": boolean;
+      "siteRole": "USER" | "SUPER_ADMIN";
+      "username": string;
     };
     "ActiveFamilyActivityItemDto": {
       "actor": components['schemas']['ActivityActorDto'];
@@ -28,12 +26,6 @@ export interface components {
       "type": "FAMILY_CREATED" | "MEMBER_JOINED" | "MEMBER_ROLE_CHANGED" | "MEMBER_LEFT" | "PHOTO_UPLOADED" | "COMMENT_ADDED" | "REACTION_ADDED" | "MILESTONE_RECORDED" | "GROWTH_RECORDED";
       "visibility": "ACTIVE";
     };
-    "ActiveInvitationDto": {
-      "createdAt": string;
-      "createdBy": components['schemas']['InvitationCreatorDto'];
-      "expiresAt": string;
-      "id": string;
-    };
     "ActivityActorDto": {
       "displayName": string;
       "membershipId": string | null;
@@ -41,6 +33,11 @@ export interface components {
     "ActivitySubjectDto": {
       "id": string;
       "type": string;
+    };
+    "AddMemberDto": {
+      "displayName": string;
+      "role"?: "ADMIN" | "MEMBER";
+      "username": string;
     };
     "ApiProblemDto": {
       "code"?: string;
@@ -77,15 +74,6 @@ export interface components {
       "location"?: string | null;
       "photoIds": Array<string>;
     };
-    "ChangeMemberRoleRequestDto": {
-      "role": "ADMIN" | "MEMBER";
-    };
-    "CodeLoginRequestDto": {
-      "challengeId": string;
-      "code": string;
-      "phone": string;
-      "remember": boolean;
-    };
     "CompleteMilestoneRequestDto": {
       "completedOn": string;
       "completionNote"?: string | null;
@@ -101,14 +89,6 @@ export interface components {
       "reminderOn"?: string | null;
       "source": "CUSTOM";
       "title": string;
-    };
-    "CreatedInvitationDto": {
-      "invitation": components['schemas']['ActiveInvitationDto'];
-      "token": string;
-    };
-    "CreateFamilyRequestDto": {
-      "displayName": string;
-      "name": string;
     };
     "CreateGrowthRequestDto": {
       "headCm"?: number | null;
@@ -149,7 +129,7 @@ export interface components {
       "id": string;
       "isCurrentAccount": boolean;
       "joinedAt": string;
-      "role": "OWNER" | "ADMIN" | "MEMBER";
+      "role": "ADMIN" | "MEMBER";
       "status": "ACTIVE";
     };
     "FamilyMemberListResponseDto": {
@@ -158,7 +138,7 @@ export interface components {
     "FamilyMembershipSummaryDto": {
       "displayName": string;
       "id": string;
-      "role": "OWNER" | "ADMIN" | "MEMBER";
+      "role": "ADMIN" | "MEMBER";
     };
     "FamilySummaryDto": {
       "createdAt": string;
@@ -238,18 +218,66 @@ export interface components {
       "timestamp": string;
       "version": string;
     };
-    "InvitationCreatorDto": {
-      "displayName": string;
-      "membershipId": string;
+    "IssuedPasswordDto": {
+      "expiresAt": string;
+      "temporaryPassword": string;
+      "username": string;
     };
-    "InvitationListResponseDto": {
-      "items": Array<components['schemas']['ActiveInvitationDto']>;
+    "ManagedAccountDetailDto": {
+      "displayName": string | null;
+      "families": Array<components['schemas']['ManagedAccountFamilyDto']>;
+      "id": string;
+      "status": "ACTIVE" | "DISABLED";
+      "username": string;
+    };
+    "ManagedAccountDto": {
+      "displayName": string | null;
+      "id": string;
+      "status": "ACTIVE" | "DISABLED";
+      "username": string;
+    };
+    "ManagedAccountFamilyDto": {
+      "id": string;
+      "name": string;
+      "role": "ADMIN" | "MEMBER";
+    };
+    "ManagedAccountInputDto": {
+      "displayName": string;
+      "username": string;
+    };
+    "ManagedFamilyDetailDto": {
+      "id": string;
+      "isOpen": boolean;
+      "members": Array<components['schemas']['ManagedMemberDto']>;
+      "name": string;
+    };
+    "ManagedFamilyDto": {
+      "id": string;
+      "isOpen": boolean;
+      "name": string;
+    };
+    "ManagedFamilyInputDto": {
+      "name": string;
+    };
+    "ManagedFamilyListItemDto": {
+      "id": string;
+      "isOpen": boolean;
+      "memberCount": number;
+      "name": string;
+    };
+    "ManagedMemberDto": {
+      "accountStatus": "ACTIVE" | "DISABLED";
+      "canResetPassword": boolean;
+      "displayName": string;
+      "id": string;
+      "role": "ADMIN" | "MEMBER";
+      "username": string;
     };
     "MemberJoinedSummaryDto": {
       "displayName": string;
       "joinKind": "NEW" | "REJOINED";
       "membershipId": string;
-      "role": "OWNER" | "ADMIN" | "MEMBER";
+      "role": "ADMIN" | "MEMBER";
     };
     "MemberLeftSummaryDto": {
       "displayName": string;
@@ -258,9 +286,12 @@ export interface components {
     };
     "MemberRoleChangedSummaryDto": {
       "displayName": string;
-      "fromRole": "OWNER" | "ADMIN" | "MEMBER";
+      "fromRole": "ADMIN" | "MEMBER";
       "membershipId": string;
-      "toRole": "OWNER" | "ADMIN" | "MEMBER";
+      "toRole": "ADMIN" | "MEMBER";
+    };
+    "MemberRoleInputDto": {
+      "role": "ADMIN" | "MEMBER";
     };
     "MilestoneAuthorDto": {
       "displayName": string;
@@ -334,16 +365,15 @@ export interface components {
     "MilestoneTemplateListDto": {
       "items": Array<components['schemas']['MilestoneTemplateDto']>;
     };
+    "PasswordChangeRequestDto": {
+      "acceptTerms"?: boolean;
+      "currentPassword": string;
+      "newPassword": string;
+    };
     "PasswordLoginRequestDto": {
       "password": string;
-      "phone": string;
-      "remember": boolean;
-    };
-    "PasswordResetRequestDto": {
-      "challengeId": string;
-      "code": string;
-      "newPassword": string;
-      "phone": string;
+      "remember"?: boolean;
+      "username": string;
     };
     "PhotoFileDescriptorDto": {
       "capturedOn": string;
@@ -434,14 +464,6 @@ export interface components {
     "PublishPhotosRequestDto": {
       "photoIds": Array<string>;
     };
-    "RegisterRequestDto": {
-      "challengeId": string;
-      "code": string;
-      "password": string;
-      "phone": string;
-      "privacyVersion": string;
-      "termsVersion": string;
-    };
     "ReopenMilestoneRequestDto": {
       "expectedVersion": number;
     };
@@ -498,15 +520,6 @@ export interface components {
       "location"?: string | null;
       "title"?: string | null;
     };
-    "VerificationChallengeRequestDto": {
-      "phone": string;
-      "purpose": "REGISTER" | "LOGIN" | "RESET_PASSWORD";
-    };
-    "VerificationChallengeResponseDto": {
-      "challengeId": string;
-      "expiresInSeconds": number;
-      "resendAfterSeconds": number;
-    };
   };
 }
 
@@ -517,47 +530,6 @@ export interface paths {
         "200": {
           content: {
             "application/json": components['schemas']['CsrfTokenResponseDto'];
-          };
-        };
-        "400": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "401": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "403": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "429": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "503": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-      };
-    };
-  };
-  "/api/v1/auth/login/code": {
-    post: {
-      requestBody: {
-        content: {
-          "application/json": components['schemas']['CodeLoginRequestDto'];
-        };
-      };
-      responses: {
-        "200": {
-          content: {
-            "application/json": components['schemas']['AccountSummaryDto'];
           };
         };
         "400": {
@@ -663,54 +635,15 @@ export interface paths {
       };
     };
   };
-  "/api/v1/auth/password/reset": {
+  "/api/v1/auth/password/change": {
     post: {
       requestBody: {
         content: {
-          "application/json": components['schemas']['PasswordResetRequestDto'];
+          "application/json": components['schemas']['PasswordChangeRequestDto'];
         };
       };
       responses: {
-        "204": {
-          content: Record<string, never>;
-        };
-        "400": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "401": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "403": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "429": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "503": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-      };
-    };
-  };
-  "/api/v1/auth/register": {
-    post: {
-      requestBody: {
-        content: {
-          "application/json": components['schemas']['RegisterRequestDto'];
-        };
-      };
-      responses: {
-        "201": {
+        "200": {
           content: {
             "application/json": components['schemas']['AccountSummaryDto'];
           };
@@ -779,92 +712,12 @@ export interface paths {
       };
     };
   };
-  "/api/v1/auth/verification-challenges": {
-    post: {
-      requestBody: {
-        content: {
-          "application/json": components['schemas']['VerificationChallengeRequestDto'];
-        };
-      };
-      responses: {
-        "202": {
-          content: {
-            "application/json": components['schemas']['VerificationChallengeResponseDto'];
-          };
-        };
-        "400": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "401": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "403": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "429": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "503": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-      };
-    };
-  };
   "/api/v1/families": {
     get: {
       responses: {
         "200": {
           content: {
             "application/json": components['schemas']['FamilyListResponseDto'];
-          };
-        };
-        "400": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "401": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "403": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "404": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "409": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-      };
-    };
-    post: {
-      requestBody: {
-        content: {
-          "application/json": components['schemas']['CreateFamilyRequestDto'];
-        };
-      };
-      responses: {
-        "201": {
-          content: {
-            "application/json": components['schemas']['FamilySummaryDto'];
           };
         };
         "400": {
@@ -1858,126 +1711,6 @@ export interface paths {
       };
     };
   };
-  "/api/v1/families/{familyId}/invitations": {
-    get: {
-      parameters: {
-        "path": {
-          "familyId": string;
-        };
-      };
-      responses: {
-        "200": {
-          content: {
-            "application/json": components['schemas']['InvitationListResponseDto'];
-          };
-        };
-        "400": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "401": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "403": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "404": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "409": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-      };
-    };
-    post: {
-      parameters: {
-        "path": {
-          "familyId": string;
-        };
-      };
-      responses: {
-        "201": {
-          content: {
-            "application/json": components['schemas']['CreatedInvitationDto'];
-          };
-        };
-        "400": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "401": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "403": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "404": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "409": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-      };
-    };
-  };
-  "/api/v1/families/{familyId}/invitations/{invitationId}": {
-    delete: {
-      parameters: {
-        "path": {
-          "familyId": string;
-          "invitationId": string;
-        };
-      };
-      responses: {
-        "204": {
-          content: Record<string, never>;
-        };
-        "400": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "401": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "403": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "404": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "409": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-      };
-    };
-  };
   "/api/v1/families/{familyId}/members": {
     get: {
       parameters: {
@@ -1989,93 +1722,6 @@ export interface paths {
         "200": {
           content: {
             "application/json": components['schemas']['FamilyMemberListResponseDto'];
-          };
-        };
-        "400": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "401": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "403": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "404": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "409": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-      };
-    };
-  };
-  "/api/v1/families/{familyId}/members/{membershipId}": {
-    delete: {
-      parameters: {
-        "path": {
-          "familyId": string;
-          "membershipId": string;
-        };
-      };
-      responses: {
-        "204": {
-          content: Record<string, never>;
-        };
-        "400": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "401": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "403": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "404": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "409": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-      };
-    };
-  };
-  "/api/v1/families/{familyId}/members/{membershipId}/role": {
-    patch: {
-      parameters: {
-        "path": {
-          "familyId": string;
-          "membershipId": string;
-        };
-      };
-      requestBody: {
-        content: {
-          "application/json": components['schemas']['ChangeMemberRoleRequestDto'];
-        };
-      };
-      responses: {
-        "200": {
-          content: {
-            "application/json": components['schemas']['FamilyMemberDto'];
           };
         };
         "400": {
@@ -2147,47 +1793,6 @@ export interface paths {
       };
     };
   };
-  "/api/v1/family-invitations/accept": {
-    post: {
-      requestBody: {
-        content: {
-          "application/json": components['schemas']['AcceptInvitationRequestDto'];
-        };
-      };
-      responses: {
-        "200": {
-          content: {
-            "application/json": components['schemas']['AcceptInvitationResponseDto'];
-          };
-        };
-        "400": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "401": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "409": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "429": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-        "503": {
-          content: {
-            "application/problem+json": components['schemas']['ApiProblemDto'];
-          };
-        };
-      };
-    };
-  };
   "/api/v1/health/live": {
     get: {
       responses: {
@@ -2208,6 +1813,540 @@ export interface paths {
           };
         };
         "503": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/management/accounts": {
+    get: {
+      responses: {
+        "200": {
+          content: {
+            "application/json": Array<components['schemas']['ManagedAccountDto']>;
+          };
+        };
+        "400": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "401": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "403": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "404": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "409": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+      };
+    };
+    post: {
+      requestBody: {
+        content: {
+          "application/json": components['schemas']['ManagedAccountInputDto'];
+        };
+      };
+      responses: {
+        "201": {
+          content: {
+            "application/json": components['schemas']['IssuedPasswordDto'];
+          };
+        };
+        "400": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "401": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "403": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "404": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "409": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/management/accounts/{accountId}": {
+    get: {
+      parameters: {
+        "path": {
+          "accountId": string;
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['ManagedAccountDetailDto'];
+          };
+        };
+        "400": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "401": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "403": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "404": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "409": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/management/accounts/{accountId}/password": {
+    post: {
+      parameters: {
+        "path": {
+          "accountId": string;
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['IssuedPasswordDto'];
+          };
+        };
+        "400": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "401": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "403": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "404": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "409": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/management/accounts/{accountId}/status": {
+    patch: {
+      parameters: {
+        "path": {
+          "accountId": string;
+        };
+      };
+      requestBody: {
+        content: {
+          "application/json": components['schemas']['AccountStatusInputDto'];
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['ManagedAccountDto'];
+          };
+        };
+        "400": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "401": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "403": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "404": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "409": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/management/families": {
+    get: {
+      responses: {
+        "200": {
+          content: {
+            "application/json": Array<components['schemas']['ManagedFamilyListItemDto']>;
+          };
+        };
+        "400": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "401": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "403": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "404": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "409": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+      };
+    };
+    post: {
+      requestBody: {
+        content: {
+          "application/json": components['schemas']['ManagedFamilyInputDto'];
+        };
+      };
+      responses: {
+        "201": {
+          content: {
+            "application/json": components['schemas']['ManagedFamilyDto'];
+          };
+        };
+        "400": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "401": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "403": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "404": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "409": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/management/families/{familyId}": {
+    get: {
+      parameters: {
+        "path": {
+          "familyId": string;
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['ManagedFamilyDetailDto'];
+          };
+        };
+        "400": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "401": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "403": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "404": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "409": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/management/families/{familyId}/accounts": {
+    post: {
+      parameters: {
+        "path": {
+          "familyId": string;
+        };
+      };
+      requestBody: {
+        content: {
+          "application/json": components['schemas']['ManagedAccountInputDto'];
+        };
+      };
+      responses: {
+        "201": {
+          content: {
+            "application/json": components['schemas']['IssuedPasswordDto'];
+          };
+        };
+        "400": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "401": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "403": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "404": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "409": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/management/families/{familyId}/members": {
+    post: {
+      parameters: {
+        "path": {
+          "familyId": string;
+        };
+      };
+      requestBody: {
+        content: {
+          "application/json": components['schemas']['AddMemberDto'];
+        };
+      };
+      responses: {
+        "204": {
+          content: Record<string, never>;
+        };
+        "400": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "401": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "403": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "404": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "409": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/management/families/{familyId}/members/{membershipId}": {
+    delete: {
+      parameters: {
+        "path": {
+          "familyId": string;
+          "membershipId": string;
+        };
+      };
+      responses: {
+        "204": {
+          content: Record<string, never>;
+        };
+        "400": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "401": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "403": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "404": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "409": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+      };
+    };
+    patch: {
+      parameters: {
+        "path": {
+          "familyId": string;
+          "membershipId": string;
+        };
+      };
+      requestBody: {
+        content: {
+          "application/json": components['schemas']['MemberRoleInputDto'];
+        };
+      };
+      responses: {
+        "204": {
+          content: Record<string, never>;
+        };
+        "400": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "401": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "403": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "404": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "409": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/management/families/{familyId}/members/{membershipId}/password": {
+    post: {
+      parameters: {
+        "path": {
+          "familyId": string;
+          "membershipId": string;
+        };
+      };
+      responses: {
+        "200": {
+          content: {
+            "application/json": components['schemas']['IssuedPasswordDto'];
+          };
+        };
+        "400": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "401": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "403": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "404": {
+          content: {
+            "application/problem+json": components['schemas']['ApiProblemDto'];
+          };
+        };
+        "409": {
           content: {
             "application/problem+json": components['schemas']['ApiProblemDto'];
           };

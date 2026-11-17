@@ -22,9 +22,8 @@ const timestamp = new Date();
 try {
   const account = await db.account.create({
     data: {
-      phoneE164: `+1999${Date.now().toString().slice(-10)}`,
+      username: `fixture-${Date.now().toString().slice(-10)}`,
       passwordHash: 'synthetic-not-a-login-hash',
-      phoneVerifiedAt: timestamp,
       passwordChangedAt: timestamp,
     },
   });
@@ -32,7 +31,7 @@ try {
     data: { name: '合成清理测试家庭', createdByAccountId: account.id },
   });
   const membership = await db.familyMembership.create({
-    data: { familyId: family.id, accountId: account.id, role: 'OWNER', displayName: '合成家长' },
+    data: { familyId: family.id, accountId: account.id, role: 'ADMIN', displayName: '合成家长' },
   });
   const baby = await db.babyProfile.create({
     data: {

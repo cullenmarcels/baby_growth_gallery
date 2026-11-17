@@ -17,8 +17,8 @@ function apiError(code: string, detail = 'English server detail'): ApiClientErro
 
 describe('userFacingError', () => {
   it('maps a stable API code to Chinese without exposing the English detail', () => {
-    const message = userFacingError(apiError('ALREADY_FAMILY_MEMBER'));
-    expect(message).toBe('你已经是这个家庭的成员，无需重复加入。');
+    const message = userFacingError(apiError('USERNAME_TAKEN'));
+    expect(message).toBe('账户名已使用。');
     expect(message).not.toContain('English');
   });
 

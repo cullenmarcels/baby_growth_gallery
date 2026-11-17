@@ -10,13 +10,13 @@ import { AuthController } from './auth/auth.controller.js';
 import { AuthService } from './auth/auth.service.js';
 import { AuthRateLimitService } from './auth/rate-limit.service.js';
 import { AuthSessionService } from './auth/session.service.js';
-import { VerificationDeliveryService } from './auth/verification-delivery.service.js';
+import { ManagementController } from './management/management.controller.js';
+import { ManagementService } from './management/management.service.js';
 import { APP_CONFIG, loadAppConfig } from './config/app-config.js';
 import { HealthController } from './health/health.controller.js';
 import { FamilyActivityService } from './family/family-activity.service.js';
-import { FamilyController, FamilyInvitationController } from './family/family.controller.js';
+import { FamilyController } from './family/family.controller.js';
 import { FamilyPolicyService } from './family/family-policy.service.js';
-import { FamilyRateLimitService } from './family/family-rate-limit.service.js';
 import { FamilyService } from './family/family.service.js';
 import { InfrastructureService } from './infrastructure/infrastructure.service.js';
 import { PrismaService } from './infrastructure/prisma.service.js';
@@ -37,7 +37,7 @@ import { MilestoneService } from './milestone/milestone.service.js';
     HealthController,
     AuthController,
     FamilyController,
-    FamilyInvitationController,
+    ManagementController,
     BabyController,
     PhotoController,
     MilestoneController,
@@ -52,10 +52,9 @@ import { MilestoneService } from './milestone/milestone.service.js';
     AuthService,
     AuthRateLimitService,
     AuthSessionService,
-    VerificationDeliveryService,
+    ManagementService,
     FamilyActivityService,
     FamilyPolicyService,
-    FamilyRateLimitService,
     FamilyService,
     BabyPolicyService,
     BabyService,

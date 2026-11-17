@@ -88,7 +88,7 @@ export function BabyEntryRedirect(): React.JSX.Element {
   if (family.isError || babies.isError)
     return <BabyPageState message="宝宝档案加载失败，请刷新页面重试。" />;
   if (babies.data.items.length === 0) {
-    const canManage = ['OWNER', 'ADMIN'].includes(family.data.currentMembership.role);
+    const canManage = family.data.currentMembership.role === 'ADMIN';
     return <Navigate replace to={canManage ? '/app/babies/new' : '/app/babies/waiting'} />;
   }
   const current = babies.data.items.find((baby) => baby.id === auth.account?.activeBabyId);
@@ -174,7 +174,7 @@ export function BabyCreatePage(): React.JSX.Element {
   if (context.pending) return <BabyPageState message="正在读取家庭权限…" busy />;
   if (context.error || !context.family)
     return <BabyPageState message="无法访问当前家庭，请返回家庭空间重试。" />;
-  if (!['OWNER', 'ADMIN'].includes(context.family.currentMembership.role)) {
+  if (!(context.family.currentMembership.role === 'ADMIN')) {
     return <Navigate replace to="/app/babies/waiting" />;
   }
   return (
@@ -215,7 +215,7 @@ export function BabyManagePage(): React.JSX.Element {
   const focusedAfterCancel = useRef(false);
   const focusHeading = (location.state as { focusHeading?: boolean } | null)?.focusHeading === true;
   const { familyId, family, pending, error } = useCurrentFamily();
-  const canManage = Boolean(family && ['OWNER', 'ADMIN'].includes(family.currentMembership.role));
+  const canManage = Boolean(family && family.currentMembership.role === 'ADMIN');
   const babies = useQuery({
     queryKey: canManage ? babyKeys.familyWithArchived(familyId) : babyKeys.family(familyId),
     queryFn: () => api.listBabies(familyId, canManage),

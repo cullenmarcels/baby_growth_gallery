@@ -12,56 +12,34 @@ import {
   Check,
   ChevronDown,
   Clock3,
-  Copy,
   Heart,
   Home,
   Images,
   LogOut,
   Menu,
-  Plus,
-  Shield,
   Sparkles,
-  Trash2,
-  UserRoundPlus,
   Users,
-  X,
 } from 'lucide-react';
-import { useEffect, useId, useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Navigate, Outlet, useNavigate, useParams } from 'react-router-dom';
-import { z } from 'zod';
 import { useAuth } from './AuthContext';
 import { api } from './api';
 import { BabyAvatar } from './BabyAvatar';
 import { babyKeys } from './baby-query';
-import { DropdownSelect } from './DropdownSelect';
 import styles from './FamilyApp.module.css';
 import { userFacingError } from './user-facing-error';
 
 type Role = FamilyMember['role'];
 
-const createSchema = z.object({
-  name: z.string().trim().min(1, '请输入家庭名称').max(40, '家庭名称最多 40 个字符'),
-  displayName: z.string().trim().min(1, '请输入家庭称呼').max(30, '家庭称呼最多 30 个字符'),
-});
-const joinSchema = z.object({
-  token: z.string().trim().min(1, '请输入邀请口令'),
-  displayName: z.string().trim().min(1, '请输入家庭称呼').max(30, '家庭称呼最多 30 个字符'),
-});
-
-type CreateValues = z.infer<typeof createSchema>;
-type JoinValues = z.infer<typeof joinSchema>;
-
 const familyKeys = {
   all: ['families'] as const,
   detail: (id: string) => ['family', id, 'detail'] as const,
   members: (id: string) => ['family', id, 'members'] as const,
-  invitations: (id: string) => ['family', id, 'invitations'] as const,
   activities: (id: string) => ['family', id, 'activities'] as const,
 };
 
 function roleLabel(role: Role): string {
-  return role === 'OWNER' ? '创建者' : role === 'ADMIN' ? '管理员' : '成员';
+  return role === 'ADMIN' ? '管理员' : '成员';
 }
 
 export function AppHomeRedirect(): React.JSX.Element {
@@ -70,8 +48,11 @@ export function AppHomeRedirect(): React.JSX.Element {
   if (families.isPending) return <PageState message="正在确定当前家庭…" busy />;
   if (families.isError) return <PageState message="家庭列表加载失败，请刷新页面重试。" />;
   const active = families.data.items.find((family) => family.id === auth.account?.activeFamilyId);
-  const target = active ?? families.data.items[0];
-  return <Navigate replace to={target ? '/app/baby-entry' : '/app/onboarding'} />;
+  if (active) return <Navigate replace to="/app/baby-entry" />;
+  const firstFamily = families.data.items[0];
+  return (
+    <Navigate replace to={firstFamily ? '/app/families/' + firstFamily.id : '/app/onboarding'} />
+  );
 }
 
 const navItems = [
@@ -300,9 +281,13 @@ export function FamilyShell(): React.JSX.Element {
                   </Link>
                 </div>
               ) : null}
-              <Link to="/app/onboarding" onClick={() => setMenuOpen(false)}>
-                <Plus size={16} />
-                创建或加入家庭
+              {auth.account?.siteRole === 'SUPER_ADMIN' ? (
+                <Link to="/admin" onClick={() => setMenuOpen(false)}>
+                  超管后台
+                </Link>
+              ) : null}
+              <Link to="/change-password" onClick={() => setMenuOpen(false)}>
+                修改密码
               </Link>
               <button className={styles.mobileLogout} type="button" onClick={() => void logout()}>
                 <LogOut size={16} />
@@ -358,162 +343,24 @@ export function FamilyShell(): React.JSX.Element {
 }
 
 export function OnboardingPage(): React.JSX.Element {
-  const [mode, setMode] = useState<'create' | 'join'>('create');
+  const { account } = useAuth();
+  const families = useQuery({ queryKey: familyKeys.all, queryFn: () => api.listFamilies() });
+  if (families.data?.items.length) return <Navigate to="/app" replace />;
   return (
     <section className={styles.onboarding}>
-      <div className={styles.heroIcon}>
-        <Baby size={30} />
-      </div>
-      <p className={styles.eyebrow}>家庭空间</p>
-      <h1>把珍贵时刻分享给最亲近的人</h1>
-      <p className={styles.lead}>创建一个新的家庭，或使用亲友发给你的一次性邀请口令加入。</p>
-      <div className={styles.modeTabs} role="tablist" aria-label="家庭加入方式">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={mode === 'create'}
-          onClick={() => setMode('create')}
-        >
-          <Home size={17} />
-          创建家庭
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={mode === 'join'}
-          onClick={() => setMode('join')}
-        >
-          <UserRoundPlus size={17} />
-          加入家庭
-        </button>
-      </div>
-      {mode === 'create' ? <CreateFamilyForm /> : <JoinFamilyForm />}
+      <h1>等待加入家庭</h1>
+      <p>请联系管理员，把你的账户名添加到家庭。</p>
+      <button
+        className={styles.secondaryButton}
+        type="button"
+        disabled={families.isFetching}
+        onClick={() => void families.refetch()}
+      >
+        刷新
+      </button>
+      {families.isError ? <p role="alert">家庭列表加载失败。</p> : null}
+      {account?.siteRole === 'SUPER_ADMIN' ? <Link to="/admin">返回超管后台</Link> : null}
     </section>
-  );
-}
-
-function CreateFamilyForm(): React.JSX.Element {
-  const auth = useAuth();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const [serverError, setServerError] = useState<string>();
-  const {
-    register,
-    handleSubmit,
-    setError,
-    formState: { errors, isSubmitting },
-  } = useForm<CreateValues>();
-
-  const submit = handleSubmit(async (raw) => {
-    const parsed = createSchema.safeParse(raw);
-    if (!parsed.success) {
-      for (const issue of parsed.error.issues) {
-        const field = issue.path[0];
-        if (field === 'name' || field === 'displayName')
-          setError(field, { message: issue.message });
-      }
-      return;
-    }
-    setServerError(undefined);
-    try {
-      const family = await api.createFamily(parsed.data);
-      auth.setAccount({ ...auth.account!, activeFamilyId: family.id, activeBabyId: null });
-      await queryClient.invalidateQueries({ queryKey: familyKeys.all });
-      await navigate(`/app/families/${family.id}`, { replace: true });
-    } catch (error) {
-      setServerError(userFacingError(error));
-    }
-  });
-
-  return (
-    <form className={styles.formCard} onSubmit={(event) => void submit(event)} noValidate>
-      <FormError message={serverError ?? errors.name?.message ?? errors.displayName?.message} />
-      <label>
-        家庭名称
-        <input
-          autoFocus
-          maxLength={40}
-          placeholder="例如：我们的温暖小家"
-          {...register('name', { required: '请输入家庭名称', maxLength: 40 })}
-        />
-      </label>
-      <FieldError message={errors.name?.message} />
-      <label>
-        你在家庭中的称呼
-        <input
-          maxLength={30}
-          placeholder="例如：妈妈、舅舅"
-          {...register('displayName', { required: '请输入家庭称呼', maxLength: 30 })}
-        />
-      </label>
-      <FieldError message={errors.displayName?.message} />
-      <button className={styles.primaryButton} disabled={isSubmitting} type="submit">
-        {isSubmitting ? '正在创建…' : '创建家庭'}
-      </button>
-      <p className={styles.hint}>你将成为此家庭的创建者。当前版本暂不支持转移所有权。</p>
-    </form>
-  );
-}
-
-function JoinFamilyForm(): React.JSX.Element {
-  const auth = useAuth();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const [serverError, setServerError] = useState<string>();
-  const {
-    register,
-    handleSubmit,
-    setError,
-    formState: { errors, isSubmitting },
-  } = useForm<JoinValues>();
-  const submit = handleSubmit(async (raw) => {
-    const parsed = joinSchema.safeParse(raw);
-    if (!parsed.success) {
-      for (const issue of parsed.error.issues) {
-        const field = issue.path[0];
-        if (field === 'token' || field === 'displayName')
-          setError(field, { message: issue.message });
-      }
-      return;
-    }
-    setServerError(undefined);
-    try {
-      const result = await api.acceptFamilyInvitation(parsed.data);
-      auth.setAccount(result.account);
-      await queryClient.invalidateQueries({ queryKey: familyKeys.all });
-      await navigate(`/app/families/${result.family.id}`, { replace: true });
-    } catch (error) {
-      setServerError(userFacingError(error, '邀请口令无效或已失效。'));
-    }
-  });
-  return (
-    <form className={styles.formCard} onSubmit={(event) => void submit(event)} noValidate>
-      <FormError message={serverError ?? errors.token?.message ?? errors.displayName?.message} />
-      <label>
-        邀请口令
-        <input
-          autoFocus
-          autoCapitalize="characters"
-          autoComplete="off"
-          placeholder="XXXX-XXXX-XXXX"
-          {...register('token', { required: '请输入邀请口令' })}
-        />
-      </label>
-      <FieldError message={errors.token?.message} />
-      <label>
-        你在家庭中的称呼
-        <input
-          maxLength={30}
-          placeholder="例如：奶奶、叔叔"
-          {...register('displayName', { required: '请输入家庭称呼', maxLength: 30 })}
-        />
-      </label>
-      <FieldError message={errors.displayName?.message} />
-      <button className={styles.primaryButton} disabled={isSubmitting} type="submit">
-        {isSubmitting ? '正在加入…' : '加入家庭'}
-      </button>
-      <p className={styles.hint}>邀请口令仅可由一位成员使用一次，有效期为 7 天。</p>
-    </form>
   );
 }
 
@@ -551,7 +398,6 @@ export function FamilyPage(): React.JSX.Element {
     );
   if (requiresActivation) return <PageState message="正在切换当前家庭…" busy />;
   const membership = detail.data.currentMembership;
-  const canInvite = membership.role === 'OWNER' || membership.role === 'ADMIN';
 
   return (
     <div className={styles.familyPage}>
@@ -585,22 +431,12 @@ export function FamilyPage(): React.JSX.Element {
             title="家庭成员"
             subtitle="称呼与授权角色相互独立"
           />
+          {membership.role === 'ADMIN' ? (
+            <Link className={styles.secondaryButton} to={'/app/families/' + familyId + '/manage'}>
+              成员管理
+            </Link>
+          ) : null}
           <MembersPanel family={detail.data} onNotice={setNotice} />
-        </section>
-        <section className={styles.panel}>
-          <PanelHeading
-            icon={<UserRoundPlus size={20} />}
-            title="邀请亲友"
-            subtitle={canInvite ? '单人单次使用，7 天内有效' : '仅创建者和管理员可管理邀请'}
-          />
-          {canInvite ? (
-            <InvitationsPanel familyId={familyId} onNotice={setNotice} />
-          ) : (
-            <EmptyState
-              icon={<Shield size={22} />}
-              text="你可以查看家庭内容，但没有邀请管理权限。"
-            />
-          )}
         </section>
         <section className={`${styles.panel} ${styles.activityPanel}`}>
           <PanelHeading
@@ -634,30 +470,6 @@ function MembersPanel({
     queryKey: familyKeys.members(family.id),
     queryFn: () => api.listFamilyMembers(family.id),
   });
-  const actorRole = family.currentMembership.role;
-
-  async function refresh(): Promise<void> {
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: familyKeys.members(family.id) }),
-      queryClient.invalidateQueries({ queryKey: familyKeys.activities(family.id) }),
-      queryClient.invalidateQueries({ queryKey: familyKeys.invitations(family.id) }),
-      queryClient.invalidateQueries({ queryKey: familyKeys.all }),
-    ]);
-  }
-  async function act(action: () => Promise<unknown>, success: string): Promise<void> {
-    try {
-      await action();
-      await refresh();
-      onNotice(success);
-    } catch (error) {
-      await refresh();
-      onNotice(userFacingError(error));
-    }
-  }
-  function canRemove(member: FamilyMember): boolean {
-    if (member.isCurrentAccount || member.role === 'OWNER') return false;
-    return actorRole === 'OWNER' || (actorRole === 'ADMIN' && member.role === 'MEMBER');
-  }
 
   if (members.isPending) return <PageState message="正在加载成员…" busy compact />;
   if (members.isError) return <PageState message="成员加载失败。" compact />;
@@ -678,80 +490,36 @@ function MembersPanel({
           <span className={styles.roleBadge} data-role={member.role}>
             {roleLabel(member.role)}
           </span>
-          {actorRole === 'OWNER' && !member.isCurrentAccount && member.role !== 'OWNER' ? (
-            <DropdownSelect
-              label={`调整 ${member.displayName} 的角色`}
-              value={member.role}
-              size="compact"
-              align="end"
-              options={[
-                { value: 'MEMBER', label: '成员' },
-                { value: 'ADMIN', label: '管理员' },
-              ]}
-              onChange={(next) => {
-                setConfirm({
-                  title: '确认调整角色？',
-                  message: `${member.displayName} 将变为${roleLabel(next)}。`,
-                  action: () =>
-                    act(
-                      () => api.changeFamilyMemberRole(family.id, member.id, { role: next }),
-                      '成员角色已更新。',
-                    ),
-                });
-              }}
-            />
-          ) : null}
-          {canRemove(member) ? (
-            <button
-              className={styles.dangerIcon}
-              type="button"
-              aria-label={`移除 ${member.displayName}`}
-              onClick={() =>
-                setConfirm({
-                  title: '确认移除成员？',
-                  message: `${member.displayName} 将立即无法访问这个家庭。`,
-                  action: () =>
-                    act(() => api.removeFamilyMember(family.id, member.id), '成员已移除。'),
-                })
-              }
-            >
-              <Trash2 size={17} />
-            </button>
-          ) : null}
         </article>
       ))}
-      {actorRole !== 'OWNER' ? (
-        <button
-          className={styles.secondaryButton}
-          type="button"
-          onClick={() =>
-            setConfirm({
-              title: '确认退出家庭？',
-              message: '退出后需要新的有效邀请口令才能重新加入。',
-              action: async () => {
-                try {
-                  const account = await api.leaveFamily(family.id);
-                  auth.setAccount(account);
-                  queryClient.removeQueries({ queryKey: ['family', family.id] });
-                  await queryClient.invalidateQueries({ queryKey: familyKeys.all });
-                  await navigate(
-                    account.activeFamilyId
-                      ? `/app/families/${account.activeFamilyId}`
-                      : '/app/onboarding',
-                    { replace: true },
-                  );
-                } catch (error) {
-                  onNotice(userFacingError(error));
-                }
-              },
-            })
-          }
-        >
-          退出这个家庭
-        </button>
-      ) : (
-        <p className={styles.hint}>创建者不能退出家庭；所有权转移将在后续版本提供。</p>
-      )}
+      <button
+        className={styles.secondaryButton}
+        type="button"
+        onClick={() =>
+          setConfirm({
+            title: '确认退出家庭？',
+            message: '重新加入请联系家庭管理员。',
+            action: async () => {
+              try {
+                const account = await api.leaveFamily(family.id);
+                auth.setAccount(account);
+                queryClient.removeQueries({ queryKey: ['family', family.id] });
+                await queryClient.invalidateQueries({ queryKey: familyKeys.all });
+                await navigate(
+                  account.activeFamilyId
+                    ? `/app/families/${account.activeFamilyId}`
+                    : '/app/onboarding',
+                  { replace: true },
+                );
+              } catch (error) {
+                onNotice(userFacingError(error));
+              }
+            },
+          })
+        }
+      >
+        退出这个家庭
+      </button>
       {confirm ? (
         <ConfirmDialog
           title={confirm.title}
@@ -760,119 +528,6 @@ function MembersPanel({
           onConfirm={async () => {
             setConfirm(undefined);
             await confirm.action();
-          }}
-        />
-      ) : null}
-    </div>
-  );
-}
-
-function InvitationsPanel({
-  familyId,
-  onNotice,
-}: {
-  familyId: string;
-  onNotice: (message?: string) => void;
-}): React.JSX.Element {
-  const queryClient = useQueryClient();
-  const [created, setCreated] = useState<{ token: string; expiresAt: string }>();
-  const [creating, setCreating] = useState(false);
-  const [revokeTarget, setRevokeTarget] = useState<string>();
-  const invitations = useQuery({
-    queryKey: familyKeys.invitations(familyId),
-    queryFn: () => api.listFamilyInvitations(familyId),
-  });
-  async function create(): Promise<void> {
-    setCreating(true);
-    onNotice(undefined);
-    try {
-      const result = await api.createFamilyInvitation(familyId);
-      setCreated({ token: result.token, expiresAt: result.invitation.expiresAt });
-      await queryClient.invalidateQueries({ queryKey: familyKeys.invitations(familyId) });
-    } catch (error) {
-      onNotice(userFacingError(error));
-    } finally {
-      setCreating(false);
-    }
-  }
-  async function copy(): Promise<void> {
-    if (!created) return;
-    try {
-      await navigator.clipboard.writeText(created.token);
-      onNotice('邀请口令已复制。');
-    } catch {
-      onNotice('自动复制失败，请长按或选中文本手动复制。');
-    }
-  }
-  async function revoke(id: string): Promise<void> {
-    try {
-      await api.revokeFamilyInvitation(familyId, id);
-      await queryClient.invalidateQueries({ queryKey: familyKeys.invitations(familyId) });
-      onNotice('邀请已撤销。');
-    } catch (error) {
-      onNotice(userFacingError(error));
-    }
-  }
-  return (
-    <div>
-      <button
-        className={styles.primaryButton}
-        disabled={creating}
-        type="button"
-        onClick={() => void create()}
-      >
-        <Plus size={17} />
-        {creating ? '正在生成…' : '生成一次性邀请'}
-      </button>
-      {created ? (
-        <div className={styles.tokenPanel} role="status">
-          <button
-            className={styles.closeButton}
-            type="button"
-            aria-label="关闭一次性邀请口令"
-            onClick={() => setCreated(undefined)}
-          >
-            <X size={17} />
-          </button>
-          <span>请现在保存，关闭后无法再次查看</span>
-          <strong>{created.token}</strong>
-          <button type="button" onClick={() => void copy()}>
-            <Copy size={16} />
-            复制口令
-          </button>
-          <small>有效至 {new Date(created.expiresAt).toLocaleString('zh-CN')}</small>
-        </div>
-      ) : null}
-      <div className={styles.inviteList}>
-        {invitations.isPending ? <PageState message="正在加载邀请…" busy compact /> : null}
-        {invitations.isError ? <PageState message="邀请列表加载失败。" compact /> : null}
-        {invitations.data?.items.map((invitation) => (
-          <div key={invitation.id}>
-            <div>
-              <strong>{invitation.createdBy.displayName} 创建</strong>
-              <span>
-                {new Date(invitation.createdAt).toLocaleDateString('zh-CN')} ·{' '}
-                {new Date(invitation.expiresAt).toLocaleDateString('zh-CN')} 到期
-              </span>
-            </div>
-            <button type="button" onClick={() => setRevokeTarget(invitation.id)}>
-              撤销
-            </button>
-          </div>
-        ))}
-        {invitations.data?.items.length === 0 ? (
-          <p className={styles.hint}>当前没有待使用的邀请。</p>
-        ) : null}
-      </div>
-      {revokeTarget ? (
-        <ConfirmDialog
-          title="确认撤销邀请？"
-          message="撤销后该邀请口令会立即失效，且无法恢复。"
-          onCancel={() => setRevokeTarget(undefined)}
-          onConfirm={async () => {
-            const invitationId = revokeTarget;
-            setRevokeTarget(undefined);
-            await revoke(invitationId);
           }}
         />
       ) : null}
@@ -1100,15 +755,4 @@ function PageState({
       {action}
     </div>
   );
-}
-function FormError({ message }: { message?: string | undefined }): React.JSX.Element | null {
-  const id = useId();
-  return message ? (
-    <p id={id} className={styles.formError} role="alert" tabIndex={-1}>
-      {message}
-    </p>
-  ) : null;
-}
-function FieldError({ message }: { message?: string | undefined }): React.JSX.Element | null {
-  return message ? <span className={styles.fieldError}>{message}</span> : null;
 }

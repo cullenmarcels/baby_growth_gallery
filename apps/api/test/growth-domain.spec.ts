@@ -76,7 +76,7 @@ describe('growth record domain and lifecycle', () => {
     expect(canRestoreGrowth(membership, { ...record, trashedByMembershipId: 'other' })).toBe(false);
     expect(canRestoreGrowth({ ...membership, id: 'other' }, record)).toBe(false);
     expect(
-      canRestoreGrowth({ ...membership, role: 'ADMIN' }, { ...record, trashedByRole: 'OWNER' }),
+      canRestoreGrowth({ ...membership, role: 'ADMIN' }, { ...record, trashedByRole: 'ADMIN' }),
     ).toBe(true);
     expect(canRestoreGrowth(membership, { ...record, purgeAfter: new Date(0) })).toBe(false);
     expect(canRestoreGrowth(membership, { ...record, status: 'ACTIVE' })).toBe(false);

@@ -72,7 +72,7 @@ describe('milestone domain boundaries', () => {
 
   it('allows the author and current managers to manage, while other members remain read only', () => {
     const policy = new MilestonePolicyService({} as never, {} as never);
-    expect(policy.canManage(membership('OWNER'), { createdByMembershipId: 'someone-else' })).toBe(
+    expect(policy.canManage(membership('ADMIN'), { createdByMembershipId: 'someone-else' })).toBe(
       true,
     );
     expect(policy.canManage(membership('ADMIN'), { createdByMembershipId: 'someone-else' })).toBe(

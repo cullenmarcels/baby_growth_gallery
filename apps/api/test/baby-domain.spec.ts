@@ -63,9 +63,9 @@ describe('baby profile domain boundaries', () => {
     jest.useRealTimers();
   });
 
-  it('allows OWNER and ADMIN management but rejects MEMBER', () => {
+  it('allows ADMIN management but rejects MEMBER', () => {
     const policy = new BabyPolicyService({} as never, {} as never);
-    expect(() => policy.requireManager(membership('OWNER'))).not.toThrow();
+    expect(() => policy.requireManager(membership('ADMIN'))).not.toThrow();
     expect(() => policy.requireManager(membership('ADMIN'))).not.toThrow();
     expect(() => policy.requireManager(membership('MEMBER'))).toThrow(ApiProblemException);
   });
@@ -75,7 +75,7 @@ describe('baby profile domain boundaries', () => {
     const service = new BabyService(
       { babyProfile: { updateMany } } as never,
       {
-        requireBaby: jest.fn().mockResolvedValue({ membership: membership('OWNER'), baby: baby() }),
+        requireBaby: jest.fn().mockResolvedValue({ membership: membership('ADMIN'), baby: baby() }),
         requireManager: jest.fn(),
       } as never,
     );
@@ -94,7 +94,7 @@ describe('baby profile domain boundaries', () => {
       {
         requireBaby: jest
           .fn()
-          .mockResolvedValue({ membership: membership('OWNER'), baby: expired }),
+          .mockResolvedValue({ membership: membership('ADMIN'), baby: expired }),
         requireManager: jest.fn(),
       } as never,
     );

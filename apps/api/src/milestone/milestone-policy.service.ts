@@ -26,10 +26,7 @@ export class MilestonePolicyService {
     membership: FamilyMembership,
     milestone: Pick<Milestone, 'createdByMembershipId'>,
   ): boolean {
-    return (
-      ['OWNER', 'ADMIN'].includes(membership.role) ||
-      milestone.createdByMembershipId === membership.id
-    );
+    return membership.role === 'ADMIN' || milestone.createdByMembershipId === membership.id;
   }
 
   notFound(): never {

@@ -28,11 +28,6 @@ const environmentSchema = z.object({
     .default('false')
     .transform((value) => value === 'true'),
   TRUST_PROXY: z.coerce.number().int().min(0).max(10).default(0),
-  VERIFICATION_DELIVERY_MODE: z.enum(['unconfigured', 'fixed']).default('unconfigured'),
-  TEST_VERIFICATION_CODE: z
-    .string()
-    .regex(/^\d{6}$/)
-    .optional(),
   S3_ENDPOINT: z.string().url().default('http://localhost:9000'),
   S3_PUBLIC_ENDPOINT: z.string().url().default('http://localhost:9000'),
   S3_REGION: z.string().min(1).default('us-east-1'),
@@ -62,8 +57,6 @@ export interface AppConfig {
     cookieSecure: boolean;
     cookieName: string;
     trustProxy: number;
-    verificationDeliveryMode: 'unconfigured' | 'fixed';
-    testVerificationCode?: string;
   };
   s3: {
     endpoint: string;
@@ -99,12 +92,6 @@ export function loadAppConfig(environment: NodeJS.ProcessEnv = process.env): App
     throw new Error('Invalid application configuration: WEB_ORIGIN cannot contain * in production');
   }
 
-  if (values.NODE_ENV === 'production' && values.VERIFICATION_DELIVERY_MODE === 'fixed') {
-    throw new Error(
-      'Invalid application configuration: fixed verification codes are forbidden in production',
-    );
-  }
-
   if (
     values.NODE_ENV === 'production' &&
     (values.AUTH_SESSION_SECRET === DEVELOPMENT_SESSION_SECRET ||
@@ -117,12 +104,6 @@ export function loadAppConfig(environment: NodeJS.ProcessEnv = process.env): App
 
   if (values.NODE_ENV === 'production' && !values.AUTH_COOKIE_SECURE) {
     throw new Error('Invalid application configuration: production cookies must be Secure');
-  }
-
-  if (values.VERIFICATION_DELIVERY_MODE === 'fixed' && !values.TEST_VERIFICATION_CODE) {
-    throw new Error(
-      'Invalid application configuration: TEST_VERIFICATION_CODE is required in fixed mode',
-    );
   }
 
   if (!values.AUTH_COOKIE_SECURE) {
@@ -162,10 +143,6 @@ export function loadAppConfig(environment: NodeJS.ProcessEnv = process.env): App
       cookieSecure: values.AUTH_COOKIE_SECURE,
       cookieName: values.AUTH_COOKIE_SECURE ? '__Host-bgg_session' : 'bgg_dev_session',
       trustProxy: values.TRUST_PROXY,
-      verificationDeliveryMode: values.VERIFICATION_DELIVERY_MODE,
-      ...(values.TEST_VERIFICATION_CODE
-        ? { testVerificationCode: values.TEST_VERIFICATION_CODE }
-        : {}),
     },
     s3: {
       endpoint: values.S3_ENDPOINT,

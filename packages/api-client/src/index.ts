@@ -5,10 +5,15 @@ export type {
   GrowthOverview,
   GrowthSeries,
   AccountSummary,
+  ManagedAccount,
+  ManagedAccountDetail,
+  ManagedFamilyListItem,
+  ManagedFamily,
+  ManagedFamilyDetail,
+  IssuedPassword,
   ApiClient,
   ApiClientOptions,
   ApiProblem,
-  ActiveInvitation,
   BabySummary,
   FamilyActivityPage,
   FamilyMember,
@@ -28,6 +33,5 @@ export type {
   PhotoUploadBatch,
   PhotoUploadInstruction,
   ReadinessResponse,
-  VerificationChallenge,
 } from './client.js';
 export type { components, operations, paths } from './schema.js';

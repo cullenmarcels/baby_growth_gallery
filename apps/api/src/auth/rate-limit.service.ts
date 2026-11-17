@@ -5,10 +5,6 @@ import { RedisService } from '../infrastructure/redis.service.js';
 
 @Injectable()
 export class AuthRateLimitService {
-  private readonly codePhoneMinute;
-  private readonly codePhoneHour;
-  private readonly codePhoneDay;
-  private readonly codeIpHour;
   private readonly passwordAccount;
   private readonly passwordIp;
 
@@ -18,30 +14,6 @@ export class AuthRateLimitService {
       useRedisPackage: true,
       rejectIfRedisNotReady: true,
     };
-    this.codePhoneMinute = new RateLimiterRedis({
-      ...common,
-      keyPrefix: `${redis.prefix}:rl:code:phone:minute`,
-      points: 1,
-      duration: 60,
-    });
-    this.codePhoneHour = new RateLimiterRedis({
-      ...common,
-      keyPrefix: `${redis.prefix}:rl:code:phone:hour`,
-      points: 5,
-      duration: 3_600,
-    });
-    this.codePhoneDay = new RateLimiterRedis({
-      ...common,
-      keyPrefix: `${redis.prefix}:rl:code:phone:day`,
-      points: 10,
-      duration: 86_400,
-    });
-    this.codeIpHour = new RateLimiterRedis({
-      ...common,
-      keyPrefix: `${redis.prefix}:rl:code:ip:hour`,
-      points: 20,
-      duration: 3_600,
-    });
     this.passwordAccount = new RateLimiterRedis({
       ...common,
       keyPrefix: `${redis.prefix}:rl:password:account`,
@@ -55,16 +27,6 @@ export class AuthRateLimitService {
       points: 30,
       duration: 900,
     });
-  }
-
-  async consumeCodeRequest(phoneKey: string, purpose: string, ipKey: string): Promise<void> {
-    await this.redis.ensureConnected();
-    await Promise.all([
-      this.consume(this.codePhoneMinute, `${phoneKey}:${purpose}`),
-      this.consume(this.codePhoneHour, phoneKey),
-      this.consume(this.codePhoneDay, phoneKey),
-      this.consume(this.codeIpHour, ipKey),
-    ]);
   }
 
   async consumePasswordAttempt(accountKey: string, ipKey: string): Promise<void> {

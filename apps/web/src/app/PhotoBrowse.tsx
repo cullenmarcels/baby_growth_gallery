@@ -689,9 +689,7 @@ export function BabyAvatarPickerPage(): React.JSX.Element {
   const photos = usePublished(familyId, babyId);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string>();
-  const canManage = Boolean(
-    family.data && ['OWNER', 'ADMIN'].includes(family.data.currentMembership.role),
-  );
+  const canManage = Boolean(family.data && family.data.currentMembership.role === 'ADMIN');
   const items = photos.data?.pages.flatMap((page) => page.items) ?? [];
   if (!familyId || !babyId) return <Navigate replace to="/app" />;
   async function select(photoId: string | null): Promise<void> {

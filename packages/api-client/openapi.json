@@ -1,37 +1,18 @@
 {
   "components": {
     "schemas": {
-      "AcceptInvitationRequestDto": {
+      "AccountStatusInputDto": {
         "properties": {
-          "displayName": {
-            "maxLength": 30,
-            "minLength": 1,
-            "type": "string"
-          },
-          "token": {
-            "maxLength": 32,
-            "minLength": 12,
+          "status": {
+            "enum": [
+              "ACTIVE",
+              "DISABLED"
+            ],
             "type": "string"
           }
         },
         "required": [
-          "token",
-          "displayName"
-        ],
-        "type": "object"
-      },
-      "AcceptInvitationResponseDto": {
-        "properties": {
-          "account": {
-            "$ref": "#/components/schemas/AccountSummaryDto"
-          },
-          "family": {
-            "$ref": "#/components/schemas/FamilySummaryDto"
-          }
-        },
-        "required": [
-          "family",
-          "account"
+          "status"
         ],
         "type": "object"
       },
@@ -55,15 +36,30 @@
             "format": "uuid",
             "type": "string"
           },
-          "phoneMasked": {
-            "example": "+86 138****8000",
+          "mustAcceptTerms": {
+            "type": "boolean"
+          },
+          "mustChangePassword": {
+            "type": "boolean"
+          },
+          "siteRole": {
+            "enum": [
+              "USER",
+              "SUPER_ADMIN"
+            ],
+            "type": "string"
+          },
+          "username": {
             "type": "string"
           }
         },
         "required": [
           "id",
           "displayName",
-          "phoneMasked",
+          "username",
+          "siteRole",
+          "mustChangePassword",
+          "mustAcceptTerms",
           "activeFamilyId",
           "activeBabyId"
         ],
@@ -143,32 +139,6 @@
         ],
         "type": "object"
       },
-      "ActiveInvitationDto": {
-        "properties": {
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "createdBy": {
-            "$ref": "#/components/schemas/InvitationCreatorDto"
-          },
-          "expiresAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "id": {
-            "format": "uuid",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "expiresAt",
-          "createdAt",
-          "createdBy"
-        ],
-        "type": "object"
-      },
       "ActivityActorDto": {
         "properties": {
           "displayName": {
@@ -198,6 +168,34 @@
         "required": [
           "type",
           "id"
+        ],
+        "type": "object"
+      },
+      "AddMemberDto": {
+        "properties": {
+          "displayName": {
+            "maxLength": 30,
+            "minLength": 1,
+            "type": "string"
+          },
+          "role": {
+            "default": "MEMBER",
+            "enum": [
+              "ADMIN",
+              "MEMBER"
+            ],
+            "type": "string"
+          },
+          "username": {
+            "example": "小福-bao",
+            "maxLength": 32,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "username",
+          "displayName"
         ],
         "type": "object"
       },
@@ -371,48 +369,6 @@
         ],
         "type": "object"
       },
-      "ChangeMemberRoleRequestDto": {
-        "properties": {
-          "role": {
-            "enum": [
-              "ADMIN",
-              "MEMBER"
-            ],
-            "type": "string"
-          }
-        },
-        "required": [
-          "role"
-        ],
-        "type": "object"
-      },
-      "CodeLoginRequestDto": {
-        "properties": {
-          "challengeId": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "code": {
-            "example": "123456",
-            "type": "string"
-          },
-          "phone": {
-            "example": "13800138000",
-            "type": "string"
-          },
-          "remember": {
-            "default": false,
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "phone",
-          "challengeId",
-          "code",
-          "remember"
-        ],
-        "type": "object"
-      },
       "CompleteMilestoneRequestDto": {
         "properties": {
           "completedOn": {
@@ -492,41 +448,6 @@
         "required": [
           "source",
           "title"
-        ],
-        "type": "object"
-      },
-      "CreatedInvitationDto": {
-        "properties": {
-          "invitation": {
-            "$ref": "#/components/schemas/ActiveInvitationDto"
-          },
-          "token": {
-            "pattern": "^[0-9A-HJKMNP-TV-Z]{4}(?:-[0-9A-HJKMNP-TV-Z]{4}){2}$",
-            "type": "string"
-          }
-        },
-        "required": [
-          "invitation",
-          "token"
-        ],
-        "type": "object"
-      },
-      "CreateFamilyRequestDto": {
-        "properties": {
-          "displayName": {
-            "maxLength": 30,
-            "minLength": 1,
-            "type": "string"
-          },
-          "name": {
-            "maxLength": 40,
-            "minLength": 1,
-            "type": "string"
-          }
-        },
-        "required": [
-          "name",
-          "displayName"
         ],
         "type": "object"
       },
@@ -728,7 +649,6 @@
           },
           "role": {
             "enum": [
-              "OWNER",
               "ADMIN",
               "MEMBER"
             ],
@@ -778,7 +698,6 @@
           },
           "role": {
             "enum": [
-              "OWNER",
               "ADMIN",
               "MEMBER"
             ],
@@ -1159,33 +1078,269 @@
         ],
         "type": "object"
       },
-      "InvitationCreatorDto": {
+      "IssuedPasswordDto": {
         "properties": {
-          "displayName": {
+          "expiresAt": {
+            "format": "date-time",
             "type": "string"
           },
-          "membershipId": {
-            "format": "uuid",
+          "temporaryPassword": {
+            "type": "string"
+          },
+          "username": {
+            "example": "小福-bao",
+            "maxLength": 32,
+            "minLength": 1,
             "type": "string"
           }
         },
         "required": [
-          "membershipId",
+          "username",
+          "temporaryPassword",
+          "expiresAt"
+        ],
+        "type": "object"
+      },
+      "ManagedAccountDetailDto": {
+        "properties": {
+          "displayName": {
+            "nullable": true,
+            "type": "string"
+          },
+          "families": {
+            "items": {
+              "$ref": "#/components/schemas/ManagedAccountFamilyDto"
+            },
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "ACTIVE",
+              "DISABLED"
+            ],
+            "type": "string"
+          },
+          "username": {
+            "example": "小福-bao",
+            "maxLength": 32,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "username",
+          "id",
+          "displayName",
+          "status",
+          "families"
+        ],
+        "type": "object"
+      },
+      "ManagedAccountDto": {
+        "properties": {
+          "displayName": {
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "ACTIVE",
+              "DISABLED"
+            ],
+            "type": "string"
+          },
+          "username": {
+            "example": "小福-bao",
+            "maxLength": 32,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "username",
+          "id",
+          "displayName",
+          "status"
+        ],
+        "type": "object"
+      },
+      "ManagedAccountFamilyDto": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "ADMIN",
+              "MEMBER"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "role"
+        ],
+        "type": "object"
+      },
+      "ManagedAccountInputDto": {
+        "properties": {
+          "displayName": {
+            "maxLength": 30,
+            "minLength": 1,
+            "type": "string"
+          },
+          "username": {
+            "example": "小福-bao",
+            "maxLength": 32,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "username",
           "displayName"
         ],
         "type": "object"
       },
-      "InvitationListResponseDto": {
+      "ManagedFamilyDetailDto": {
         "properties": {
-          "items": {
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "isOpen": {
+            "type": "boolean"
+          },
+          "members": {
             "items": {
-              "$ref": "#/components/schemas/ActiveInvitationDto"
+              "$ref": "#/components/schemas/ManagedMemberDto"
             },
             "type": "array"
+          },
+          "name": {
+            "type": "string"
           }
         },
         "required": [
-          "items"
+          "id",
+          "name",
+          "isOpen",
+          "members"
+        ],
+        "type": "object"
+      },
+      "ManagedFamilyDto": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "isOpen": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "isOpen"
+        ],
+        "type": "object"
+      },
+      "ManagedFamilyInputDto": {
+        "properties": {
+          "name": {
+            "maxLength": 40,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "ManagedFamilyListItemDto": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "isOpen": {
+            "type": "boolean"
+          },
+          "memberCount": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "isOpen",
+          "memberCount"
+        ],
+        "type": "object"
+      },
+      "ManagedMemberDto": {
+        "properties": {
+          "accountStatus": {
+            "enum": [
+              "ACTIVE",
+              "DISABLED"
+            ],
+            "type": "string"
+          },
+          "canResetPassword": {
+            "type": "boolean"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "ADMIN",
+              "MEMBER"
+            ],
+            "type": "string"
+          },
+          "username": {
+            "example": "小福-bao",
+            "maxLength": 32,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "username",
+          "id",
+          "displayName",
+          "role",
+          "accountStatus",
+          "canResetPassword"
         ],
         "type": "object"
       },
@@ -1207,7 +1362,6 @@
           },
           "role": {
             "enum": [
-              "OWNER",
               "ADMIN",
               "MEMBER"
             ],
@@ -1253,7 +1407,6 @@
           },
           "fromRole": {
             "enum": [
-              "OWNER",
               "ADMIN",
               "MEMBER"
             ],
@@ -1265,7 +1418,6 @@
           },
           "toRole": {
             "enum": [
-              "OWNER",
               "ADMIN",
               "MEMBER"
             ],
@@ -1277,6 +1429,21 @@
           "displayName",
           "fromRole",
           "toRole"
+        ],
+        "type": "object"
+      },
+      "MemberRoleInputDto": {
+        "properties": {
+          "role": {
+            "enum": [
+              "ADMIN",
+              "MEMBER"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "role"
         ],
         "type": "object"
       },
@@ -1619,6 +1786,29 @@
         ],
         "type": "object"
       },
+      "PasswordChangeRequestDto": {
+        "properties": {
+          "acceptTerms": {
+            "default": false,
+            "type": "boolean"
+          },
+          "currentPassword": {
+            "maxLength": 128,
+            "minLength": 6,
+            "type": "string"
+          },
+          "newPassword": {
+            "maxLength": 128,
+            "minLength": 6,
+            "type": "string"
+          }
+        },
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ],
+        "type": "object"
+      },
       "PasswordLoginRequestDto": {
         "properties": {
           "password": {
@@ -1626,47 +1816,20 @@
             "minLength": 6,
             "type": "string"
           },
-          "phone": {
-            "example": "13800138000",
-            "type": "string"
-          },
           "remember": {
             "default": false,
             "type": "boolean"
-          }
-        },
-        "required": [
-          "phone",
-          "password",
-          "remember"
-        ],
-        "type": "object"
-      },
-      "PasswordResetRequestDto": {
-        "properties": {
-          "challengeId": {
-            "format": "uuid",
-            "type": "string"
           },
-          "code": {
-            "example": "123456",
-            "type": "string"
-          },
-          "newPassword": {
-            "maxLength": 128,
-            "minLength": 6,
-            "type": "string"
-          },
-          "phone": {
-            "example": "13800138000",
+          "username": {
+            "example": "小福-bao",
+            "maxLength": 32,
+            "minLength": 1,
             "type": "string"
           }
         },
         "required": [
-          "phone",
-          "challengeId",
-          "code",
-          "newPassword"
+          "username",
+          "password"
         ],
         "type": "object"
       },
@@ -2124,44 +2287,6 @@
         ],
         "type": "object"
       },
-      "RegisterRequestDto": {
-        "properties": {
-          "challengeId": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "code": {
-            "example": "123456",
-            "type": "string"
-          },
-          "password": {
-            "maxLength": 128,
-            "minLength": 6,
-            "type": "string"
-          },
-          "phone": {
-            "example": "13800138000",
-            "type": "string"
-          },
-          "privacyVersion": {
-            "example": "draft-2026-09-10",
-            "type": "string"
-          },
-          "termsVersion": {
-            "example": "draft-2026-09-10",
-            "type": "string"
-          }
-        },
-        "required": [
-          "phone",
-          "challengeId",
-          "code",
-          "password",
-          "termsVersion",
-          "privacyVersion"
-        ],
-        "type": "object"
-      },
       "ReopenMilestoneRequestDto": {
         "properties": {
           "expectedVersion": {
@@ -2431,49 +2556,6 @@
           }
         },
         "type": "object"
-      },
-      "VerificationChallengeRequestDto": {
-        "properties": {
-          "phone": {
-            "example": "13800138000",
-            "type": "string"
-          },
-          "purpose": {
-            "enum": [
-              "REGISTER",
-              "LOGIN",
-              "RESET_PASSWORD"
-            ],
-            "type": "string"
-          }
-        },
-        "required": [
-          "phone",
-          "purpose"
-        ],
-        "type": "object"
-      },
-      "VerificationChallengeResponseDto": {
-        "properties": {
-          "challengeId": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "expiresInSeconds": {
-            "example": 300,
-            "type": "number"
-          },
-          "resendAfterSeconds": {
-            "example": 60,
-            "type": "number"
-          }
-        },
-        "required": [
-          "challengeId",
-          "expiresInSeconds",
-          "resendAfterSeconds"
-        ],
-        "type": "object"
       }
     }
   },
@@ -2495,88 +2577,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CsrfTokenResponseDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "400": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "401": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "403": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "429": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "503": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "summary": "Create or reuse an anonymous session and return its CSRF token",
-        "tags": [
-          "auth"
-        ]
-      }
-    },
-    "/api/v1/auth/login/code": {
-      "post": {
-        "operationId": "AuthController_loginCode",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CodeLoginRequestDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AccountSummaryDto"
                 }
               }
             },
@@ -2788,96 +2788,22 @@
         ]
       }
     },
-    "/api/v1/auth/password/reset": {
+    "/api/v1/auth/password/change": {
       "post": {
-        "operationId": "AuthController_resetPassword",
+        "operationId": "AuthController_changePassword",
         "parameters": [],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PasswordResetRequestDto"
+                "$ref": "#/components/schemas/PasswordChangeRequestDto"
               }
             }
           },
           "required": true
         },
         "responses": {
-          "204": {
-            "description": ""
-          },
-          "400": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "401": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "403": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "429": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "503": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "tags": [
-          "auth"
-        ]
-      }
-    },
-    "/api/v1/auth/register": {
-      "post": {
-        "operationId": "AuthController_register",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RegisterRequestDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
@@ -2938,6 +2864,11 @@
             "description": ""
           }
         },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
         "tags": [
           "auth"
         ]
@@ -3019,87 +2950,6 @@
         ]
       }
     },
-    "/api/v1/auth/verification-challenges": {
-      "post": {
-        "operationId": "AuthController_createChallenge",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/VerificationChallengeRequestDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "202": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VerificationChallengeResponseDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "400": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "401": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "403": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "429": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "503": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "tags": [
-          "auth"
-        ]
-      }
-    },
     "/api/v1/families": {
       "get": {
         "operationId": "FamilyController_list",
@@ -3110,90 +2960,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/FamilyListResponseDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "400": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "401": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "403": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "404": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "409": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "cookie": []
-          }
-        ],
-        "tags": [
-          "families"
-        ]
-      },
-      "post": {
-        "operationId": "FamilyController_create",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateFamilyRequestDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FamilySummaryDto"
                 }
               }
             },
@@ -5956,264 +5722,6 @@
         ]
       }
     },
-    "/api/v1/families/{familyId}/invitations": {
-      "get": {
-        "operationId": "FamilyController_invitations",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "familyId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InvitationListResponseDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "400": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "401": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "403": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "404": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "409": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "cookie": []
-          }
-        ],
-        "tags": [
-          "families"
-        ]
-      },
-      "post": {
-        "operationId": "FamilyController_createInvitation",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "familyId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CreatedInvitationDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "400": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "401": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "403": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "404": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "409": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "cookie": []
-          }
-        ],
-        "tags": [
-          "families"
-        ]
-      }
-    },
-    "/api/v1/families/{familyId}/invitations/{invitationId}": {
-      "delete": {
-        "operationId": "FamilyController_revokeInvitation",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "invitationId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "familyId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": ""
-          },
-          "400": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "401": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "403": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "404": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "409": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "cookie": []
-          }
-        ],
-        "tags": [
-          "families"
-        ]
-      }
-    },
     "/api/v1/families/{familyId}/members": {
       "get": {
         "operationId": "FamilyController_members",
@@ -6234,199 +5742,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/FamilyMemberListResponseDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "400": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "401": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "403": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "404": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "409": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "cookie": []
-          }
-        ],
-        "tags": [
-          "families"
-        ]
-      }
-    },
-    "/api/v1/families/{familyId}/members/{membershipId}": {
-      "delete": {
-        "operationId": "FamilyController_removeMember",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "membershipId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "familyId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": ""
-          },
-          "400": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "401": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "403": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "404": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "409": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "cookie": []
-          }
-        ],
-        "tags": [
-          "families"
-        ]
-      }
-    },
-    "/api/v1/families/{familyId}/members/{membershipId}/role": {
-      "patch": {
-        "operationId": "FamilyController_changeRole",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "membershipId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "familyId",
-            "required": true,
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ChangeMemberRoleRequestDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FamilyMemberDto"
                 }
               }
             },
@@ -6579,92 +5894,6 @@
         ]
       }
     },
-    "/api/v1/family-invitations/accept": {
-      "post": {
-        "operationId": "FamilyInvitationController_accept",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AcceptInvitationRequestDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AcceptInvitationResponseDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "400": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "401": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "409": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "429": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          },
-          "503": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiProblemDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "cookie": []
-          }
-        ],
-        "tags": [
-          "family-invitations"
-        ]
-      }
-    },
     "/api/v1/health/live": {
       "get": {
         "operationId": "HealthController_live",
@@ -6716,6 +5945,1150 @@
         "summary": "Required infrastructure readiness probe",
         "tags": [
           "health"
+        ]
+      }
+    },
+    "/api/v1/management/accounts": {
+      "get": {
+        "operationId": "ManagementController_listAccounts",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ManagedAccountDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "management"
+        ]
+      },
+      "post": {
+        "operationId": "ManagementController_createAccount",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManagedAccountInputDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssuedPasswordDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "management"
+        ]
+      }
+    },
+    "/api/v1/management/accounts/{accountId}": {
+      "get": {
+        "operationId": "ManagementController_getAccount",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "accountId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagedAccountDetailDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "management"
+        ]
+      }
+    },
+    "/api/v1/management/accounts/{accountId}/password": {
+      "post": {
+        "operationId": "ManagementController_resetAccount",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "accountId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssuedPasswordDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "management"
+        ]
+      }
+    },
+    "/api/v1/management/accounts/{accountId}/status": {
+      "patch": {
+        "operationId": "ManagementController_setStatus",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "accountId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountStatusInputDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagedAccountDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "management"
+        ]
+      }
+    },
+    "/api/v1/management/families": {
+      "get": {
+        "operationId": "ManagementController_listFamilies",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ManagedFamilyListItemDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "management"
+        ]
+      },
+      "post": {
+        "operationId": "ManagementController_createFamily",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManagedFamilyInputDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagedFamilyDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "management"
+        ]
+      }
+    },
+    "/api/v1/management/families/{familyId}": {
+      "get": {
+        "operationId": "ManagementController_familyDetail",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagedFamilyDetailDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "management"
+        ]
+      }
+    },
+    "/api/v1/management/families/{familyId}/accounts": {
+      "post": {
+        "operationId": "ManagementController_createFamilyAccount",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManagedAccountInputDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssuedPasswordDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "management"
+        ]
+      }
+    },
+    "/api/v1/management/families/{familyId}/members": {
+      "post": {
+        "operationId": "ManagementController_addMember",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddMemberDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "management"
+        ]
+      }
+    },
+    "/api/v1/management/families/{familyId}/members/{membershipId}": {
+      "delete": {
+        "operationId": "ManagementController_removeMember",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "membershipId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "management"
+        ]
+      },
+      "patch": {
+        "operationId": "ManagementController_setRole",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "membershipId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemberRoleInputDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "management"
+        ]
+      }
+    },
+    "/api/v1/management/families/{familyId}/members/{membershipId}/password": {
+      "post": {
+        "operationId": "ManagementController_resetMember",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "membershipId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "familyId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssuedPasswordDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProblemDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "tags": [
+          "management"
         ]
       }
     }

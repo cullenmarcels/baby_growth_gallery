@@ -273,6 +273,10 @@
   margin-top: 2px;
   accent-color: var(--color-primary);
 }
+.passwordActions {
+  display: grid;
+  gap: 12px;
+}
 .primaryButton {
   width: 100%;
   min-height: 50px;

@@ -1,10 +1,18 @@
 import { GrowthPage, GrowthFormPage } from './GrowthApp';
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { AuthLayout } from './AuthLayout';
-import { ForgotPasswordPage, LoginPage, RegisterPage } from './AuthPages';
+import { ChangePasswordPage, LoginPage } from './AuthPages';
+import { FamilyManagementPage } from './ManagementPages';
+import {
+  AdminFamiliesPage,
+  AdminFamilyDetailPage,
+  AdminLayout,
+  AdminMemberDetailPage,
+  AdminMembersPage,
+} from './AdminPages';
 import { LegalPage } from './LegalPage';
 import { NotFoundPage } from './NotFoundPage';
-import { GuestRoute, ProtectedRoute, RootRedirect } from './route-guards';
+import { GuestRoute, ProtectedRoute, RootRedirect, SuperAdminRoute } from './route-guards';
 import { StatusPage } from './StatusPage';
 import { AppHomeRedirect, FamilyPage, FamilyShell, OnboardingPage } from './FamilyApp';
 import {
@@ -25,11 +33,7 @@ export const router = createBrowserRouter([
     children: [
       {
         element: <AuthLayout />,
-        children: [
-          { path: '/login', element: <LoginPage /> },
-          { path: '/register', element: <RegisterPage /> },
-          { path: '/forgot-password', element: <ForgotPasswordPage /> },
-        ],
+        children: [{ path: '/login', element: <LoginPage /> }],
       },
     ],
   },
@@ -38,6 +42,26 @@ export const router = createBrowserRouter([
   {
     element: <ProtectedRoute />,
     children: [
+      {
+        element: <AuthLayout />,
+        children: [{ path: '/change-password', element: <ChangePasswordPage /> }],
+      },
+      {
+        element: <SuperAdminRoute />,
+        children: [
+          {
+            path: '/admin',
+            element: <AdminLayout />,
+            children: [
+              { index: true, element: <Navigate to="members" replace /> },
+              { path: 'members', element: <AdminMembersPage /> },
+              { path: 'members/:accountId', element: <AdminMemberDetailPage /> },
+              { path: 'families', element: <AdminFamiliesPage /> },
+              { path: 'families/:familyId', element: <AdminFamilyDetailPage /> },
+            ],
+          },
+        ],
+      },
       { path: '/app/photos/upload', element: <PhotoUploadPage /> },
       {
         path: '/app',
@@ -53,6 +77,7 @@ export const router = createBrowserRouter([
           { path: 'photos/manage', element: <PhotoManagePage /> },
           { path: 'photos/:photoId', element: <PhotoDetailPage /> },
           { path: 'onboarding', element: <OnboardingPage /> },
+          { path: 'families/:familyId/manage', element: <FamilyManagementPage /> },
           { path: 'families/:familyId', element: <FamilyPage /> },
           { path: 'timeline', element: <TimelinePage /> },
           { path: 'gallery', element: <GalleryPage /> },

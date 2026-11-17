@@ -36,15 +36,13 @@ export class PhotoPolicyService {
   }
 
   canManagePublished(membership: FamilyMembership, photo: Photo): boolean {
-    return (
-      photo.createdByMembershipId === membership.id || ['OWNER', 'ADMIN'].includes(membership.role)
-    );
+    return photo.createdByMembershipId === membership.id || membership.role === 'ADMIN';
   }
 
   canRestore(membership: FamilyMembership, photo: Photo): boolean {
     if (photo.status !== 'TRASHED' || !photo.purgeAfter || photo.purgeAfter <= new Date())
       return false;
-    if (membership.role === 'OWNER' || membership.role === 'ADMIN') return true;
+    if (membership.role === 'ADMIN') return true;
     return (
       photo.createdByMembershipId === membership.id &&
       photo.trashedByMembershipId === membership.id &&

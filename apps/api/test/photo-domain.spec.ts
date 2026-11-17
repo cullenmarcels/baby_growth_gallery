@@ -152,7 +152,7 @@ describe('photo upload domain boundaries', () => {
 
   it('keeps another member private draft hidden even from an owner, while owners can manage published photos', () => {
     const policy = new PhotoPolicyService({} as never, {} as never);
-    const owner = membership('OWNER');
+    const owner = membership('ADMIN');
     const otherDraft = photo('DRAFT');
     otherDraft.createdByMembershipId = '00000000-0000-4000-8000-000000000099';
     expect(() => policy.requirePrivateOwner(owner, otherDraft)).toThrow(ApiProblemException);
@@ -190,12 +190,12 @@ describe('photo upload domain boundaries', () => {
         createdByMembershipId: '00000000-0000-4000-8000-000000000099',
       }),
     ).toBe(false);
-    expect(policy.canRestore(membership('OWNER'), { ...ownTrash, trashedByRole: null })).toBe(true);
-    expect(policy.canRestore(membership('ADMIN'), { ...ownTrash, trashedByRole: 'OWNER' })).toBe(
+    expect(policy.canRestore(membership('ADMIN'), { ...ownTrash, trashedByRole: null })).toBe(true);
+    expect(policy.canRestore(membership('ADMIN'), { ...ownTrash, trashedByRole: 'ADMIN' })).toBe(
       true,
     );
     expect(
-      policy.canRestore(membership('OWNER'), {
+      policy.canRestore(membership('ADMIN'), {
         ...ownTrash,
         purgeAfter: new Date(Date.now() - 1000),
       }),
@@ -548,10 +548,10 @@ describe('photo upload domain boundaries', () => {
   it('provides a private thumbnail for an authorized trash manager without exposing it to a member', async () => {
     const trashed = photo('TRASHED');
     trashed.createdByMembershipId = '00000000-0000-4000-8000-000000000099';
-    const current = membership('OWNER');
+    const current = membership('ADMIN');
     const policy = {
       requirePhoto: jest.fn().mockResolvedValue({ membership: current, photo: trashed }),
-      canManagePublished: jest.fn((actor: FamilyMembership) => actor.role === 'OWNER'),
+      canManagePublished: jest.fn((actor: FamilyMembership) => actor.role === 'ADMIN'),
       permissionDenied: jest.fn(() => {
         throw new ApiProblemException(403, '你没有权限执行此照片操作。', 'PHOTO_PERMISSION_DENIED');
       }),

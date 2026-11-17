@@ -4,7 +4,7 @@
 
 ## 1. 项目状态
 
-- 项目为 PC、平板、移动端自适应网站；工程基础、分支治理与 Plan A–E 均已归档，现已具备私有照片直传、安全处理、家庭发布、回收站、图集、时间轴、照片详情与宝宝头像；后续阶段以已确认知识为准，持续交付可运行、可验证网站。
+- 项目为 PC、平板、移动端自适应网站；工程基础、分支治理与 Plan A–G 均已归档，Plan H 已合入 develop，现已具备私有照片直传、安全处理、家庭发布、回收站、图集、时间轴、照片详情与宝宝头像；后续阶段以已确认知识为准，持续交付可运行、可验证网站。
 
 ## 2. 权威性与冲突优先级
 
@@ -87,8 +87,9 @@
 | Plan E 照片浏览与界面修订             | `docs/plans/PLAN-20260918-RC0Y5QH3/plan.md` / `docs/achievements/ACH-20260918-RC0Y5QH3-photo-gallery-timeline-ui.md`                                                                        | 已归档                        | 图集、时间轴、照片详情、宝宝头像、档案操作、处理卡片及照片瀑布流；关联 `DES-20260918-Y2GFD47V` 与按钮单行规则 v2  |
 | Plan F 成长里程碑                     | `docs/specs/SPEC-20260920-QQ9SQ9VT-baby-milestones/spec.md` / `docs/designs/DES-20260920-SAX3DM0H-baby-milestones-ui/design.md` / `docs/plans/PLAN-20260920-BR79695D/plan.md`               | 已归档：ACH-20260920-BR79695D | 共享清单、12 项模板、自定义里程碑、应用内提醒、照片关联与混合时间轴                                               |
 | 照片浏览上传者与来源导航修订          | `docs/specs/SPEC-20260923-Y0XZXEM0-photo-detail-uploader/spec.md` / `docs/designs/DES-20260923-M1TKDS56-photo-detail-uploader/design.md` / `docs/plans/PLAN-20260923-1FC2B42D/plan.md` / `docs/achievements/ACH-20260923-1FC2B42D-photo-browse-experience.md` | 已归档                      | 卡片与详情上传者显示、图集/时间轴/里程碑来源感知照片详情返回；CI 镜像支持修复另见 PR #29 |
-
-| Plan G 成长数据与回收站 | `docs/specs/SPEC-20261022-17HX5RTZ-growth-records/spec.md` / `docs/designs/DES-20261022-EM2SND6K-growth-records/design.md` / `docs/plans/PLAN-20261022-707KSVG3/plan.md` | 实施中 | 任意年龄测量、WHO 228 月参考、30 天回收与管理员彻底删除 |
+| Plan G 成长数据与回收站 | `docs/specs/SPEC-20261022-17HX5RTZ-growth-records/spec.md` / `docs/designs/DES-20261022-EM2SND6K-growth-records/design.md` / `docs/plans/PLAN-20261022-707KSVG3/plan.md` | 已归档：ACH-20261022-707KSVG3 | 任意年龄测量、WHO 228 月参考、30 天回收与管理员彻底删除 |
+| 家庭专用账号修订 | `docs/specs/SPEC-20261111-H7J6WEKD-managed-admin/spec.md` / `docs/designs/DES-20261111-9KTXT0TA-managed-admin/design.md` / `docs/plans/PLAN-20261111-4TX2SW6A/plan.md` | 实施中 | 账户名密码、三级权限与本地重建 |
+| 超管后台改版 | `docs/plans/PLAN-20261111-V6ACAR8T/plan.md` | 实施中 | 成员和家庭管理、分页与后台读取契约 |
 
 执行任务时先用 `rules/INDEX.md` 定位阶段；进入 `docs/` 后读取 `docs/README.md` 和 `docs/INDEX.md`。不得仅按文件日期推断当前有效资料。
 

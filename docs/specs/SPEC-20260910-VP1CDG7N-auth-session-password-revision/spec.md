@@ -2,12 +2,12 @@
 id: SPEC-20260910-VP1CDG7N
 type: spec
 title: "手机号认证与 Redis 会话规格（密码长度修订）"
-status: active
+status: superseded
 created_at: 2026-09-10T16:23:24+08:00
-updated_at: 2026-09-10T16:23:24+08:00
+updated_at: 2026-11-11T13:30:00+08:00
 related_ids: [DES-20260908-ZVZKM07B, DES-20260910-V9P4SBX8, SPEC-20260908-5BD26QCA, SPEC-20260910-TAMMQYAH, PLAN-20260910-GK1XDGCG, PLAN-20260910-JBD9BWHZ]
 supersedes: [SPEC-20260910-TAMMQYAH]
-superseded_by: []
+superseded_by: [SPEC-20261111-5ZY6HCR3]
 ---
 
 # 手机号认证与 Redis 会话规格（密码长度修订）

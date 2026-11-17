@@ -4,37 +4,38 @@ import type { Account } from '../generated/prisma/client.js';
 import { ApiProblemException } from '../common/api-problem.exception.js';
 import { APP_CONFIG, type AppConfig } from '../config/app-config.js';
 import { PrismaService } from '../infrastructure/prisma.service.js';
-import { AuthService } from './auth.service.js';
+import type { AccountSummaryDto } from './auth.dto.js';
+import { LEGAL_DRAFT_VERSION } from './auth.schemas.js';
 
-export type AuthMethod = 'password' | 'code' | 'register';
+function requiresSetup(account: Account): boolean {
+  return (
+    account.temporaryPasswordExpiresAt !== null ||
+    account.acceptedLegalVersion !== LEGAL_DRAFT_VERSION
+  );
+}
 
 @Injectable()
 export class AuthSessionService {
   constructor(
     @Inject(APP_CONFIG) private readonly config: AppConfig,
     @Inject(PrismaService) private readonly prisma: PrismaService,
-    @Inject(AuthService) private readonly auth: AuthService,
   ) {}
 
-  async establish(
-    request: Request,
-    account: Account,
-    method: AuthMethod,
-    remember: boolean,
-  ): Promise<void> {
+  async establish(request: Request, account: Account, remember: boolean): Promise<void> {
     await this.regenerate(request);
     const now = Date.now();
     const idleTimeoutMs = remember ? 7 * 86_400_000 : 12 * 3_600_000;
     const absoluteTimeoutMs = remember ? 30 * 86_400_000 : 24 * 3_600_000;
     request.session.accountId = account.id;
     request.session.authVersion = account.authVersion;
-    request.session.authMethod = method;
     request.session.issuedAt = now;
     request.session.lastSeenAt = now;
     request.session.absoluteExpiresAt = now + absoluteTimeoutMs;
     request.session.idleTimeoutMs = idleTimeoutMs;
     request.session.cookie.maxAge = idleTimeoutMs;
-    const activeFamilyId = await this.findFallbackFamily(account.id);
+    const activeFamilyId = requiresSetup(account)
+      ? null
+      : await this.findFallbackFamily(account.id);
     if (activeFamilyId) {
       request.session.activeFamilyId = activeFamilyId;
       const activeBabyId = await this.findFallbackBaby(account.id, activeFamilyId);
@@ -43,7 +44,7 @@ export class AuthSessionService {
     await this.save(request);
   }
 
-  async current(request: Request): Promise<Account> {
+  async current(request: Request, allowRestricted = false): Promise<Account> {
     const session = request.session;
     const now = Date.now();
     if (
@@ -65,43 +66,45 @@ export class AuthSessionService {
       throw this.unauthorized();
     }
 
+    if (account.temporaryPasswordExpiresAt && account.temporaryPasswordExpiresAt.getTime() <= now) {
+      await this.destroy(request);
+      throw this.unauthorized();
+    }
+    if (!allowRestricted && requiresSetup(account)) {
+      throw new ApiProblemException(
+        403,
+        'Complete your account setup first.',
+        'ACCOUNT_SETUP_REQUIRED',
+      );
+    }
+
     session.lastSeenAt = now;
     session.cookie.maxAge = Math.max(
       1,
       Math.min(session.idleTimeoutMs, session.absoluteExpiresAt - now),
     );
-    await this.reconcileActiveFamily(request, account.id);
-    await this.reconcileActiveBaby(request, account.id);
+    if (!requiresSetup(account)) {
+      await this.reconcileActiveFamily(request, account.id);
+      await this.reconcileActiveBaby(request, account.id);
+    }
     await this.save(request);
     return account;
   }
 
-  summary(account: Account): {
-    id: string;
-    displayName: string | null;
-    phoneMasked: string;
-    activeFamilyId: string | null;
-    activeBabyId: string | null;
-  } {
+  private summary(account: Account): AccountSummaryDto {
     return {
       id: account.id,
       displayName: account.displayName,
-      phoneMasked: this.auth.maskPhone(account.phoneE164),
+      username: account.username,
+      siteRole: account.siteRole,
+      mustChangePassword: account.temporaryPasswordExpiresAt !== null,
+      mustAcceptTerms: account.acceptedLegalVersion !== LEGAL_DRAFT_VERSION,
       activeFamilyId: null,
       activeBabyId: null,
     };
   }
 
-  summaryForRequest(
-    request: Request,
-    account: Account,
-  ): {
-    id: string;
-    displayName: string | null;
-    phoneMasked: string;
-    activeFamilyId: string | null;
-    activeBabyId: string | null;
-  } {
+  summaryForRequest(request: Request, account: Account): AccountSummaryDto {
     return {
       ...this.summary(account),
       activeFamilyId: request.session.activeFamilyId ?? null,

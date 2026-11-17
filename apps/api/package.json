@@ -16,6 +16,7 @@
     "typecheck": "pnpm prisma:generate && tsc --noEmit",
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand",
     "prisma:generate": "prisma generate",
+    "super-admin": "tsx src/auth/super-admin.ts",
     "openapi:export": "pnpm prisma:generate && tsx src/openapi-export.ts"
   },
   "dependencies": {

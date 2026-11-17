@@ -1,72 +1,20 @@
+import { expect, test } from '@playwright/test';
 import {
-  expect,
-  request as playwrightRequest,
-  test,
-  type APIRequestContext,
-} from '@playwright/test';
-import { randomInt } from 'node:crypto';
-
-const apiBaseUrl = process.env.E2E_API_BASE_URL ?? 'http://127.0.0.1:3000';
-const webOrigin = process.env.STACK_BASE_URL ?? 'http://127.0.0.1:5173';
-
-function syntheticPhone(): string {
-  return `135${randomInt(10_000_000, 100_000_000)}`;
-}
-
-async function csrf(context: APIRequestContext): Promise<string> {
-  const response = await context.get('/api/v1/auth/csrf');
-  expect(response.ok()).toBe(true);
-  return ((await response.json()) as { csrfToken: string }).csrfToken;
-}
-
-async function registerAccount(): Promise<{ context: APIRequestContext; csrf: string }> {
-  const context = await playwrightRequest.newContext({
-    baseURL: apiBaseUrl,
-    extraHTTPHeaders: {
-      'X-Forwarded-For': `198.19.${randomInt(0, 256)}.${randomInt(1, 255)}`,
-    },
-  });
-  const phone = syntheticPhone();
-  const firstCsrf = await csrf(context);
-  const challenge = await context.post('/api/v1/auth/verification-challenges', {
-    headers: { Origin: webOrigin, 'x-csrf-token': firstCsrf },
-    data: { phone, purpose: 'REGISTER' },
-  });
-  const challengeId = ((await challenge.json()) as { challengeId: string }).challengeId;
-  const registration = await context.post('/api/v1/auth/register', {
-    headers: { Origin: webOrigin, 'x-csrf-token': firstCsrf },
-    data: {
-      phone,
-      challengeId,
-      code: '246810',
-      password: 'abcdef',
-      termsVersion: 'draft-2026-09-10',
-      privacyVersion: 'draft-2026-09-10',
-    },
-  });
-  expect(registration.status()).toBe(201);
-  return { context, csrf: await csrf(context) };
-}
-
-async function post(context: APIRequestContext, path: string, token: string, data?: unknown) {
-  return context.post(path, {
-    headers: { Origin: webOrigin, 'x-csrf-token': token },
-    ...(data === undefined ? {} : { data }),
-  });
-}
+  assignMember,
+  createManagedFamily,
+  loginInBrowser,
+  post,
+  provisionAccount,
+} from './managed-fixtures';
 
 test('enforces baby profile permissions, family scope, current-baby fallback, and recovery', async ({
   request: _request,
 }, testInfo) => {
   void _request;
   test.skip(testInfo.project.name !== 'chromium-1440', 'API contract is viewport-independent');
-  const owner = await registerAccount();
-  const member = await registerAccount();
-  const familyResponse = await post(owner.context, '/api/v1/families', owner.csrf, {
-    name: '宝宝测试家庭',
-    displayName: '创建者',
-  });
-  const family = (await familyResponse.json()) as { id: string };
+  const owner = await provisionAccount();
+  const member = await provisionAccount();
+  const family = await createManagedFamily(owner, '宝宝测试家庭', '创建者');
   const first = await post(owner.context, `/api/v1/families/${family.id}/babies`, owner.csrf, {
     nickname: '小星星',
     birthDate: '2026-01-02',
@@ -89,16 +37,7 @@ test('enforces baby profile permissions, family scope, current-baby fallback, an
     ).activeBabyId,
   ).toBe(secondBaby.id);
 
-  const invite = await post(owner.context, `/api/v1/families/${family.id}/invitations`, owner.csrf);
-  const token = ((await invite.json()) as { token: string }).token;
-  expect(
-    (
-      await post(member.context, '/api/v1/family-invitations/accept', member.csrf, {
-        token,
-        displayName: '普通成员',
-      })
-    ).status(),
-  ).toBe(200);
+  expect(await assignMember(family.id, member.username, '普通成员')).toBe(204);
   const memberList = await member.context.get(`/api/v1/families/${family.id}/babies`);
   expect(memberList.status()).toBe(200);
   expect(((await memberList.json()) as { items: unknown[] }).items).toHaveLength(2);
@@ -146,11 +85,7 @@ test('enforces baby profile permissions, family scope, current-baby fallback, an
     ).activeBabyId,
   ).toBe(firstBaby.id);
 
-  const otherFamily = await post(owner.context, '/api/v1/families', owner.csrf, {
-    name: '隔离家庭',
-    displayName: '创建者',
-  });
-  const otherFamilyId = ((await otherFamily.json()) as { id: string }).id;
+  const otherFamilyId = (await createManagedFamily(owner, '隔离家庭', '创建者')).id;
   const crossFamily = await owner.context.get(
     `/api/v1/families/${otherFamilyId}/babies/${firstBaby.id}`,
   );
@@ -163,19 +98,11 @@ test('enforces baby profile permissions, family scope, current-baby fallback, an
 test('creates a baby profile from the responsive family application without horizontal overflow', async ({
   page,
 }) => {
-  const phone = syntheticPhone();
-  await page.goto('/register');
-  await page.getByLabel('手机号').fill(phone);
-  await page.getByRole('button', { name: '获取验证码' }).click();
-  await page.getByLabel('验证码').fill('246810');
-  await page.getByLabel('设置密码').fill('abcdef');
-  await page.getByLabel('确认密码').fill('abcdef');
-  await page.getByLabel(/我已阅读并同意/).check();
-  await page.getByRole('button', { name: '注册并登录' }).click();
-  await page.getByLabel('家庭名称').fill('合成成长家庭');
-  await page.getByLabel('你在家庭中的称呼').fill('合成创建者');
-  await page.getByRole('button', { name: '创建家庭', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '合成成长家庭' })).toBeVisible();
+  const owner = await provisionAccount();
+  await createManagedFamily(owner, '合成成长家庭', '合成家管');
+  await loginInBrowser(page, owner.username, owner.password);
+  await owner.context.dispose();
+  await expect(page).toHaveURL(/\/app\/babies\/new$/);
   await page.goto('/app/babies/new');
   await expect(page.getByRole('heading', { name: '记录成长故事的主角' })).toBeVisible();
   await page.getByRole('button', { name: '取消' }).click();
