@@ -4,7 +4,7 @@ type: execution_log
 title: execution-log
 status: in_progress
 created_at: 2026-11-11T15:30:14+08:00
-updated_at: 2026-11-11T15:30:14+08:00
+updated_at: 2026-11-17T11:24:55+08:00
 plan_id: PLAN-20261111-V6ACAR8T
 ---
 
@@ -22,3 +22,7 @@ plan_id: PLAN-20261111-V6ACAR8T
 - 本次重新执行 pnpm validate 通过。PHOTO_DEPENDENCIES=VALID、ESLint、Prettier、API/Web 类型检查、5 项仓库工具测试、API 292 项、Web 77 项、API/Web build 和 PROJECT_VALIDATION=PASSED。Node 对 WHO JSON import 输出弃用提醒，不影响通过结果。
 - 更新两个活动 Plan 的工作区状态为 dirty_overlap。子 Plan 远端状态按刚完成的显式 fetch 更新为 verified。索引与项目证据校验通过。
 - 2026-11-17：用户表示「完成收尾工作，所有PLAN已全部验收。」。从已核验的 origin/develop@2bf30dc 的独立 worktree 恢复 stash 1adfd6e，保留原 stash。两个 Plan 的执行依赖及共享实现随同一候选验证，各自重算作用域。候选之前将只承担台账导航的 AGENTS.md 和生成索引 docs/INDEX.md 从产品摘要中移出，保留原产品、测试和冻结规格范围，避免推进状态和归档本身改变摘要。该工作区以干净基线创建；恢复的改动已按 stash 路径逐项核对。
+
+## 2026-11-17 候选证据
+
+候选 6c227008e86963dd3c66335440c51c26be3063af，v2 作用域摘要 59B59C83942308C93F9493395DED02D1B2674DD1CBE613B5288D4B9285BE13A0。pnpm validate 与 OpenAPI 一致性通过，隔离库迁移 9/9。Windows Chromium 在 375、834、1440 最终 65 项通过、19 项按条件跳过。标准 API 镜像生产依赖打包超时，本机应用配合容器依赖完成测试。用户验收反馈已录入，产品分支及 Plan H 归档提交留在本地。
