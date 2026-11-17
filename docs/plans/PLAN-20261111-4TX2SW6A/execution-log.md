@@ -28,3 +28,9 @@ plan_id: PLAN-20261111-4TX2SW6A
 ## 2026-11-17 候选证据
 
 候选 6c227008e86963dd3c66335440c51c26be3063af，v2 作用域摘要 FD6CC4D77DCF2FF8C22BE30001F2F95036DF2B624B6C70F7FCBEE2B762A6E279。pnpm validate 与 OpenAPI 一致性通过，隔离库迁移 9/9。Windows Chromium 在 375、834、1440 最终 65 项通过、19 项按条件跳过。标准 API 镜像生产依赖打包超时，本机应用配合容器依赖完成测试。用户验收反馈已录入，产品分支及 Plan H 归档提交留在本地。
+
+## 2026-11-17T13:57:11+08:00 收尾、集成复验与归档
+
+- 用户此前明确授权同步 Plan H、推送本功能分支及开 PR。对应远端为 develop@8f03297 和 PR #32 的 head 903c1900f4a67c3fa575812cb13c4d5b9fc15bc0。同步冲突仅在 AGENTS 与生成索引，候选摘要保持一致。
+- 用户报告 PR Review 已完成。本轮核查时 PR #32 已合并，GitHub 返回无审批条目。合并由用户侧完成，集成提交为 a63e50a497d1d325944b6ae5eb802df5453b2e25。
+- 基于 GitHub PR 和 CI 证据，补齐冻结候选 Review、Regression、验收绑定和集成复验。合并发生在文档补录之前。独立归档工作区创建 Achievement 与规范化哈希，台账更新为 archived。归档提交留在本地。

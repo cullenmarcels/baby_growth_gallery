@@ -89,7 +89,7 @@
 | 照片浏览上传者与来源导航修订          | `docs/specs/SPEC-20260923-Y0XZXEM0-photo-detail-uploader/spec.md` / `docs/designs/DES-20260923-M1TKDS56-photo-detail-uploader/design.md` / `docs/plans/PLAN-20260923-1FC2B42D/plan.md` / `docs/achievements/ACH-20260923-1FC2B42D-photo-browse-experience.md` | 已归档                      | 卡片与详情上传者显示、图集/时间轴/里程碑来源感知照片详情返回；CI 镜像支持修复另见 PR #29 |
 | Plan G 成长数据与回收站 | `docs/specs/SPEC-20261022-17HX5RTZ-growth-records/spec.md` / `docs/designs/DES-20261022-EM2SND6K-growth-records/design.md` / `docs/plans/PLAN-20261022-707KSVG3/plan.md` | 已归档：ACH-20261022-707KSVG3 | 任意年龄测量、WHO 228 月参考、30 天回收与管理员彻底删除 |
 | Plan H 宝宝首页数据聚合 | `docs/specs/SPEC-20261030-VJ05H0TV-homepage-aggregation/spec.md` / `docs/designs/DES-20261030-TSASQH7P-homepage-aggregation/design.md` / `docs/plans/PLAN-20261030-7HNVR9E5/plan.md` | 已归档：ACH-20261030-7HNVR9E5 | 照片、里程碑进度、近期提醒与最新成长数据的首页聚合 |
-| 家庭专用账号与超管后台 | `docs/specs/SPEC-20261111-H7J6WEKD-managed-admin/spec.md` / `docs/designs/DES-20261111-9KTXT0TA-managed-admin/design.md` / `docs/plans/PLAN-20261111-4TX2SW6A/plan.md` / `docs/plans/PLAN-20261111-V6ACAR8T/plan.md` | 审查中 | 账户名密码、三级权限、本地重建及成员和家庭后台管理 |
+| 家庭专用账号与超管后台 | `docs/specs/SPEC-20261111-H7J6WEKD-managed-admin/spec.md` / `docs/designs/DES-20261111-9KTXT0TA-managed-admin/design.md` / `docs/plans/PLAN-20261111-4TX2SW6A/plan.md` / `docs/plans/PLAN-20261111-V6ACAR8T/plan.md` | 已归档：ACH-20261111-4TX2SW6A、ACH-20261111-V6ACAR8T | 账户名密码、三级权限、本地重建及成员和家庭后台管理 |
 
 执行任务时先用 `rules/INDEX.md` 定位阶段；进入 `docs/` 后读取 `docs/README.md` 和 `docs/INDEX.md`。不得仅按文件日期推断当前有效资料。
 
